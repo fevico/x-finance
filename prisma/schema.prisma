@@ -5,15 +5,75 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-
 model Group {
-  id          String @id @default(uuid())
+  id   String @id @default(cuid())
+  name String @unique
+
+  groupRoles GroupRole[]
+  entities  Entity[]
+  users     User[]
+}
+
+model Entity {
+  id      String @id @default(cuid())
+  name    String @unique
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id])
+  users   User[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  firstName     String?
+  lastName      String?
+  password      String?
+  image         Json? // {url: string, public_id: string}
+  provider      String? // "google", "github", "credentials", etc.
+  providerId    String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  groupRoles  GroupRole[]
+  systemRole systemRole  @default(user)
+
+  groupId  String?
+  group    Group?  @relation(fields: [groupId], references: [id])
+  entityId String?
+  entity   Entity? @relation(fields: [entityId], references: [id])
+
+  @@unique([provider, providerId])
+}
+
+model GroupRole {
+  id          String       @id @default(cuid())
+  name        String
+  users       User[]
+  permissions Permission[]
+  groupId     String
+  group       Group        @relation(fields: [groupId], references: [id])
+
+  @@unique([name, groupId])
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  name        String  @unique // e.g., "dashboard:group:view", "dashboard:entity:view", (module:scope)
+  description String?
+  groupRoles  GroupRole[]
+
+}
+
+enum systemRole {
+  admin
+  user
 }
