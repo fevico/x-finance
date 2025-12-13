@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as bodyParser from 'body-parser';
 import { AllExceptionsFilter } from './lib/http-exception.filter';
 import { ResponseInterceptor } from './lib/response.interceptor';
+import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,5 +31,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   await app.listen(process.env.PORT ?? 3810);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 void bootstrap();

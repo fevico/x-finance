@@ -45,7 +45,7 @@ export class AuthController {
   @Roles(systemRole.admin)
   async startGroup(@Body() { groupId, groupName }, @Res() res: Response) {
     const token = await encryptSession({ groupId, groupName }, '30m');
-    res.setHeader('Set-Cookie', createCookie('xf_group', token));
+    res.setHeader('Set-Cookie', createCookie('xf_group', token, 60 * 30));
     return res.send({ success: true });
   }
 
@@ -61,7 +61,7 @@ export class AuthController {
   @Permissions('dashboard:group')
   async startEntity(@Body() { entityId, entityName }, @Res() res: Response) {
     const token = await encryptSession({ entityId, entityName }, '30m');
-    res.setHeader('Set-Cookie', createCookie('xf_entity', token));
+    res.setHeader('Set-Cookie', createCookie('xf_entity', token, 60 * 30));
     return res.send({ success: true });
   }
 

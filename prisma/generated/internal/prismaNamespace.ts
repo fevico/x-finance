@@ -846,6 +846,7 @@ export const UserScalarFieldEnum = {
   emailVerified: 'emailVerified',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  groupRoleId: 'groupRoleId',
   systemRole: 'systemRole',
   groupId: 'groupId',
   entityId: 'entityId'

@@ -33,12 +33,13 @@ export class AuthGuard implements CanActivate {
 
     req.user = mainPayload as Request['user'];
 
+
     // Group impersonation
     const groupToken: string | undefined = req.cookies?.['xf_group'] as
       | string
       | undefined;
     if (groupToken) {
-      const groupPayload = await decryptSession(groupToken, '30m');
+      const groupPayload = await decryptSession(groupToken);
       if (groupPayload) {
         req.groupImpersonation = {
           groupId: groupPayload.groupId as string,
@@ -54,7 +55,7 @@ export class AuthGuard implements CanActivate {
       | string
       | undefined;
     if (entityToken) {
-      const entityPayload = await decryptSession(entityToken, '30m');
+      const entityPayload = await decryptSession(entityToken);
       if (entityPayload) {
         req.entityImpersonation = {
           entityId: entityPayload.entityId as string,

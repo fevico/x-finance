@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { Permission } from 'prisma/generated/client';
 
 @Injectable()
 export class AuthService {
@@ -27,9 +28,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const permissions = user.groupRole.flatMap((role) =>
-      role.permissions.map((permission) => permission.name),
-    );
+    const permissions: string[] | null =
+      user.groupRole &&
+      user.groupRole.permissions.map(
+        (permission: Permission) => permission.name,
+      );
 
     const uniquePermissions = [...new Set(permissions)];
 

@@ -214,7 +214,7 @@ export type GroupRoleScalarWhereWithAggregatesInput = {
 export type GroupRoleCreateInput = {
   id?: string
   name: string
-  users?: Prisma.UserCreateNestedManyWithoutGroupRolesInput
+  users?: Prisma.UserCreateNestedManyWithoutGroupRoleInput
   permissions?: Prisma.PermissionCreateNestedManyWithoutGroupRolesInput
   group: Prisma.GroupCreateNestedOneWithoutGroupRolesInput
 }
@@ -223,14 +223,14 @@ export type GroupRoleUncheckedCreateInput = {
   id?: string
   name: string
   groupId: string
-  users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupRolesInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupRoleInput
   permissions?: Prisma.PermissionUncheckedCreateNestedManyWithoutGroupRolesInput
 }
 
 export type GroupRoleUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUpdateManyWithoutGroupRolesNestedInput
+  users?: Prisma.UserUpdateManyWithoutGroupRoleNestedInput
   permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
 }
@@ -239,7 +239,7 @@ export type GroupRoleUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUncheckedUpdateManyWithoutGroupRolesNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutGroupRoleNestedInput
   permissions?: Prisma.PermissionUncheckedUpdateManyWithoutGroupRolesNestedInput
 }
 
@@ -268,6 +268,11 @@ export type GroupRoleListRelationFilter = {
 
 export type GroupRoleOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type GroupRoleNullableScalarRelationFilter = {
+  is?: Prisma.GroupRoleWhereInput | null
+  isNot?: Prisma.GroupRoleWhereInput | null
 }
 
 export type GroupRoleNameGroupIdCompoundUniqueInput = {
@@ -335,42 +340,20 @@ export type GroupRoleUncheckedUpdateManyWithoutGroupNestedInput = {
   deleteMany?: Prisma.GroupRoleScalarWhereInput | Prisma.GroupRoleScalarWhereInput[]
 }
 
-export type GroupRoleCreateNestedManyWithoutUsersInput = {
-  create?: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput> | Prisma.GroupRoleCreateWithoutUsersInput[] | Prisma.GroupRoleUncheckedCreateWithoutUsersInput[]
-  connectOrCreate?: Prisma.GroupRoleCreateOrConnectWithoutUsersInput | Prisma.GroupRoleCreateOrConnectWithoutUsersInput[]
-  connect?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
+export type GroupRoleCreateNestedOneWithoutUsersInput = {
+  create?: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput>
+  connectOrCreate?: Prisma.GroupRoleCreateOrConnectWithoutUsersInput
+  connect?: Prisma.GroupRoleWhereUniqueInput
 }
 
-export type GroupRoleUncheckedCreateNestedManyWithoutUsersInput = {
-  create?: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput> | Prisma.GroupRoleCreateWithoutUsersInput[] | Prisma.GroupRoleUncheckedCreateWithoutUsersInput[]
-  connectOrCreate?: Prisma.GroupRoleCreateOrConnectWithoutUsersInput | Prisma.GroupRoleCreateOrConnectWithoutUsersInput[]
-  connect?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-}
-
-export type GroupRoleUpdateManyWithoutUsersNestedInput = {
-  create?: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput> | Prisma.GroupRoleCreateWithoutUsersInput[] | Prisma.GroupRoleUncheckedCreateWithoutUsersInput[]
-  connectOrCreate?: Prisma.GroupRoleCreateOrConnectWithoutUsersInput | Prisma.GroupRoleCreateOrConnectWithoutUsersInput[]
-  upsert?: Prisma.GroupRoleUpsertWithWhereUniqueWithoutUsersInput | Prisma.GroupRoleUpsertWithWhereUniqueWithoutUsersInput[]
-  set?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  disconnect?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  delete?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  connect?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  update?: Prisma.GroupRoleUpdateWithWhereUniqueWithoutUsersInput | Prisma.GroupRoleUpdateWithWhereUniqueWithoutUsersInput[]
-  updateMany?: Prisma.GroupRoleUpdateManyWithWhereWithoutUsersInput | Prisma.GroupRoleUpdateManyWithWhereWithoutUsersInput[]
-  deleteMany?: Prisma.GroupRoleScalarWhereInput | Prisma.GroupRoleScalarWhereInput[]
-}
-
-export type GroupRoleUncheckedUpdateManyWithoutUsersNestedInput = {
-  create?: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput> | Prisma.GroupRoleCreateWithoutUsersInput[] | Prisma.GroupRoleUncheckedCreateWithoutUsersInput[]
-  connectOrCreate?: Prisma.GroupRoleCreateOrConnectWithoutUsersInput | Prisma.GroupRoleCreateOrConnectWithoutUsersInput[]
-  upsert?: Prisma.GroupRoleUpsertWithWhereUniqueWithoutUsersInput | Prisma.GroupRoleUpsertWithWhereUniqueWithoutUsersInput[]
-  set?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  disconnect?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  delete?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  connect?: Prisma.GroupRoleWhereUniqueInput | Prisma.GroupRoleWhereUniqueInput[]
-  update?: Prisma.GroupRoleUpdateWithWhereUniqueWithoutUsersInput | Prisma.GroupRoleUpdateWithWhereUniqueWithoutUsersInput[]
-  updateMany?: Prisma.GroupRoleUpdateManyWithWhereWithoutUsersInput | Prisma.GroupRoleUpdateManyWithWhereWithoutUsersInput[]
-  deleteMany?: Prisma.GroupRoleScalarWhereInput | Prisma.GroupRoleScalarWhereInput[]
+export type GroupRoleUpdateOneWithoutUsersNestedInput = {
+  create?: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput>
+  connectOrCreate?: Prisma.GroupRoleCreateOrConnectWithoutUsersInput
+  upsert?: Prisma.GroupRoleUpsertWithoutUsersInput
+  disconnect?: Prisma.GroupRoleWhereInput | boolean
+  delete?: Prisma.GroupRoleWhereInput | boolean
+  connect?: Prisma.GroupRoleWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GroupRoleUpdateToOneWithWhereWithoutUsersInput, Prisma.GroupRoleUpdateWithoutUsersInput>, Prisma.GroupRoleUncheckedUpdateWithoutUsersInput>
 }
 
 export type GroupRoleCreateNestedManyWithoutPermissionsInput = {
@@ -414,14 +397,14 @@ export type GroupRoleUncheckedUpdateManyWithoutPermissionsNestedInput = {
 export type GroupRoleCreateWithoutGroupInput = {
   id?: string
   name: string
-  users?: Prisma.UserCreateNestedManyWithoutGroupRolesInput
+  users?: Prisma.UserCreateNestedManyWithoutGroupRoleInput
   permissions?: Prisma.PermissionCreateNestedManyWithoutGroupRolesInput
 }
 
 export type GroupRoleUncheckedCreateWithoutGroupInput = {
   id?: string
   name: string
-  users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupRolesInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupRoleInput
   permissions?: Prisma.PermissionUncheckedCreateNestedManyWithoutGroupRolesInput
 }
 
@@ -479,26 +462,35 @@ export type GroupRoleCreateOrConnectWithoutUsersInput = {
   create: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput>
 }
 
-export type GroupRoleUpsertWithWhereUniqueWithoutUsersInput = {
-  where: Prisma.GroupRoleWhereUniqueInput
+export type GroupRoleUpsertWithoutUsersInput = {
   update: Prisma.XOR<Prisma.GroupRoleUpdateWithoutUsersInput, Prisma.GroupRoleUncheckedUpdateWithoutUsersInput>
   create: Prisma.XOR<Prisma.GroupRoleCreateWithoutUsersInput, Prisma.GroupRoleUncheckedCreateWithoutUsersInput>
+  where?: Prisma.GroupRoleWhereInput
 }
 
-export type GroupRoleUpdateWithWhereUniqueWithoutUsersInput = {
-  where: Prisma.GroupRoleWhereUniqueInput
+export type GroupRoleUpdateToOneWithWhereWithoutUsersInput = {
+  where?: Prisma.GroupRoleWhereInput
   data: Prisma.XOR<Prisma.GroupRoleUpdateWithoutUsersInput, Prisma.GroupRoleUncheckedUpdateWithoutUsersInput>
 }
 
-export type GroupRoleUpdateManyWithWhereWithoutUsersInput = {
-  where: Prisma.GroupRoleScalarWhereInput
-  data: Prisma.XOR<Prisma.GroupRoleUpdateManyMutationInput, Prisma.GroupRoleUncheckedUpdateManyWithoutUsersInput>
+export type GroupRoleUpdateWithoutUsersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
+  group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
+}
+
+export type GroupRoleUncheckedUpdateWithoutUsersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  permissions?: Prisma.PermissionUncheckedUpdateManyWithoutGroupRolesNestedInput
 }
 
 export type GroupRoleCreateWithoutPermissionsInput = {
   id?: string
   name: string
-  users?: Prisma.UserCreateNestedManyWithoutGroupRolesInput
+  users?: Prisma.UserCreateNestedManyWithoutGroupRoleInput
   group: Prisma.GroupCreateNestedOneWithoutGroupRolesInput
 }
 
@@ -506,7 +498,7 @@ export type GroupRoleUncheckedCreateWithoutPermissionsInput = {
   id?: string
   name: string
   groupId: string
-  users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupRolesInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupRoleInput
 }
 
 export type GroupRoleCreateOrConnectWithoutPermissionsInput = {
@@ -538,14 +530,14 @@ export type GroupRoleCreateManyGroupInput = {
 export type GroupRoleUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUpdateManyWithoutGroupRolesNestedInput
+  users?: Prisma.UserUpdateManyWithoutGroupRoleNestedInput
   permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
 }
 
 export type GroupRoleUncheckedUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUncheckedUpdateManyWithoutGroupRolesNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutGroupRoleNestedInput
   permissions?: Prisma.PermissionUncheckedUpdateManyWithoutGroupRolesNestedInput
 }
 
@@ -554,30 +546,10 @@ export type GroupRoleUncheckedUpdateManyWithoutGroupInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
-export type GroupRoleUpdateWithoutUsersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
-  group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
-}
-
-export type GroupRoleUncheckedUpdateWithoutUsersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  permissions?: Prisma.PermissionUncheckedUpdateManyWithoutGroupRolesNestedInput
-}
-
-export type GroupRoleUncheckedUpdateManyWithoutUsersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  groupId?: Prisma.StringFieldUpdateOperationsInput | string
-}
-
 export type GroupRoleUpdateWithoutPermissionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUpdateManyWithoutGroupRolesNestedInput
+  users?: Prisma.UserUpdateManyWithoutGroupRoleNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
 }
 
@@ -585,7 +557,7 @@ export type GroupRoleUncheckedUpdateWithoutPermissionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUncheckedUpdateManyWithoutGroupRolesNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutGroupRoleNestedInput
 }
 
 export type GroupRoleUncheckedUpdateManyWithoutPermissionsInput = {

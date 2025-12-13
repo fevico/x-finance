@@ -1,5 +1,3 @@
-import { JWTPayload } from 'jose';
-
 import { User as PrismaUser } from 'prisma/generated/client';
 
 declare global {

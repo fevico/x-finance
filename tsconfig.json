@@ -25,5 +25,6 @@
     }
   },
   
-  "include": ["src", "scripts/seed/*"]
+  "include": ["src", "scripts/*", "prisma.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }
