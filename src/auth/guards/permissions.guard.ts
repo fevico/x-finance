@@ -20,7 +20,7 @@ export class PermissionsGuard implements CanActivate {
     if (!user) return false;
 
     // Allow superAdmin to bypass permission checks
-    if (user.systemRole === systemRole.admin) return true;
+    if (user.systemRole === systemRole.superadmin) return true;
 
     // Check if user has all required permissions
     if (!user.permissions || !Array.isArray(user.permissions)) return false;

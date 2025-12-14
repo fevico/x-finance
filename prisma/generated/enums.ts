@@ -10,6 +10,7 @@
 */
 
 export const systemRole = {
+  superadmin: 'superadmin',
   admin: 'admin',
   user: 'user'
 } as const

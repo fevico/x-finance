@@ -13,10 +13,8 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Permissions } from '../auth/decorators/permissions.decorator';
-import { systemRole } from '@prisma/client';
+import { systemRole } from 'prisma/generated/enums';
 
 @UseGuards(AuthGuard)
 @Controller('groups')
@@ -25,35 +23,35 @@ export class GroupController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(systemRole.admin)
+  @Roles(systemRole.superadmin)
   create(@Body() createGroupDto: CreateGroupDto) {
     return this.groupService.create(createGroupDto);
   }
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(systemRole.admin)
+  @Roles(systemRole.superadmin)
   findAll() {
     return this.groupService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(PermissionsGuard)
-  @Permissions('dashboard:group:view')
+  @UseGuards(RolesGuard)
+  @Roles(systemRole.admin)
   findOne(@Param('id') id: string) {
     return this.groupService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(PermissionsGuard)
-  @Permissions('dashboard:group:edit')
+  @UseGuards(RolesGuard)
+  @Roles(systemRole.admin)
   update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
     return this.groupService.update(id, updateGroupDto);
   }
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(systemRole.admin)
+  @Roles(systemRole.superadmin)
   remove(@Param('id') id: string) {
     return this.groupService.remove(id);
   }

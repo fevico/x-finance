@@ -33,7 +33,6 @@ export class AuthGuard implements CanActivate {
 
     req.user = mainPayload as Request['user'];
 
-
     // Group impersonation
     const groupToken: string | undefined = req.cookies?.['xf_group'] as
       | string

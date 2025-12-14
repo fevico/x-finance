@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsEnum,
 } from 'class-validator';
+import { systemRole } from 'prisma/generated/enums';
 
 export class RegisterDto {
   @IsString()
@@ -32,6 +33,6 @@ export class RegisterDto {
   @MinLength(6)
   password: string;
 
-  @IsEnum(['admin', 'superAdmin'])
-  role: 'admin' | 'superAdmin';
+  @IsEnum(systemRole)
+  role: systemRole;
 }

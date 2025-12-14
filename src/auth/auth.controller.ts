@@ -13,7 +13,6 @@ import { AuthService } from './auth.service';
 import { encryptSession } from './utils/crypto.util';
 import { createCookie, deleteCookie } from './utils/cookie.util';
 import { AuthGuard } from './guards/auth.guard';
-import { PermissionsGuard } from './guards/permissions.guard';
 import { Permissions } from './decorators/permissions.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
@@ -42,7 +41,7 @@ export class AuthController {
 
   @Post('impersonate/group')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(systemRole.admin)
+  @Roles(systemRole.superadmin)
   async startGroup(@Body() { groupId, groupName }, @Res() res: Response) {
     const token = await encryptSession({ groupId, groupName }, '30m');
     res.setHeader('Set-Cookie', createCookie('xf_group', token, 60 * 30));
@@ -50,15 +49,15 @@ export class AuthController {
   }
 
   @Delete('impersonate/group')
-  //   @UseGuards(AuthGuard, Roles(systemRole.admin))
-  stopGroup(@Res() res: Response) {
+@UseGuards(AuthGuard, RolesGuard)
+  @Roles(systemRole.superadmin)  stopGroup(@Res() res: Response) {
     res.setHeader('Set-Cookie', deleteCookie('xf_group'));
     return res.send({ success: true });
   }
 
   @Post('impersonate/entity')
-  @UseGuards(AuthGuard, PermissionsGuard)
-  @Permissions('dashboard:group')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(systemRole.superadmin, systemRole.admin)
   async startEntity(@Body() { entityId, entityName }, @Res() res: Response) {
     const token = await encryptSession({ entityId, entityName }, '30m');
     res.setHeader('Set-Cookie', createCookie('xf_entity', token, 60 * 30));
@@ -66,8 +65,8 @@ export class AuthController {
   }
 
   @Delete('impersonate/entity')
-  @UseGuards(AuthGuard, PermissionsGuard)
-  @Permissions('dashboard:group')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(systemRole.superadmin, systemRole.admin)
   stopEntity(@Res() res: Response) {
     res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
     return res.send({ success: true });

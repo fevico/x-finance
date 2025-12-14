@@ -75,6 +75,7 @@ model Permission {
 }
 
 enum systemRole {
+  superadmin
   admin
   user
 }
