@@ -23,6 +23,7 @@ jobs:
             package.json
             tsconfig.build.json
             tsconfig.json
+            prisma.config.ts
             prisma/
           include-hidden-files: true
           retention-days: 1
@@ -89,6 +90,9 @@ jobs:
 
           rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
             build/package.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
+
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            build/prisma.config.ts ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
 
           rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
             build/tsconfig*.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
