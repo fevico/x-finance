@@ -49,7 +49,7 @@ export class EntityController {
   findOne(@Param('id') id: string, @Req() req: Request) {
     const effectiveGroupId = getEffectiveGroupId(req);
     if (!effectiveGroupId) {
-      throw new ForbiddenException('No effective group ID found..');
+      throw new ForbiddenException('No effective group ID found.');
     }
     return this.entityService.findOne(id, effectiveGroupId);
   }
