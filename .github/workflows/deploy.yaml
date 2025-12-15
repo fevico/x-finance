@@ -54,50 +54,62 @@ jobs:
           echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> build/.env
           echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> build/.env
           echo "PORT=${{ secrets.PORT }}" >> build/.env
-      - name: Deploy Backend via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Rsync backend to VPS (Blue-Green)
+        run: |
+          # Detect current live port
+          LIVE_PORT=$(ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "curl -s http://127.0.0.1:3810/api/v1/health > /dev/null && echo 3810 || echo 3811")
+
+          if [ "$LIVE_PORT" = "3810" ]; then
+            GREEN_DIR=/var/www/html/backend-green
+            GREEN_PORT=3811
+            OLD_PORT=3810
+            OLD_NAME=backend-blue
+            NEW_NAME=backend-green
+          else
+            GREEN_DIR=/var/www/html/backend-blue
+            GREEN_PORT=3810
+            OLD_PORT=3811
+            OLD_NAME=backend-green
+            NEW_NAME=backend-blue
+          fi
+
+          echo "Deploying $NEW_NAME on port $GREEN_PORT"
+
+          # Create green folder on VPS
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "sudo mkdir -p $GREEN_DIR && sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} $GREEN_DIR"
+
+          # Rsync files
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/dist/
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/package.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/tsconfig*.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/.env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/prisma/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/prisma/
+
+      - name: Start Green instance & switch Nginx
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             set -e
             export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
-
-            # Detect current live color
-            LIVE_PORT=$(curl -s http://127.0.0.1:3810/api/v1/health > /dev/null 2>&1 && echo 3810 || echo 3811)
-            if [ "$LIVE_PORT" = "3810" ]; then
-              GREEN_DIR=/var/www/html/backend-green
-              GREEN_PORT=3811
-              OLD_PORT=3810
-              OLD_NAME=backend-blue
-              NEW_NAME=backend-green
-            else
-              GREEN_DIR=/var/www/html/backend-blue
-              GREEN_PORT=3810
-              OLD_PORT=3811
-              OLD_NAME=backend-green
-              NEW_NAME=backend-blue
-            fi
-
-            echo "Deploying $NEW_NAME on port $GREEN_PORT"
-
-            sudo mkdir -p $GREEN_DIR
-            sudo chown -R $USER:$USER $GREEN_DIR
-
-            rsync -avz --delete ~/build/dist/ $GREEN_DIR/dist/
-            rsync -avz ~/build/package.json $GREEN_DIR/
-            rsync -avz ~/build/tsconfig.build.json $GREEN_DIR/
-            rsync -avz ~/build/tsconfig.json $GREEN_DIR/
-            rsync -avz ~/build/.env $GREEN_DIR/
-            rsync -avz --delete ~/build/prisma/ $GREEN_DIR/prisma/
+            [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
 
             cd $GREEN_DIR
             npm install --production
             npx prisma generate
             npx prisma migrate deploy
 
-            pm2 start npm --name $NEW_NAME -- start --watch --port $GREEN_PORT || pm2 reload $NEW_NAME
+            # Start PM2 with NVM
+            pm2 restart $NEW_NAME
+            pm2 save
 
             # Health check
             for i in {1..10}; do
@@ -110,4 +122,4 @@ jobs:
             sudo nginx -t
             sudo systemctl reload nginx
 
-            pm2 stop $OLD_NAME
+            pm2 stop $OLD_NAME || true
