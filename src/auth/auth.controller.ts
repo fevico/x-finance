@@ -49,8 +49,9 @@ export class AuthController {
   }
 
   @Delete('impersonate/group')
-@UseGuards(AuthGuard, RolesGuard)
-  @Roles(systemRole.superadmin)  stopGroup(@Res() res: Response) {
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(systemRole.superadmin)
+  stopGroup(@Res() res: Response) {
     res.setHeader('Set-Cookie', deleteCookie('xf_group'));
     return res.send({ success: true });
   }

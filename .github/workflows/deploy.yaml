@@ -1,0 +1,113 @@
+name: Deploy Backend (NestJS) Blue-Green
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: |
+            dist/
+            package.json
+            tsconfig.build.json
+            tsconfig.json
+            prisma/
+          include-hidden-files: true
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: build
+      - name: Create full .env
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > build/.env
+          echo "COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}" >> build/.env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> build/.env
+          echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> build/.env
+          echo "COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }}" >> build/.env
+          echo "LIVE_FRONTEND_URL=${{ secrets.LIVE_FRONTEND_URL }}" >> build/.env
+          echo "WWW_LIVE_FRONTEND_URL=${{ secrets.WWW_LIVE_FRONTEND_URL }}" >> build/.env
+          echo "API_URL=${{ secrets.API_URL }}" >> build/.env
+          echo "CLOUD_NAME=${{ secrets.CLOUD_NAME }}" >> build/.env
+          echo "CLOUD_KEY=${{ secrets.CLOUD_KEY }}" >> build/.env
+          echo "CLOUD_SECRET=${{ secrets.CLOUD_SECRET }}" >> build/.env
+          echo "PAYSTACK_SECRET_KEY=${{ secrets.PAYSTACK_SECRET_KEY }}" >> build/.env
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> build/.env
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> build/.env
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> build/.env
+          echo "PORT=${{ secrets.PORT }}" >> build/.env
+      - name: Deploy Backend via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
+
+            # Detect current live color
+            LIVE_PORT=$(curl -s http://127.0.0.1:3810/api/v1/health > /dev/null 2>&1 && echo 3810 || echo 3811)
+            if [ "$LIVE_PORT" = "3810" ]; then
+              GREEN_DIR=/var/www/html/backend-green
+              GREEN_PORT=3811
+              OLD_PORT=3810
+              OLD_NAME=backend-blue
+              NEW_NAME=backend-green
+            else
+              GREEN_DIR=/var/www/html/backend-blue
+              GREEN_PORT=3810
+              OLD_PORT=3811
+              OLD_NAME=backend-green
+              NEW_NAME=backend-blue
+            fi
+
+            echo "Deploying $NEW_NAME on port $GREEN_PORT"
+
+            sudo mkdir -p $GREEN_DIR
+            sudo chown -R $USER:$USER $GREEN_DIR
+
+            rsync -avz --delete ~/build/dist/ $GREEN_DIR/dist/
+            rsync -avz ~/build/package.json $GREEN_DIR/
+            rsync -avz ~/build/tsconfig.build.json $GREEN_DIR/
+            rsync -avz ~/build/tsconfig.json $GREEN_DIR/
+            rsync -avz ~/build/.env $GREEN_DIR/
+            rsync -avz --delete ~/build/prisma/ $GREEN_DIR/prisma/
+
+            cd $GREEN_DIR
+            npm install --production
+            npx prisma generate
+            npx prisma migrate deploy
+
+            pm2 start npm --name $NEW_NAME -- start --watch --port $GREEN_PORT || pm2 reload $NEW_NAME
+
+            # Health check
+            for i in {1..10}; do
+              curl -s http://127.0.0.1:$GREEN_PORT/api/v1/health | grep '"status":"ok"' && break
+              sleep 2
+            done
+
+            # Switch Nginx upstream
+            sudo sed -i "s/server 127.0.0.1:$OLD_PORT;/server 127.0.0.1:$GREEN_PORT;/" /etc/nginx/sites-available/backend
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            pm2 stop $OLD_NAME
