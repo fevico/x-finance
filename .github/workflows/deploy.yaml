@@ -30,12 +30,12 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: backend-build
           path: build
+
       - name: Create full .env
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > build/.env
@@ -60,12 +60,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Rsync backend to VPS (Blue-Green)
+      - name: Deploy Blue-Green Backend
         run: |
-          # Detect current live port
-          LIVE_PORT=$(ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          # Detect live backend
+          LIVE_PORT=$(ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
             "curl -s http://127.0.0.1:3810/api/v1/health > /dev/null && echo 3810 || echo 3811")
 
           if [ "$LIVE_PORT" = "3810" ]; then
@@ -84,42 +84,46 @@ jobs:
 
           echo "Deploying $NEW_NAME on port $GREEN_PORT"
 
-          # Create green folder on VPS
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "sudo mkdir -p $GREEN_DIR && sudo chown -R ${{ secrets.VPS_USER }}:${{ secrets.VPS_USER }} $GREEN_DIR"
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            build/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/dist/
 
-          # Rsync files
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/dist/
-          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/package.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
-          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/tsconfig*.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
-          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/.env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" build/prisma/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/prisma/
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            build/package.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
 
-      - name: Start Green instance & switch Nginx
-        run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            set -e
-            export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
-            [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            build/tsconfig*.json ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
 
-            cd $GREEN_DIR
-            npm install --production
-            npx prisma generate
-            npx prisma migrate deploy
+          rsync -avz -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            build/.env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/
 
-            # Start PM2 with NVM
-            pm2 restart $NEW_NAME
-            pm2 save
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            build/prisma/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:$GREEN_DIR/prisma/
 
-            # Health check
-            for i in {1..10}; do
-              curl -s http://127.0.0.1:$GREEN_PORT/api/v1/health | grep '"status":"ok"' && break
-              sleep 2
-            done
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+              set -e
+              export NVM_DIR=\$HOME/.nvm
+              [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+              export PATH=\$PATH:/usr/local/bin:/usr/bin:/bin
 
-            # Switch Nginx upstream
-            sudo sed -i "s/server 127.0.0.1:$OLD_PORT;/server 127.0.0.1:$GREEN_PORT;/" /etc/nginx/sites-available/backend
-            sudo nginx -t
-            sudo systemctl reload nginx
+              cd $GREEN_DIR
+              npm install --omit=dev
+              npx prisma generate
+              npx prisma migrate deploy
 
-            pm2 stop $OLD_NAME || true
+              pm2 restart $NEW_NAME
+
+              pm2 save
+
+              for i in {1..10}; do
+                curl -s http://127.0.0.1:$GREEN_PORT/api/v1/health | grep 'ok' && break
+                sleep 2
+              done
+
+              sudo sed -i \"s/server 127.0.0.1:$OLD_PORT;/server 127.0.0.1:$GREEN_PORT;/\" \
+                /etc/nginx/sites-available/backend
+              sudo nginx -t
+              sudo systemctl reload nginx
+
+              pm2 stop $OLD_NAME || true
+            "
