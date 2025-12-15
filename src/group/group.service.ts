@@ -29,4 +29,6 @@ export class GroupService {
   remove(id: string) {
     return this.prisma.group.delete({ where: { id } });
   }
+
+  // continuation
 }
