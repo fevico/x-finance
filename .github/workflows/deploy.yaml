@@ -115,7 +115,6 @@ jobs:
               npx prisma generate
               npx prisma migrate deploy
               pm2 restart $NEW_NAME
-
               pm2 save
 
               for i in {1..10}; do
