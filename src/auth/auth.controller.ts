@@ -43,8 +43,11 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin)
   async startGroup(@Body() { groupId, groupName }, @Res() res: Response) {
-    const token = await encryptSession({ groupId, groupName }, '30m');
-    res.setHeader('Set-Cookie', createCookie('xf_group', token, 60 * 30));
+    const token = await encryptSession({ groupId, groupName }, '7d');
+    res.setHeader(
+      'Set-Cookie',
+      createCookie('xf_group', token, 60 * 60 * 24 * 7),
+    );
     return res.send({ success: true });
   }
 
@@ -60,8 +63,11 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin, systemRole.admin)
   async startEntity(@Body() { entityId, entityName }, @Res() res: Response) {
-    const token = await encryptSession({ entityId, entityName }, '30m');
-    res.setHeader('Set-Cookie', createCookie('xf_entity', token, 60 * 30));
+    const token = await encryptSession({ entityId, entityName }, '7d');
+    res.setHeader(
+      'Set-Cookie',
+      createCookie('xf_entity', token, 60 * 60 * 24 * 7),
+    );
     return res.send({ success: true });
   }
 
