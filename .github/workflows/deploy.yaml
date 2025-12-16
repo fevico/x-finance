@@ -111,7 +111,7 @@ jobs:
               export PATH=\$PATH:/usr/local/bin:/usr/bin:/bin
 
               cd $GREEN_DIR
-              npm install --omit=dev
+              npm install
               npx prisma generate
               npx prisma migrate deploy
 
@@ -127,7 +127,7 @@ jobs:
               sudo sed -i \"s|proxy_pass http://127.0.0.1:$OLD_PORT;|proxy_pass http://127.0.0.1:$GREEN_PORT;|\" \
                 /etc/nginx/sites-available/backend
               echo "NGINX AFTER SWITCH:"
-              sudo grep proxy_pass /etc/nginx/sites-available/frontend
+              sudo grep proxy_pass /etc/nginx/sites-available/backend
 
               sudo nginx -t
               sudo systemctl reload nginx
