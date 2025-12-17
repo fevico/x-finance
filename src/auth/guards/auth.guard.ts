@@ -27,7 +27,7 @@ export class AuthGuard implements CanActivate {
 
     const mainPayload = await decryptSession(mainToken);
     if (!mainPayload) {
-      res.setHeader('Set-Cookie', deleteCookie('xf'));
+      res.setHeader('Set-Cookie', deleteCookie(req, 'xf'));
       throw new UnauthorizedException();
     }
 
@@ -45,7 +45,7 @@ export class AuthGuard implements CanActivate {
           groupName: groupPayload.groupName as string,
         };
       } else {
-        res.setHeader('Set-Cookie', deleteCookie('xf_group'));
+        res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
       }
     }
 
@@ -61,7 +61,7 @@ export class AuthGuard implements CanActivate {
           entityName: entityPayload.entityName as string,
         };
       } else {
-        res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
+        res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
       }
     }
 
