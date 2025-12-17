@@ -28,18 +28,54 @@ export type EntityMinAggregateOutputType = {
   id: string | null
   name: string | null
   groupId: string | null
+  legalName: string | null
+  taxId: string | null
+  country: string | null
+  currency: string | null
+  yearEnd: string | null
+  address: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  phoneNumber: string | null
+  email: string | null
+  website: string | null
 }
 
 export type EntityMaxAggregateOutputType = {
   id: string | null
   name: string | null
   groupId: string | null
+  legalName: string | null
+  taxId: string | null
+  country: string | null
+  currency: string | null
+  yearEnd: string | null
+  address: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  phoneNumber: string | null
+  email: string | null
+  website: string | null
 }
 
 export type EntityCountAggregateOutputType = {
   id: number
   name: number
   groupId: number
+  legalName: number
+  taxId: number
+  country: number
+  currency: number
+  yearEnd: number
+  address: number
+  city: number
+  state: number
+  postalCode: number
+  phoneNumber: number
+  email: number
+  website: number
   _all: number
 }
 
@@ -48,18 +84,54 @@ export type EntityMinAggregateInputType = {
   id?: true
   name?: true
   groupId?: true
+  legalName?: true
+  taxId?: true
+  country?: true
+  currency?: true
+  yearEnd?: true
+  address?: true
+  city?: true
+  state?: true
+  postalCode?: true
+  phoneNumber?: true
+  email?: true
+  website?: true
 }
 
 export type EntityMaxAggregateInputType = {
   id?: true
   name?: true
   groupId?: true
+  legalName?: true
+  taxId?: true
+  country?: true
+  currency?: true
+  yearEnd?: true
+  address?: true
+  city?: true
+  state?: true
+  postalCode?: true
+  phoneNumber?: true
+  email?: true
+  website?: true
 }
 
 export type EntityCountAggregateInputType = {
   id?: true
   name?: true
   groupId?: true
+  legalName?: true
+  taxId?: true
+  country?: true
+  currency?: true
+  yearEnd?: true
+  address?: true
+  city?: true
+  state?: true
+  postalCode?: true
+  phoneNumber?: true
+  email?: true
+  website?: true
   _all?: true
 }
 
@@ -139,6 +211,18 @@ export type EntityGroupByOutputType = {
   id: string
   name: string
   groupId: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
   _count: EntityCountAggregateOutputType | null
   _min: EntityMinAggregateOutputType | null
   _max: EntityMaxAggregateOutputType | null
@@ -166,33 +250,87 @@ export type EntityWhereInput = {
   id?: Prisma.StringFilter<"Entity"> | string
   name?: Prisma.StringFilter<"Entity"> | string
   groupId?: Prisma.StringFilter<"Entity"> | string
+  legalName?: Prisma.StringFilter<"Entity"> | string
+  taxId?: Prisma.StringFilter<"Entity"> | string
+  country?: Prisma.StringFilter<"Entity"> | string
+  currency?: Prisma.StringFilter<"Entity"> | string
+  yearEnd?: Prisma.StringFilter<"Entity"> | string
+  address?: Prisma.StringFilter<"Entity"> | string
+  city?: Prisma.StringFilter<"Entity"> | string
+  state?: Prisma.StringFilter<"Entity"> | string
+  postalCode?: Prisma.StringFilter<"Entity"> | string
+  phoneNumber?: Prisma.StringFilter<"Entity"> | string
+  email?: Prisma.StringFilter<"Entity"> | string
+  website?: Prisma.StringFilter<"Entity"> | string
   group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   users?: Prisma.UserListRelationFilter
+  customer?: Prisma.CustomerListRelationFilter
+  invoice?: Prisma.InvoiceListRelationFilter
 }
 
 export type EntityOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  currency?: Prisma.SortOrder
+  yearEnd?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  website?: Prisma.SortOrder
   group?: Prisma.GroupOrderByWithRelationInput
   users?: Prisma.UserOrderByRelationAggregateInput
+  customer?: Prisma.CustomerOrderByRelationAggregateInput
+  invoice?: Prisma.InvoiceOrderByRelationAggregateInput
 }
 
 export type EntityWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   name?: string
+  email?: string
   AND?: Prisma.EntityWhereInput | Prisma.EntityWhereInput[]
   OR?: Prisma.EntityWhereInput[]
   NOT?: Prisma.EntityWhereInput | Prisma.EntityWhereInput[]
   groupId?: Prisma.StringFilter<"Entity"> | string
+  legalName?: Prisma.StringFilter<"Entity"> | string
+  taxId?: Prisma.StringFilter<"Entity"> | string
+  country?: Prisma.StringFilter<"Entity"> | string
+  currency?: Prisma.StringFilter<"Entity"> | string
+  yearEnd?: Prisma.StringFilter<"Entity"> | string
+  address?: Prisma.StringFilter<"Entity"> | string
+  city?: Prisma.StringFilter<"Entity"> | string
+  state?: Prisma.StringFilter<"Entity"> | string
+  postalCode?: Prisma.StringFilter<"Entity"> | string
+  phoneNumber?: Prisma.StringFilter<"Entity"> | string
+  website?: Prisma.StringFilter<"Entity"> | string
   group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   users?: Prisma.UserListRelationFilter
-}, "id" | "name">
+  customer?: Prisma.CustomerListRelationFilter
+  invoice?: Prisma.InvoiceListRelationFilter
+}, "id" | "name" | "email">
 
 export type EntityOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  currency?: Prisma.SortOrder
+  yearEnd?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  website?: Prisma.SortOrder
   _count?: Prisma.EntityCountOrderByAggregateInput
   _max?: Prisma.EntityMaxOrderByAggregateInput
   _min?: Prisma.EntityMinOrderByAggregateInput
@@ -205,51 +343,155 @@ export type EntityScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Entity"> | string
   name?: Prisma.StringWithAggregatesFilter<"Entity"> | string
   groupId?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  legalName?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  taxId?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  country?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  currency?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  yearEnd?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  address?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  city?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  state?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  postalCode?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  phoneNumber?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  email?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  website?: Prisma.StringWithAggregatesFilter<"Entity"> | string
 }
 
 export type EntityCreateInput = {
   id?: string
   name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateInput = {
   id?: string
   name: string
   groupId: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateManyInput = {
   id?: string
   name: string
   groupId: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
 }
 
 export type EntityUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EntityUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type EntityListRelationFilter = {
@@ -266,23 +508,64 @@ export type EntityCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  currency?: Prisma.SortOrder
+  yearEnd?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  website?: Prisma.SortOrder
 }
 
 export type EntityMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  currency?: Prisma.SortOrder
+  yearEnd?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  website?: Prisma.SortOrder
 }
 
 export type EntityMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  currency?: Prisma.SortOrder
+  yearEnd?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  website?: Prisma.SortOrder
 }
 
 export type EntityNullableScalarRelationFilter = {
   is?: Prisma.EntityWhereInput | null
   isNot?: Prisma.EntityWhereInput | null
+}
+
+export type EntityScalarRelationFilter = {
+  is?: Prisma.EntityWhereInput
+  isNot?: Prisma.EntityWhereInput
 }
 
 export type EntityCreateNestedManyWithoutGroupInput = {
@@ -343,16 +626,72 @@ export type EntityUpdateOneWithoutUsersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutUsersInput, Prisma.EntityUpdateWithoutUsersInput>, Prisma.EntityUncheckedUpdateWithoutUsersInput>
 }
 
+export type EntityCreateNestedOneWithoutCustomerInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutCustomerInput, Prisma.EntityUncheckedCreateWithoutCustomerInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutCustomerInput
+  connect?: Prisma.EntityWhereUniqueInput
+}
+
+export type EntityUpdateOneRequiredWithoutCustomerNestedInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutCustomerInput, Prisma.EntityUncheckedCreateWithoutCustomerInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutCustomerInput
+  upsert?: Prisma.EntityUpsertWithoutCustomerInput
+  connect?: Prisma.EntityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutCustomerInput, Prisma.EntityUpdateWithoutCustomerInput>, Prisma.EntityUncheckedUpdateWithoutCustomerInput>
+}
+
+export type EntityCreateNestedOneWithoutInvoiceInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutInvoiceInput, Prisma.EntityUncheckedCreateWithoutInvoiceInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutInvoiceInput
+  connect?: Prisma.EntityWhereUniqueInput
+}
+
+export type EntityUpdateOneRequiredWithoutInvoiceNestedInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutInvoiceInput, Prisma.EntityUncheckedCreateWithoutInvoiceInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutInvoiceInput
+  upsert?: Prisma.EntityUpsertWithoutInvoiceInput
+  connect?: Prisma.EntityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutInvoiceInput, Prisma.EntityUpdateWithoutInvoiceInput>, Prisma.EntityUncheckedUpdateWithoutInvoiceInput>
+}
+
 export type EntityCreateWithoutGroupInput = {
   id?: string
   name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutGroupInput = {
   id?: string
   name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutGroupInput = {
@@ -388,18 +727,58 @@ export type EntityScalarWhereInput = {
   id?: Prisma.StringFilter<"Entity"> | string
   name?: Prisma.StringFilter<"Entity"> | string
   groupId?: Prisma.StringFilter<"Entity"> | string
+  legalName?: Prisma.StringFilter<"Entity"> | string
+  taxId?: Prisma.StringFilter<"Entity"> | string
+  country?: Prisma.StringFilter<"Entity"> | string
+  currency?: Prisma.StringFilter<"Entity"> | string
+  yearEnd?: Prisma.StringFilter<"Entity"> | string
+  address?: Prisma.StringFilter<"Entity"> | string
+  city?: Prisma.StringFilter<"Entity"> | string
+  state?: Prisma.StringFilter<"Entity"> | string
+  postalCode?: Prisma.StringFilter<"Entity"> | string
+  phoneNumber?: Prisma.StringFilter<"Entity"> | string
+  email?: Prisma.StringFilter<"Entity"> | string
+  website?: Prisma.StringFilter<"Entity"> | string
 }
 
 export type EntityCreateWithoutUsersInput = {
   id?: string
   name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutUsersInput = {
   id?: string
   name: string
   groupId: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutUsersInput = {
@@ -421,35 +800,307 @@ export type EntityUpdateToOneWithWhereWithoutUsersInput = {
 export type EntityUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityCreateWithoutCustomerInput = {
+  id?: string
+  name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
+  group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
+  users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
+}
+
+export type EntityUncheckedCreateWithoutCustomerInput = {
+  id?: string
+  name: string
+  groupId: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
+}
+
+export type EntityCreateOrConnectWithoutCustomerInput = {
+  where: Prisma.EntityWhereUniqueInput
+  create: Prisma.XOR<Prisma.EntityCreateWithoutCustomerInput, Prisma.EntityUncheckedCreateWithoutCustomerInput>
+}
+
+export type EntityUpsertWithoutCustomerInput = {
+  update: Prisma.XOR<Prisma.EntityUpdateWithoutCustomerInput, Prisma.EntityUncheckedUpdateWithoutCustomerInput>
+  create: Prisma.XOR<Prisma.EntityCreateWithoutCustomerInput, Prisma.EntityUncheckedCreateWithoutCustomerInput>
+  where?: Prisma.EntityWhereInput
+}
+
+export type EntityUpdateToOneWithWhereWithoutCustomerInput = {
+  where?: Prisma.EntityWhereInput
+  data: Prisma.XOR<Prisma.EntityUpdateWithoutCustomerInput, Prisma.EntityUncheckedUpdateWithoutCustomerInput>
+}
+
+export type EntityUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
+  group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
+  users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityUncheckedUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityCreateWithoutInvoiceInput = {
+  id?: string
+  name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
+  group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
+  users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+}
+
+export type EntityUncheckedCreateWithoutInvoiceInput = {
+  id?: string
+  name: string
+  groupId: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+}
+
+export type EntityCreateOrConnectWithoutInvoiceInput = {
+  where: Prisma.EntityWhereUniqueInput
+  create: Prisma.XOR<Prisma.EntityCreateWithoutInvoiceInput, Prisma.EntityUncheckedCreateWithoutInvoiceInput>
+}
+
+export type EntityUpsertWithoutInvoiceInput = {
+  update: Prisma.XOR<Prisma.EntityUpdateWithoutInvoiceInput, Prisma.EntityUncheckedUpdateWithoutInvoiceInput>
+  create: Prisma.XOR<Prisma.EntityCreateWithoutInvoiceInput, Prisma.EntityUncheckedCreateWithoutInvoiceInput>
+  where?: Prisma.EntityWhereInput
+}
+
+export type EntityUpdateToOneWithWhereWithoutInvoiceInput = {
+  where?: Prisma.EntityWhereInput
+  data: Prisma.XOR<Prisma.EntityUpdateWithoutInvoiceInput, Prisma.EntityUncheckedUpdateWithoutInvoiceInput>
+}
+
+export type EntityUpdateWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
+  group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
+  users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityUncheckedUpdateWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateManyGroupInput = {
   id?: string
   name: string
+  legalName: string
+  taxId: string
+  country: string
+  currency: string
+  yearEnd: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  phoneNumber: string
+  email: string
+  website: string
 }
 
 export type EntityUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateManyWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -459,10 +1110,14 @@ export type EntityUncheckedUpdateManyWithoutGroupInput = {
 
 export type EntityCountOutputType = {
   users: number
+  customer: number
+  invoice: number
 }
 
 export type EntityCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | EntityCountOutputTypeCountUsersArgs
+  customer?: boolean | EntityCountOutputTypeCountCustomerArgs
+  invoice?: boolean | EntityCountOutputTypeCountInvoiceArgs
 }
 
 /**
@@ -482,13 +1137,41 @@ export type EntityCountOutputTypeCountUsersArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.UserWhereInput
 }
 
+/**
+ * EntityCountOutputType without action
+ */
+export type EntityCountOutputTypeCountCustomerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CustomerWhereInput
+}
+
+/**
+ * EntityCountOutputType without action
+ */
+export type EntityCountOutputTypeCountInvoiceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvoiceWhereInput
+}
+
 
 export type EntitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   groupId?: boolean
+  legalName?: boolean
+  taxId?: boolean
+  country?: boolean
+  currency?: boolean
+  yearEnd?: boolean
+  address?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  phoneNumber?: boolean
+  email?: boolean
+  website?: boolean
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   users?: boolean | Prisma.Entity$usersArgs<ExtArgs>
+  customer?: boolean | Prisma.Entity$customerArgs<ExtArgs>
+  invoice?: boolean | Prisma.Entity$invoiceArgs<ExtArgs>
   _count?: boolean | Prisma.EntityCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["entity"]>
 
@@ -496,6 +1179,18 @@ export type EntitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   groupId?: boolean
+  legalName?: boolean
+  taxId?: boolean
+  country?: boolean
+  currency?: boolean
+  yearEnd?: boolean
+  address?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  phoneNumber?: boolean
+  email?: boolean
+  website?: boolean
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["entity"]>
 
@@ -503,6 +1198,18 @@ export type EntitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   groupId?: boolean
+  legalName?: boolean
+  taxId?: boolean
+  country?: boolean
+  currency?: boolean
+  yearEnd?: boolean
+  address?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  phoneNumber?: boolean
+  email?: boolean
+  website?: boolean
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["entity"]>
 
@@ -510,12 +1217,26 @@ export type EntitySelectScalar = {
   id?: boolean
   name?: boolean
   groupId?: boolean
+  legalName?: boolean
+  taxId?: boolean
+  country?: boolean
+  currency?: boolean
+  yearEnd?: boolean
+  address?: boolean
+  city?: boolean
+  state?: boolean
+  postalCode?: boolean
+  phoneNumber?: boolean
+  email?: boolean
+  website?: boolean
 }
 
-export type EntityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "groupId", ExtArgs["result"]["entity"]>
+export type EntityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "groupId" | "legalName" | "taxId" | "country" | "currency" | "yearEnd" | "address" | "city" | "state" | "postalCode" | "phoneNumber" | "email" | "website", ExtArgs["result"]["entity"]>
 export type EntityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   users?: boolean | Prisma.Entity$usersArgs<ExtArgs>
+  customer?: boolean | Prisma.Entity$customerArgs<ExtArgs>
+  invoice?: boolean | Prisma.Entity$invoiceArgs<ExtArgs>
   _count?: boolean | Prisma.EntityCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EntityIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -530,11 +1251,25 @@ export type $EntityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     group: Prisma.$GroupPayload<ExtArgs>
     users: Prisma.$UserPayload<ExtArgs>[]
+    customer: Prisma.$CustomerPayload<ExtArgs>[]
+    invoice: Prisma.$InvoicePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
     groupId: string
+    legalName: string
+    taxId: string
+    country: string
+    currency: string
+    yearEnd: string
+    address: string
+    city: string
+    state: string
+    postalCode: string
+    phoneNumber: string
+    email: string
+    website: string
   }, ExtArgs["result"]["entity"]>
   composites: {}
 }
@@ -931,6 +1666,8 @@ export interface Prisma__EntityClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   group<T extends Prisma.GroupDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   users<T extends Prisma.Entity$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  customer<T extends Prisma.Entity$customerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$customerArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invoice<T extends Prisma.Entity$invoiceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$invoiceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -963,6 +1700,18 @@ export interface EntityFieldRefs {
   readonly id: Prisma.FieldRef<"Entity", 'String'>
   readonly name: Prisma.FieldRef<"Entity", 'String'>
   readonly groupId: Prisma.FieldRef<"Entity", 'String'>
+  readonly legalName: Prisma.FieldRef<"Entity", 'String'>
+  readonly taxId: Prisma.FieldRef<"Entity", 'String'>
+  readonly country: Prisma.FieldRef<"Entity", 'String'>
+  readonly currency: Prisma.FieldRef<"Entity", 'String'>
+  readonly yearEnd: Prisma.FieldRef<"Entity", 'String'>
+  readonly address: Prisma.FieldRef<"Entity", 'String'>
+  readonly city: Prisma.FieldRef<"Entity", 'String'>
+  readonly state: Prisma.FieldRef<"Entity", 'String'>
+  readonly postalCode: Prisma.FieldRef<"Entity", 'String'>
+  readonly phoneNumber: Prisma.FieldRef<"Entity", 'String'>
+  readonly email: Prisma.FieldRef<"Entity", 'String'>
+  readonly website: Prisma.FieldRef<"Entity", 'String'>
 }
     
 
@@ -1380,6 +2129,54 @@ export type Entity$usersArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+}
+
+/**
+ * Entity.customer
+ */
+export type Entity$customerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Customer
+   */
+  select?: Prisma.CustomerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Customer
+   */
+  omit?: Prisma.CustomerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CustomerInclude<ExtArgs> | null
+  where?: Prisma.CustomerWhereInput
+  orderBy?: Prisma.CustomerOrderByWithRelationInput | Prisma.CustomerOrderByWithRelationInput[]
+  cursor?: Prisma.CustomerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CustomerScalarFieldEnum | Prisma.CustomerScalarFieldEnum[]
+}
+
+/**
+ * Entity.invoice
+ */
+export type Entity$invoiceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Invoice
+   */
+  select?: Prisma.InvoiceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Invoice
+   */
+  omit?: Prisma.InvoiceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoiceInclude<ExtArgs> | null
+  where?: Prisma.InvoiceWhereInput
+  orderBy?: Prisma.InvoiceOrderByWithRelationInput | Prisma.InvoiceOrderByWithRelationInput[]
+  cursor?: Prisma.InvoiceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvoiceScalarFieldEnum | Prisma.InvoiceScalarFieldEnum[]
 }
 
 /**

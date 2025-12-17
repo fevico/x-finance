@@ -55,6 +55,8 @@ export const ModelName = {
   Entity: 'Entity',
   User: 'User',
   GroupRole: 'GroupRole',
+  Customer: 'Customer',
+  Invoice: 'Invoice',
   Permission: 'Permission'
 } as const
 
@@ -85,7 +87,19 @@ export type GroupScalarFieldEnum = (typeof GroupScalarFieldEnum)[keyof typeof Gr
 export const EntityScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  groupId: 'groupId'
+  groupId: 'groupId',
+  legalName: 'legalName',
+  taxId: 'taxId',
+  country: 'country',
+  currency: 'currency',
+  yearEnd: 'yearEnd',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  postalCode: 'postalCode',
+  phoneNumber: 'phoneNumber',
+  email: 'email',
+  website: 'website'
 } as const
 
 export type EntityScalarFieldEnum = (typeof EntityScalarFieldEnum)[keyof typeof EntityScalarFieldEnum]
@@ -119,6 +133,45 @@ export const GroupRoleScalarFieldEnum = {
 } as const
 
 export type GroupRoleScalarFieldEnum = (typeof GroupRoleScalarFieldEnum)[keyof typeof GroupRoleScalarFieldEnum]
+
+
+export const CustomerScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  name: 'name',
+  email: 'email',
+  phoneNumber: 'phoneNumber',
+  companyName: 'companyName',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  postalCode: 'postalCode',
+  paymentTerms: 'paymentTerms',
+  creditLimit: 'creditLimit',
+  note: 'note',
+  entityId: 'entityId',
+  isActive: 'isActive'
+} as const
+
+export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  entityId: 'entityId',
+  invoiceNumber: 'invoiceNumber',
+  invoiceDate: 'invoiceDate',
+  dueDate: 'dueDate',
+  paymentTerms: 'paymentTerms',
+  currency: 'currency',
+  items: 'items',
+  total: 'total',
+  notes: 'notes',
+  status: 'status'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
 
 
 export const PermissionScalarFieldEnum = {

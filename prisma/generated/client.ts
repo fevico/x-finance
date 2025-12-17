@@ -58,6 +58,16 @@ export type User = Prisma.UserModel
  */
 export type GroupRole = Prisma.GroupRoleModel
 /**
+ * Model Customer
+ * 
+ */
+export type Customer = Prisma.CustomerModel
+/**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
  * Model Permission
  * 
  */

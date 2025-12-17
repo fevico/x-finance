@@ -18,11 +18,24 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { systemRole } from 'prisma/generated/enums';
 import { LoginDto } from './dto/login.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiCookieAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({ status: 200, description: 'Successful login' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     const user = await this.authService.login(
       loginDto.email,
@@ -35,6 +48,10 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get current user' })
+  @ApiResponse({ status: 200, description: 'Current user' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
   me(@User() user) {
     return user;
   }
@@ -42,6 +59,9 @@ export class AuthController {
   @Post('impersonate/group')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin)
+  @ApiOperation({ summary: 'Start impersonating a group' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
   async startGroup(@Body() { groupId, groupName }, @Res() res: Response) {
     const token = await encryptSession({ groupId, groupName }, '30m');
     res.setHeader('Set-Cookie', createCookie('xf_group', token, 60 * 30));
@@ -51,6 +71,9 @@ export class AuthController {
   @Delete('impersonate/group')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin)
+  @ApiOperation({ summary: 'Stop impersonating a group' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
   stopGroup(@Res() res: Response) {
     res.setHeader('Set-Cookie', deleteCookie('xf_group'));
     return res.send({ success: true });
@@ -59,6 +82,9 @@ export class AuthController {
   @Post('impersonate/entity')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin, systemRole.admin)
+  @ApiOperation({ summary: 'Start impersonating an entity' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
   async startEntity(@Body() { entityId, entityName }, @Res() res: Response) {
     const token = await encryptSession({ entityId, entityName }, '30m');
     res.setHeader('Set-Cookie', createCookie('xf_entity', token, 60 * 30));
@@ -68,6 +94,9 @@ export class AuthController {
   @Delete('impersonate/entity')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin, systemRole.admin)
+  @ApiOperation({ summary: 'Stop impersonating an entity' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
   stopEntity(@Res() res: Response) {
     res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
     return res.send({ success: true });

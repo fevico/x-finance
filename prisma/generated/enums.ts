@@ -16,3 +16,14 @@ export const systemRole = {
 } as const
 
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
+
+
+export const InvoiceStatus = {
+  Overdue: 'Overdue',
+  Paid: 'Paid',
+  Draft: 'Draft',
+  Sent: 'Sent',
+  Pending: 'Pending'
+} as const
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
