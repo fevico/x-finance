@@ -40,7 +40,7 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60;
 function isLocalhost(req?: IncomingMessage) {
   const origin = req?.headers.origin || '';
   const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
-    console.log('Cookie origin:', origin, isLocal);
+  // console.log('Cookie origin:', origin, isLocal);
 
   return isLocal;
 }
