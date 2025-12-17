@@ -6,6 +6,7 @@ import {
   Res,
   Get,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { User } from 'src/lib/req-user';
@@ -23,13 +24,20 @@ import { LoginDto } from './dto/login.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Post('login')
-  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const user = await this.authService.login(
       loginDto.email,
       loginDto.password,
     );
     const token = await encryptSession(user);
-    res.setHeader('Set-Cookie', createCookie('xf', token, 60 * 60 * 24 * 7));
+    res.setHeader(
+      'Set-Cookie',
+      createCookie(req, 'xf', token, 60 * 60 * 24 * 7),
+    );
     return res.send(user);
   }
 
@@ -42,11 +50,15 @@ export class AuthController {
   @Post('impersonate/group')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin)
-  async startGroup(@Body() { groupId, groupName }, @Res() res: Response) {
+  async startGroup(
+    @Body() { groupId, groupName },
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const token = await encryptSession({ groupId, groupName }, '7d');
     res.setHeader(
       'Set-Cookie',
-      createCookie('xf_group', token, 60 * 60 * 24 * 7),
+      createCookie(req, 'xf_group', token, 60 * 60 * 24 * 7),
     );
     return res.send({ success: true });
   }
@@ -54,19 +66,23 @@ export class AuthController {
   @Delete('impersonate/group')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin)
-  stopGroup(@Res() res: Response) {
-    res.setHeader('Set-Cookie', deleteCookie('xf_group'));
+  stopGroup(@Req() req: Request, @Res() res: Response) {
+    res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
     return res.send({ success: true });
   }
 
   @Post('impersonate/entity')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin, systemRole.admin)
-  async startEntity(@Body() { entityId, entityName }, @Res() res: Response) {
+  async startEntity(
+    @Body() { entityId, entityName },
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const token = await encryptSession({ entityId, entityName }, '7d');
     res.setHeader(
       'Set-Cookie',
-      createCookie('xf_entity', token, 60 * 60 * 24 * 7),
+      createCookie(req, 'xf_entity', token, 60 * 60 * 24 * 7),
     );
     return res.send({ success: true });
   }
@@ -74,8 +90,8 @@ export class AuthController {
   @Delete('impersonate/entity')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin, systemRole.admin)
-  stopEntity(@Res() res: Response) {
-    res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
+  stopEntity(@Req() req: Request, @Res() res: Response) {
+    res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
     return res.send({ success: true });
   }
 }

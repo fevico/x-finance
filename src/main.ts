@@ -25,6 +25,31 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // app.enableCors({
+  //   origin: (origin, callback) => {
+  //     const allowedOrigins = [
+  //       process.env.FRONTEND_URL,        // http://localhost:3000
+  //       process.env.LIVE_FRONTEND_URL,   // https://fevico.com.ng
+  //       process.env.WWW_LIVE_FRONTEND_URL, // https://www.fevico.com.ng
+  //     ].filter(Boolean); // 🔥 removes undefined
+
+  //     // Allow server-to-server / Postman / curl
+  //     if (!origin) {
+  //       return callback(null, true);
+  //     }
+
+  //     if (allowedOrigins.includes(origin)) {
+  //       return callback(null, true);
+  //     }
+
+  //     return callback(
+  //       new Error(`CORS blocked origin: ${origin}`),
+  //       false,
+  //     );
+  //   },
+  //   credentials: true,
+  // });
+
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new AllExceptionsFilter());
