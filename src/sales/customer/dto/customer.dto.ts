@@ -63,8 +63,4 @@ export class CreateCustomerDto {
   @IsString()
   @MaxLength(1000)
   note?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  entityId: string;
 }

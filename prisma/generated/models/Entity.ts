@@ -211,18 +211,18 @@ export type EntityGroupByOutputType = {
   id: string
   name: string
   groupId: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName: string | null
+  taxId: string | null
+  country: string | null
+  currency: string | null
+  yearEnd: string | null
+  address: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  phoneNumber: string | null
+  email: string | null
+  website: string | null
   _count: EntityCountAggregateOutputType | null
   _min: EntityMinAggregateOutputType | null
   _max: EntityMaxAggregateOutputType | null
@@ -250,18 +250,18 @@ export type EntityWhereInput = {
   id?: Prisma.StringFilter<"Entity"> | string
   name?: Prisma.StringFilter<"Entity"> | string
   groupId?: Prisma.StringFilter<"Entity"> | string
-  legalName?: Prisma.StringFilter<"Entity"> | string
-  taxId?: Prisma.StringFilter<"Entity"> | string
-  country?: Prisma.StringFilter<"Entity"> | string
-  currency?: Prisma.StringFilter<"Entity"> | string
-  yearEnd?: Prisma.StringFilter<"Entity"> | string
-  address?: Prisma.StringFilter<"Entity"> | string
-  city?: Prisma.StringFilter<"Entity"> | string
-  state?: Prisma.StringFilter<"Entity"> | string
-  postalCode?: Prisma.StringFilter<"Entity"> | string
-  phoneNumber?: Prisma.StringFilter<"Entity"> | string
-  email?: Prisma.StringFilter<"Entity"> | string
-  website?: Prisma.StringFilter<"Entity"> | string
+  legalName?: Prisma.StringNullableFilter<"Entity"> | string | null
+  taxId?: Prisma.StringNullableFilter<"Entity"> | string | null
+  country?: Prisma.StringNullableFilter<"Entity"> | string | null
+  currency?: Prisma.StringNullableFilter<"Entity"> | string | null
+  yearEnd?: Prisma.StringNullableFilter<"Entity"> | string | null
+  address?: Prisma.StringNullableFilter<"Entity"> | string | null
+  city?: Prisma.StringNullableFilter<"Entity"> | string | null
+  state?: Prisma.StringNullableFilter<"Entity"> | string | null
+  postalCode?: Prisma.StringNullableFilter<"Entity"> | string | null
+  phoneNumber?: Prisma.StringNullableFilter<"Entity"> | string | null
+  email?: Prisma.StringNullableFilter<"Entity"> | string | null
+  website?: Prisma.StringNullableFilter<"Entity"> | string | null
   group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   users?: Prisma.UserListRelationFilter
   customer?: Prisma.CustomerListRelationFilter
@@ -272,18 +272,18 @@ export type EntityOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
-  legalName?: Prisma.SortOrder
-  taxId?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
-  yearEnd?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
-  phoneNumber?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  website?: Prisma.SortOrder
+  legalName?: Prisma.SortOrderInput | Prisma.SortOrder
+  taxId?: Prisma.SortOrderInput | Prisma.SortOrder
+  country?: Prisma.SortOrderInput | Prisma.SortOrder
+  currency?: Prisma.SortOrderInput | Prisma.SortOrder
+  yearEnd?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  state?: Prisma.SortOrderInput | Prisma.SortOrder
+  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
   group?: Prisma.GroupOrderByWithRelationInput
   users?: Prisma.UserOrderByRelationAggregateInput
   customer?: Prisma.CustomerOrderByRelationAggregateInput
@@ -298,17 +298,17 @@ export type EntityWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.EntityWhereInput[]
   NOT?: Prisma.EntityWhereInput | Prisma.EntityWhereInput[]
   groupId?: Prisma.StringFilter<"Entity"> | string
-  legalName?: Prisma.StringFilter<"Entity"> | string
-  taxId?: Prisma.StringFilter<"Entity"> | string
-  country?: Prisma.StringFilter<"Entity"> | string
-  currency?: Prisma.StringFilter<"Entity"> | string
-  yearEnd?: Prisma.StringFilter<"Entity"> | string
-  address?: Prisma.StringFilter<"Entity"> | string
-  city?: Prisma.StringFilter<"Entity"> | string
-  state?: Prisma.StringFilter<"Entity"> | string
-  postalCode?: Prisma.StringFilter<"Entity"> | string
-  phoneNumber?: Prisma.StringFilter<"Entity"> | string
-  website?: Prisma.StringFilter<"Entity"> | string
+  legalName?: Prisma.StringNullableFilter<"Entity"> | string | null
+  taxId?: Prisma.StringNullableFilter<"Entity"> | string | null
+  country?: Prisma.StringNullableFilter<"Entity"> | string | null
+  currency?: Prisma.StringNullableFilter<"Entity"> | string | null
+  yearEnd?: Prisma.StringNullableFilter<"Entity"> | string | null
+  address?: Prisma.StringNullableFilter<"Entity"> | string | null
+  city?: Prisma.StringNullableFilter<"Entity"> | string | null
+  state?: Prisma.StringNullableFilter<"Entity"> | string | null
+  postalCode?: Prisma.StringNullableFilter<"Entity"> | string | null
+  phoneNumber?: Prisma.StringNullableFilter<"Entity"> | string | null
+  website?: Prisma.StringNullableFilter<"Entity"> | string | null
   group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   users?: Prisma.UserListRelationFilter
   customer?: Prisma.CustomerListRelationFilter
@@ -319,18 +319,18 @@ export type EntityOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
-  legalName?: Prisma.SortOrder
-  taxId?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
-  yearEnd?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
-  phoneNumber?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  website?: Prisma.SortOrder
+  legalName?: Prisma.SortOrderInput | Prisma.SortOrder
+  taxId?: Prisma.SortOrderInput | Prisma.SortOrder
+  country?: Prisma.SortOrderInput | Prisma.SortOrder
+  currency?: Prisma.SortOrderInput | Prisma.SortOrder
+  yearEnd?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  state?: Prisma.SortOrderInput | Prisma.SortOrder
+  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.EntityCountOrderByAggregateInput
   _max?: Prisma.EntityMaxOrderByAggregateInput
   _min?: Prisma.EntityMinOrderByAggregateInput
@@ -343,35 +343,35 @@ export type EntityScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Entity"> | string
   name?: Prisma.StringWithAggregatesFilter<"Entity"> | string
   groupId?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  legalName?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  taxId?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  country?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  currency?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  yearEnd?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  address?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  city?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  state?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  postalCode?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  phoneNumber?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  email?: Prisma.StringWithAggregatesFilter<"Entity"> | string
-  website?: Prisma.StringWithAggregatesFilter<"Entity"> | string
+  legalName?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  taxId?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  country?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  currency?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  yearEnd?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  address?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  state?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  postalCode?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  phoneNumber?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  email?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  website?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
 }
 
 export type EntityCreateInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
@@ -382,18 +382,18 @@ export type EntityUncheckedCreateInput = {
   id?: string
   name: string
   groupId: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
@@ -402,18 +402,18 @@ export type EntityUncheckedCreateInput = {
 export type EntityUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
@@ -424,18 +424,18 @@ export type EntityUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
@@ -445,53 +445,53 @@ export type EntityCreateManyInput = {
   id?: string
   name: string
   groupId: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
 }
 
 export type EntityUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EntityUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EntityListRelationFilter = {
@@ -610,6 +610,10 @@ export type EntityUncheckedUpdateManyWithoutGroupNestedInput = {
   deleteMany?: Prisma.EntityScalarWhereInput | Prisma.EntityScalarWhereInput[]
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type EntityCreateNestedOneWithoutUsersInput = {
   create?: Prisma.XOR<Prisma.EntityCreateWithoutUsersInput, Prisma.EntityUncheckedCreateWithoutUsersInput>
   connectOrCreate?: Prisma.EntityCreateOrConnectWithoutUsersInput
@@ -657,18 +661,18 @@ export type EntityUpdateOneRequiredWithoutInvoiceNestedInput = {
 export type EntityCreateWithoutGroupInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -677,18 +681,18 @@ export type EntityCreateWithoutGroupInput = {
 export type EntityUncheckedCreateWithoutGroupInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
@@ -727,35 +731,35 @@ export type EntityScalarWhereInput = {
   id?: Prisma.StringFilter<"Entity"> | string
   name?: Prisma.StringFilter<"Entity"> | string
   groupId?: Prisma.StringFilter<"Entity"> | string
-  legalName?: Prisma.StringFilter<"Entity"> | string
-  taxId?: Prisma.StringFilter<"Entity"> | string
-  country?: Prisma.StringFilter<"Entity"> | string
-  currency?: Prisma.StringFilter<"Entity"> | string
-  yearEnd?: Prisma.StringFilter<"Entity"> | string
-  address?: Prisma.StringFilter<"Entity"> | string
-  city?: Prisma.StringFilter<"Entity"> | string
-  state?: Prisma.StringFilter<"Entity"> | string
-  postalCode?: Prisma.StringFilter<"Entity"> | string
-  phoneNumber?: Prisma.StringFilter<"Entity"> | string
-  email?: Prisma.StringFilter<"Entity"> | string
-  website?: Prisma.StringFilter<"Entity"> | string
+  legalName?: Prisma.StringNullableFilter<"Entity"> | string | null
+  taxId?: Prisma.StringNullableFilter<"Entity"> | string | null
+  country?: Prisma.StringNullableFilter<"Entity"> | string | null
+  currency?: Prisma.StringNullableFilter<"Entity"> | string | null
+  yearEnd?: Prisma.StringNullableFilter<"Entity"> | string | null
+  address?: Prisma.StringNullableFilter<"Entity"> | string | null
+  city?: Prisma.StringNullableFilter<"Entity"> | string | null
+  state?: Prisma.StringNullableFilter<"Entity"> | string | null
+  postalCode?: Prisma.StringNullableFilter<"Entity"> | string | null
+  phoneNumber?: Prisma.StringNullableFilter<"Entity"> | string | null
+  email?: Prisma.StringNullableFilter<"Entity"> | string | null
+  website?: Prisma.StringNullableFilter<"Entity"> | string | null
 }
 
 export type EntityCreateWithoutUsersInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -765,18 +769,18 @@ export type EntityUncheckedCreateWithoutUsersInput = {
   id?: string
   name: string
   groupId: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
 }
@@ -800,18 +804,18 @@ export type EntityUpdateToOneWithWhereWithoutUsersInput = {
 export type EntityUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -821,18 +825,18 @@ export type EntityUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
 }
@@ -840,18 +844,18 @@ export type EntityUncheckedUpdateWithoutUsersInput = {
 export type EntityCreateWithoutCustomerInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -861,18 +865,18 @@ export type EntityUncheckedCreateWithoutCustomerInput = {
   id?: string
   name: string
   groupId: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
 }
@@ -896,18 +900,18 @@ export type EntityUpdateToOneWithWhereWithoutCustomerInput = {
 export type EntityUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -917,18 +921,18 @@ export type EntityUncheckedUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
 }
@@ -936,18 +940,18 @@ export type EntityUncheckedUpdateWithoutCustomerInput = {
 export type EntityCreateWithoutInvoiceInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
@@ -957,18 +961,18 @@ export type EntityUncheckedCreateWithoutInvoiceInput = {
   id?: string
   name: string
   groupId: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
 }
@@ -992,18 +996,18 @@ export type EntityUpdateToOneWithWhereWithoutInvoiceInput = {
 export type EntityUpdateWithoutInvoiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
@@ -1013,18 +1017,18 @@ export type EntityUncheckedUpdateWithoutInvoiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
 }
@@ -1032,35 +1036,35 @@ export type EntityUncheckedUpdateWithoutInvoiceInput = {
 export type EntityCreateManyGroupInput = {
   id?: string
   name: string
-  legalName: string
-  taxId: string
-  country: string
-  currency: string
-  yearEnd: string
-  address: string
-  city: string
-  state: string
-  postalCode: string
-  phoneNumber: string
-  email: string
-  website: string
+  legalName?: string | null
+  taxId?: string | null
+  country?: string | null
+  currency?: string | null
+  yearEnd?: string | null
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  phoneNumber?: string | null
+  email?: string | null
+  website?: string | null
 }
 
 export type EntityUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -1069,18 +1073,18 @@ export type EntityUpdateWithoutGroupInput = {
 export type EntityUncheckedUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
@@ -1089,18 +1093,18 @@ export type EntityUncheckedUpdateWithoutGroupInput = {
 export type EntityUncheckedUpdateManyWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  legalName?: Prisma.StringFieldUpdateOperationsInput | string
-  taxId?: Prisma.StringFieldUpdateOperationsInput | string
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  yearEnd?: Prisma.StringFieldUpdateOperationsInput | string
-  address?: Prisma.StringFieldUpdateOperationsInput | string
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phoneNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  website?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1258,18 +1262,18 @@ export type $EntityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     name: string
     groupId: string
-    legalName: string
-    taxId: string
-    country: string
-    currency: string
-    yearEnd: string
-    address: string
-    city: string
-    state: string
-    postalCode: string
-    phoneNumber: string
-    email: string
-    website: string
+    legalName: string | null
+    taxId: string | null
+    country: string | null
+    currency: string | null
+    yearEnd: string | null
+    address: string | null
+    city: string | null
+    state: string | null
+    postalCode: string | null
+    phoneNumber: string | null
+    email: string | null
+    website: string | null
   }, ExtArgs["result"]["entity"]>
   composites: {}
 }

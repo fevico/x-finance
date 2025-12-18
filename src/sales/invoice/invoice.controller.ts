@@ -26,14 +26,13 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Invoices')
-@Controller('invoice')
+@Controller('invoices')
 export class InvoiceController {
   constructor(private invoiceService: InvoiceService) {}
 
-  @Post('create')
+  @Post()
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Create an invoice' })
-  @ApiBearerAuth('jwt')
   @ApiCookieAuth('cookieAuth')
   @ApiUnauthorizedResponse({ description: 'Access denied' })
   async createInvoice(@Body() body: CreateInvoiceDto, @Req() req) {

@@ -27,18 +27,18 @@ model Entity {
   name    String @unique
   groupId String
   group   Group  @relation(fields: [groupId], references: [id])
-  legalName String
-  taxId     String
-  country   String 
-  currency  String 
-  yearEnd   String 
-  address   String
-  city      String
-  state     String
-  postalCode  String 
-  phoneNumber String 
-  email       String
-  website     String 
+  legalName String?
+  taxId     String?
+  country   String? 
+  currency  String? 
+  yearEnd   String? 
+  address   String?
+  city      String?
+  state     String?
+  postalCode  String? 
+  phoneNumber String? 
+  email       String?
+  website     String? 
   users   User[]
   customer  Customer[]
   invoice    Invoice[]

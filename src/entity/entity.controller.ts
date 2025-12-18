@@ -29,8 +29,8 @@ import {
 
 @ApiTags('Entities') 
 @UseGuards(AuthGuard)
-@ApiBearerAuth('jwt')
-@ApiCookieAuth('cookieAuth')
+// @ApiBearerAuth('jwt')
+// @ApiCookieAuth('cookieAuth')
 @Controller('entities')
 export class EntityController {
   constructor(private readonly entityService: EntityService) {}
@@ -55,7 +55,7 @@ export class EntityController {
     const effectiveGroupId = getEffectiveGroupId(req);
     if (!effectiveGroupId) {
       throw new ForbiddenException('No effective group ID found.');
-    }
+    } 
     return this.entityService.findAll(effectiveGroupId);
   }
 
