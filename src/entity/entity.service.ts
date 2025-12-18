@@ -17,9 +17,9 @@ export class EntityService {
         'You can only create entities within your effective group.',
       );
     }
-    // return this.prisma.entity.create({
-    //   data: createEntityDto,
-    // });
+    return this.prisma.entity.create({
+      data: createEntityDto, 
+    });
   }
 
   findAll(effectiveGroupId: string) {

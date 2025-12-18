@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const BillingCycle = {
+  Monthly: 'Monthly',
+  Annual: 'Annual'
+} as const
+
+export type BillingCycle = (typeof BillingCycle)[keyof typeof BillingCycle]
+
+
 export const systemRole = {
   superadmin: 'superadmin',
   admin: 'admin',
@@ -16,6 +24,35 @@ export const systemRole = {
 } as const
 
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
+
+
+export const vendorStatus = {
+  Active: 'Active',
+  Inactive: 'Inactive'
+} as const
+
+export type vendorStatus = (typeof vendorStatus)[keyof typeof vendorStatus]
+
+
+export const PaymentMethod = {
+  Cash: 'Cash',
+  Card: 'Card',
+  Bank_Transfer: 'Bank_Transfer',
+  Mobile_Money: 'Mobile_Money',
+  Check: 'Check',
+  Debit_Card: 'Debit_Card',
+  Credit_Card: 'Credit_Card'
+} as const
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+
+
+export const ReceiptStatus = {
+  Completed: 'Completed',
+  Void: 'Void'
+} as const
+
+export type ReceiptStatus = (typeof ReceiptStatus)[keyof typeof ReceiptStatus]
 
 
 export const InvoiceStatus = {

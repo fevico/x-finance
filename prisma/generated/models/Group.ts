@@ -27,16 +27,56 @@ export type AggregateGroup = {
 export type GroupMinAggregateOutputType = {
   id: string | null
   name: string | null
+  legalName: string | null
+  taxId: string | null
+  industry: string | null
+  address: string | null
+  city: string | null
+  province: string | null
+  postalCode: string | null
+  country: string | null
+  email: string | null
+  phone: string | null
+  website: string | null
+  subscriptionId: string | null
+  billingCycle: $Enums.BillingCycle | null
 }
 
 export type GroupMaxAggregateOutputType = {
   id: string | null
   name: string | null
+  legalName: string | null
+  taxId: string | null
+  industry: string | null
+  address: string | null
+  city: string | null
+  province: string | null
+  postalCode: string | null
+  country: string | null
+  email: string | null
+  phone: string | null
+  website: string | null
+  subscriptionId: string | null
+  billingCycle: $Enums.BillingCycle | null
 }
 
 export type GroupCountAggregateOutputType = {
   id: number
   name: number
+  legalName: number
+  logo: number
+  taxId: number
+  industry: number
+  address: number
+  city: number
+  province: number
+  postalCode: number
+  country: number
+  email: number
+  phone: number
+  website: number
+  subscriptionId: number
+  billingCycle: number
   _all: number
 }
 
@@ -44,16 +84,56 @@ export type GroupCountAggregateOutputType = {
 export type GroupMinAggregateInputType = {
   id?: true
   name?: true
+  legalName?: true
+  taxId?: true
+  industry?: true
+  address?: true
+  city?: true
+  province?: true
+  postalCode?: true
+  country?: true
+  email?: true
+  phone?: true
+  website?: true
+  subscriptionId?: true
+  billingCycle?: true
 }
 
 export type GroupMaxAggregateInputType = {
   id?: true
   name?: true
+  legalName?: true
+  taxId?: true
+  industry?: true
+  address?: true
+  city?: true
+  province?: true
+  postalCode?: true
+  country?: true
+  email?: true
+  phone?: true
+  website?: true
+  subscriptionId?: true
+  billingCycle?: true
 }
 
 export type GroupCountAggregateInputType = {
   id?: true
   name?: true
+  legalName?: true
+  logo?: true
+  taxId?: true
+  industry?: true
+  address?: true
+  city?: true
+  province?: true
+  postalCode?: true
+  country?: true
+  email?: true
+  phone?: true
+  website?: true
+  subscriptionId?: true
+  billingCycle?: true
   _all?: true
 }
 
@@ -132,6 +212,20 @@ export type GroupGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type GroupGroupByOutputType = {
   id: string
   name: string
+  legalName: string
+  logo: runtime.JsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website: string | null
+  subscriptionId: string | null
+  billingCycle: $Enums.BillingCycle | null
   _count: GroupCountAggregateOutputType | null
   _min: GroupMinAggregateOutputType | null
   _max: GroupMaxAggregateOutputType | null
@@ -158,16 +252,44 @@ export type GroupWhereInput = {
   NOT?: Prisma.GroupWhereInput | Prisma.GroupWhereInput[]
   id?: Prisma.StringFilter<"Group"> | string
   name?: Prisma.StringFilter<"Group"> | string
-  groupRoles?: Prisma.GroupRoleListRelationFilter
+  legalName?: Prisma.StringFilter<"Group"> | string
+  logo?: Prisma.JsonFilter<"Group">
+  taxId?: Prisma.StringFilter<"Group"> | string
+  industry?: Prisma.StringFilter<"Group"> | string
+  address?: Prisma.StringFilter<"Group"> | string
+  city?: Prisma.StringFilter<"Group"> | string
+  province?: Prisma.StringFilter<"Group"> | string
+  postalCode?: Prisma.StringFilter<"Group"> | string
+  country?: Prisma.StringFilter<"Group"> | string
+  email?: Prisma.StringFilter<"Group"> | string
+  phone?: Prisma.StringFilter<"Group"> | string
+  website?: Prisma.StringNullableFilter<"Group"> | string | null
+  subscriptionId?: Prisma.StringNullableFilter<"Group"> | string | null
+  billingCycle?: Prisma.EnumBillingCycleNullableFilter<"Group"> | $Enums.BillingCycle | null
   entities?: Prisma.EntityListRelationFilter
+  groupRoles?: Prisma.GroupRoleListRelationFilter
   users?: Prisma.UserListRelationFilter
 }
 
 export type GroupOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  groupRoles?: Prisma.GroupRoleOrderByRelationAggregateInput
+  legalName?: Prisma.SortOrder
+  logo?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  billingCycle?: Prisma.SortOrderInput | Prisma.SortOrder
   entities?: Prisma.EntityOrderByRelationAggregateInput
+  groupRoles?: Prisma.GroupRoleOrderByRelationAggregateInput
   users?: Prisma.UserOrderByRelationAggregateInput
 }
 
@@ -177,14 +299,42 @@ export type GroupWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.GroupWhereInput | Prisma.GroupWhereInput[]
   OR?: Prisma.GroupWhereInput[]
   NOT?: Prisma.GroupWhereInput | Prisma.GroupWhereInput[]
-  groupRoles?: Prisma.GroupRoleListRelationFilter
+  legalName?: Prisma.StringFilter<"Group"> | string
+  logo?: Prisma.JsonFilter<"Group">
+  taxId?: Prisma.StringFilter<"Group"> | string
+  industry?: Prisma.StringFilter<"Group"> | string
+  address?: Prisma.StringFilter<"Group"> | string
+  city?: Prisma.StringFilter<"Group"> | string
+  province?: Prisma.StringFilter<"Group"> | string
+  postalCode?: Prisma.StringFilter<"Group"> | string
+  country?: Prisma.StringFilter<"Group"> | string
+  email?: Prisma.StringFilter<"Group"> | string
+  phone?: Prisma.StringFilter<"Group"> | string
+  website?: Prisma.StringNullableFilter<"Group"> | string | null
+  subscriptionId?: Prisma.StringNullableFilter<"Group"> | string | null
+  billingCycle?: Prisma.EnumBillingCycleNullableFilter<"Group"> | $Enums.BillingCycle | null
   entities?: Prisma.EntityListRelationFilter
+  groupRoles?: Prisma.GroupRoleListRelationFilter
   users?: Prisma.UserListRelationFilter
 }, "id" | "name">
 
 export type GroupOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  logo?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  billingCycle?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.GroupCountOrderByAggregateInput
   _max?: Prisma.GroupMaxOrderByAggregateInput
   _min?: Prisma.GroupMinOrderByAggregateInput
@@ -196,68 +346,220 @@ export type GroupScalarWhereWithAggregatesInput = {
   NOT?: Prisma.GroupScalarWhereWithAggregatesInput | Prisma.GroupScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Group"> | string
   name?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  legalName?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  logo?: Prisma.JsonWithAggregatesFilter<"Group">
+  taxId?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  industry?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  address?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  city?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  province?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  postalCode?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  country?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  email?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  phone?: Prisma.StringWithAggregatesFilter<"Group"> | string
+  website?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
+  subscriptionId?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
+  billingCycle?: Prisma.EnumBillingCycleNullableWithAggregatesFilter<"Group"> | $Enums.BillingCycle | null
 }
 
 export type GroupCreateInput = {
   id?: string
   name: string
-  groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   entities?: Prisma.EntityCreateNestedManyWithoutGroupInput
+  groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
   users?: Prisma.UserCreateNestedManyWithoutGroupInput
 }
 
 export type GroupUncheckedCreateInput = {
   id?: string
   name: string
-  groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   entities?: Prisma.EntityUncheckedCreateNestedManyWithoutGroupInput
+  groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type GroupUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   entities?: Prisma.EntityUpdateManyWithoutGroupNestedInput
+  groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupNestedInput
 }
 
 export type GroupUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   entities?: Prisma.EntityUncheckedUpdateManyWithoutGroupNestedInput
+  groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type GroupCreateManyInput = {
   id?: string
   name: string
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
 }
 
 export type GroupUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
 }
 
 export type GroupUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
 }
 
 export type GroupCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  logo?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  billingCycle?: Prisma.SortOrder
 }
 
 export type GroupMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  billingCycle?: Prisma.SortOrder
 }
 
 export type GroupMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  legalName?: Prisma.SortOrder
+  taxId?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  province?: Prisma.SortOrder
+  postalCode?: Prisma.SortOrder
+  country?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  subscriptionId?: Prisma.SortOrder
+  billingCycle?: Prisma.SortOrder
 }
 
 export type GroupScalarRelationFilter = {
@@ -272,6 +574,14 @@ export type GroupNullableScalarRelationFilter = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type NullableEnumBillingCycleFieldUpdateOperationsInput = {
+  set?: $Enums.BillingCycle | null
 }
 
 export type GroupCreateNestedOneWithoutEntitiesInput = {
@@ -321,6 +631,20 @@ export type GroupUpdateOneRequiredWithoutGroupRolesNestedInput = {
 export type GroupCreateWithoutEntitiesInput = {
   id?: string
   name: string
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
   users?: Prisma.UserCreateNestedManyWithoutGroupInput
 }
@@ -328,6 +652,20 @@ export type GroupCreateWithoutEntitiesInput = {
 export type GroupUncheckedCreateWithoutEntitiesInput = {
   id?: string
   name: string
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -351,6 +689,20 @@ export type GroupUpdateToOneWithWhereWithoutEntitiesInput = {
 export type GroupUpdateWithoutEntitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupNestedInput
 }
@@ -358,6 +710,20 @@ export type GroupUpdateWithoutEntitiesInput = {
 export type GroupUncheckedUpdateWithoutEntitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -365,15 +731,43 @@ export type GroupUncheckedUpdateWithoutEntitiesInput = {
 export type GroupCreateWithoutUsersInput = {
   id?: string
   name: string
-  groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   entities?: Prisma.EntityCreateNestedManyWithoutGroupInput
+  groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
 }
 
 export type GroupUncheckedCreateWithoutUsersInput = {
   id?: string
   name: string
-  groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   entities?: Prisma.EntityUncheckedCreateNestedManyWithoutGroupInput
+  groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type GroupCreateOrConnectWithoutUsersInput = {
@@ -395,20 +789,62 @@ export type GroupUpdateToOneWithWhereWithoutUsersInput = {
 export type GroupUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   entities?: Prisma.EntityUpdateManyWithoutGroupNestedInput
+  groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
 }
 
 export type GroupUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   entities?: Prisma.EntityUncheckedUpdateManyWithoutGroupNestedInput
+  groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type GroupCreateWithoutGroupRolesInput = {
   id?: string
   name: string
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   entities?: Prisma.EntityCreateNestedManyWithoutGroupInput
   users?: Prisma.UserCreateNestedManyWithoutGroupInput
 }
@@ -416,6 +852,20 @@ export type GroupCreateWithoutGroupRolesInput = {
 export type GroupUncheckedCreateWithoutGroupRolesInput = {
   id?: string
   name: string
+  legalName: string
+  logo: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId: string
+  industry: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  country: string
+  email: string
+  phone: string
+  website?: string | null
+  subscriptionId?: string | null
+  billingCycle?: $Enums.BillingCycle | null
   entities?: Prisma.EntityUncheckedCreateNestedManyWithoutGroupInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -439,6 +889,20 @@ export type GroupUpdateToOneWithWhereWithoutGroupRolesInput = {
 export type GroupUpdateWithoutGroupRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   entities?: Prisma.EntityUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupNestedInput
 }
@@ -446,6 +910,20 @@ export type GroupUpdateWithoutGroupRolesInput = {
 export type GroupUncheckedUpdateWithoutGroupRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  taxId?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  postalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  country?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   entities?: Prisma.EntityUncheckedUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -456,14 +934,14 @@ export type GroupUncheckedUpdateWithoutGroupRolesInput = {
  */
 
 export type GroupCountOutputType = {
-  groupRoles: number
   entities: number
+  groupRoles: number
   users: number
 }
 
 export type GroupCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  groupRoles?: boolean | GroupCountOutputTypeCountGroupRolesArgs
   entities?: boolean | GroupCountOutputTypeCountEntitiesArgs
+  groupRoles?: boolean | GroupCountOutputTypeCountGroupRolesArgs
   users?: boolean | GroupCountOutputTypeCountUsersArgs
 }
 
@@ -480,15 +958,15 @@ export type GroupCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
 /**
  * GroupCountOutputType without action
  */
-export type GroupCountOutputTypeCountGroupRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.GroupRoleWhereInput
+export type GroupCountOutputTypeCountEntitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EntityWhereInput
 }
 
 /**
  * GroupCountOutputType without action
  */
-export type GroupCountOutputTypeCountEntitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.EntityWhereInput
+export type GroupCountOutputTypeCountGroupRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GroupRoleWhereInput
 }
 
 /**
@@ -502,8 +980,22 @@ export type GroupCountOutputTypeCountUsersArgs<ExtArgs extends runtime.Types.Ext
 export type GroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
+  legalName?: boolean
+  logo?: boolean
+  taxId?: boolean
+  industry?: boolean
+  address?: boolean
+  city?: boolean
+  province?: boolean
+  postalCode?: boolean
+  country?: boolean
+  email?: boolean
+  phone?: boolean
+  website?: boolean
+  subscriptionId?: boolean
+  billingCycle?: boolean
   entities?: boolean | Prisma.Group$entitiesArgs<ExtArgs>
+  groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
   users?: boolean | Prisma.Group$usersArgs<ExtArgs>
   _count?: boolean | Prisma.GroupCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["group"]>
@@ -511,22 +1003,64 @@ export type GroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 export type GroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  legalName?: boolean
+  logo?: boolean
+  taxId?: boolean
+  industry?: boolean
+  address?: boolean
+  city?: boolean
+  province?: boolean
+  postalCode?: boolean
+  country?: boolean
+  email?: boolean
+  phone?: boolean
+  website?: boolean
+  subscriptionId?: boolean
+  billingCycle?: boolean
 }, ExtArgs["result"]["group"]>
 
 export type GroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  legalName?: boolean
+  logo?: boolean
+  taxId?: boolean
+  industry?: boolean
+  address?: boolean
+  city?: boolean
+  province?: boolean
+  postalCode?: boolean
+  country?: boolean
+  email?: boolean
+  phone?: boolean
+  website?: boolean
+  subscriptionId?: boolean
+  billingCycle?: boolean
 }, ExtArgs["result"]["group"]>
 
 export type GroupSelectScalar = {
   id?: boolean
   name?: boolean
+  legalName?: boolean
+  logo?: boolean
+  taxId?: boolean
+  industry?: boolean
+  address?: boolean
+  city?: boolean
+  province?: boolean
+  postalCode?: boolean
+  country?: boolean
+  email?: boolean
+  phone?: boolean
+  website?: boolean
+  subscriptionId?: boolean
+  billingCycle?: boolean
 }
 
-export type GroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name", ExtArgs["result"]["group"]>
+export type GroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "legalName" | "logo" | "taxId" | "industry" | "address" | "city" | "province" | "postalCode" | "country" | "email" | "phone" | "website" | "subscriptionId" | "billingCycle", ExtArgs["result"]["group"]>
 export type GroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
   entities?: boolean | Prisma.Group$entitiesArgs<ExtArgs>
+  groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
   users?: boolean | Prisma.Group$usersArgs<ExtArgs>
   _count?: boolean | Prisma.GroupCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -536,13 +1070,27 @@ export type GroupIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type $GroupPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Group"
   objects: {
-    groupRoles: Prisma.$GroupRolePayload<ExtArgs>[]
     entities: Prisma.$EntityPayload<ExtArgs>[]
+    groupRoles: Prisma.$GroupRolePayload<ExtArgs>[]
     users: Prisma.$UserPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
+    legalName: string
+    logo: runtime.JsonValue
+    taxId: string
+    industry: string
+    address: string
+    city: string
+    province: string
+    postalCode: string
+    country: string
+    email: string
+    phone: string
+    website: string | null
+    subscriptionId: string | null
+    billingCycle: $Enums.BillingCycle | null
   }, ExtArgs["result"]["group"]>
   composites: {}
 }
@@ -937,8 +1485,8 @@ readonly fields: GroupFieldRefs;
  */
 export interface Prisma__GroupClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  groupRoles<T extends Prisma.Group$groupRolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Group$groupRolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   entities<T extends Prisma.Group$entitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Group$entitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EntityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  groupRoles<T extends Prisma.Group$groupRolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Group$groupRolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   users<T extends Prisma.Group$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Group$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -971,6 +1519,20 @@ export interface Prisma__GroupClient<T, Null = never, ExtArgs extends runtime.Ty
 export interface GroupFieldRefs {
   readonly id: Prisma.FieldRef<"Group", 'String'>
   readonly name: Prisma.FieldRef<"Group", 'String'>
+  readonly legalName: Prisma.FieldRef<"Group", 'String'>
+  readonly logo: Prisma.FieldRef<"Group", 'Json'>
+  readonly taxId: Prisma.FieldRef<"Group", 'String'>
+  readonly industry: Prisma.FieldRef<"Group", 'String'>
+  readonly address: Prisma.FieldRef<"Group", 'String'>
+  readonly city: Prisma.FieldRef<"Group", 'String'>
+  readonly province: Prisma.FieldRef<"Group", 'String'>
+  readonly postalCode: Prisma.FieldRef<"Group", 'String'>
+  readonly country: Prisma.FieldRef<"Group", 'String'>
+  readonly email: Prisma.FieldRef<"Group", 'String'>
+  readonly phone: Prisma.FieldRef<"Group", 'String'>
+  readonly website: Prisma.FieldRef<"Group", 'String'>
+  readonly subscriptionId: Prisma.FieldRef<"Group", 'String'>
+  readonly billingCycle: Prisma.FieldRef<"Group", 'BillingCycle'>
 }
     
 
@@ -1359,30 +1921,6 @@ export type GroupDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 /**
- * Group.groupRoles
- */
-export type Group$groupRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the GroupRole
-   */
-  select?: Prisma.GroupRoleSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the GroupRole
-   */
-  omit?: Prisma.GroupRoleOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.GroupRoleInclude<ExtArgs> | null
-  where?: Prisma.GroupRoleWhereInput
-  orderBy?: Prisma.GroupRoleOrderByWithRelationInput | Prisma.GroupRoleOrderByWithRelationInput[]
-  cursor?: Prisma.GroupRoleWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.GroupRoleScalarFieldEnum | Prisma.GroupRoleScalarFieldEnum[]
-}
-
-/**
  * Group.entities
  */
 export type Group$entitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1404,6 +1942,30 @@ export type Group$entitiesArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.EntityScalarFieldEnum | Prisma.EntityScalarFieldEnum[]
+}
+
+/**
+ * Group.groupRoles
+ */
+export type Group$groupRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GroupRole
+   */
+  select?: Prisma.GroupRoleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GroupRole
+   */
+  omit?: Prisma.GroupRoleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GroupRoleInclude<ExtArgs> | null
+  where?: Prisma.GroupRoleWhereInput
+  orderBy?: Prisma.GroupRoleOrderByWithRelationInput | Prisma.GroupRoleOrderByWithRelationInput[]
+  cursor?: Prisma.GroupRoleWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GroupRoleScalarFieldEnum | Prisma.GroupRoleScalarFieldEnum[]
 }
 
 /**

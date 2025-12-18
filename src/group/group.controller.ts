@@ -7,7 +7,10 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
@@ -21,6 +24,8 @@ import {
   ApiOperation,
   ApiResponse,
   ApiCookieAuth,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 
 @ApiTags('Groups')
@@ -34,10 +39,49 @@ export class GroupController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(systemRole.superadmin)
-  @ApiOperation({ summary: 'Create a new group' })
+  @UseInterceptors(FileInterceptor('logo'))
+  @ApiOperation({ summary: 'Create a new group with optional logo' })
   @ApiResponse({ status: 201, description: 'Group created' })
-  create(@Body() createGroupDto: CreateGroupDto) {
-    return this.groupService.create(createGroupDto);
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        legalName: { type: 'string' },
+        taxId: { type: 'string' },
+        industry: { type: 'string' },
+        address: { type: 'string' },
+        city: { type: 'string' },
+        province: { type: 'string' },
+        postalCode: { type: 'string' },
+        country: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        phone: { type: 'string' },
+        website: { type: 'string', format: 'uri' },
+        subscriptionId: { type: 'string' },
+        logo: { type: 'string', format: 'binary' },
+      },
+      required: [
+        'name',
+        'legalName',
+        'taxId',
+        'industry',
+        'address',
+        'city',
+        'province',
+        'postalCode',
+        'country',
+        'email',
+        'phone',
+      ],
+    },
+  })
+  create(
+    @Body() createGroupDto: CreateGroupDto,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    return this.groupService.create(createGroupDto, file);
   }
 
   @Get()
@@ -61,10 +105,16 @@ export class GroupController {
   @Patch(':id')
   @UseGuards(RolesGuard)
   @Roles(systemRole.admin)
-  @ApiOperation({ summary: 'Update group' })
+  @UseInterceptors(FileInterceptor('logo'))
+  @ApiOperation({ summary: 'Update group with optional new logo' })
   @ApiResponse({ status: 200, description: 'Group updated' })
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupService.update(id, updateGroupDto);
+  @ApiConsumes('multipart/form-data')
+  update(
+    @Param('id') id: string,
+    @Body() updateGroupDto: UpdateGroupDto,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    return this.groupService.update(id, updateGroupDto, file);
   }
 
   @Delete(':id')

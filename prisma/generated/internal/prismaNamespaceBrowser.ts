@@ -57,6 +57,9 @@ export const ModelName = {
   GroupRole: 'GroupRole',
   Customer: 'Customer',
   Invoice: 'Invoice',
+  vendor: 'vendor',
+  Expenses: 'Expenses',
+  Receipt: 'Receipt',
   Permission: 'Permission'
 } as const
 
@@ -78,7 +81,21 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const GroupScalarFieldEnum = {
   id: 'id',
-  name: 'name'
+  name: 'name',
+  legalName: 'legalName',
+  logo: 'logo',
+  taxId: 'taxId',
+  industry: 'industry',
+  address: 'address',
+  city: 'city',
+  province: 'province',
+  postalCode: 'postalCode',
+  country: 'country',
+  email: 'email',
+  phone: 'phone',
+  website: 'website',
+  subscriptionId: 'subscriptionId',
+  billingCycle: 'billingCycle'
 } as const
 
 export type GroupScalarFieldEnum = (typeof GroupScalarFieldEnum)[keyof typeof GroupScalarFieldEnum]
@@ -88,18 +105,18 @@ export const EntityScalarFieldEnum = {
   id: 'id',
   name: 'name',
   groupId: 'groupId',
-  legalName: 'legalName',
-  taxId: 'taxId',
-  country: 'country',
-  currency: 'currency',
-  yearEnd: 'yearEnd',
   address: 'address',
   city: 'city',
-  state: 'state',
-  postalCode: 'postalCode',
-  phoneNumber: 'phoneNumber',
+  country: 'country',
+  currency: 'currency',
   email: 'email',
-  website: 'website'
+  legalName: 'legalName',
+  phoneNumber: 'phoneNumber',
+  postalCode: 'postalCode',
+  state: 'state',
+  taxId: 'taxId',
+  website: 'website',
+  yearEnd: 'yearEnd'
 } as const
 
 export type EntityScalarFieldEnum = (typeof EntityScalarFieldEnum)[keyof typeof EntityScalarFieldEnum]
@@ -174,6 +191,73 @@ export const InvoiceScalarFieldEnum = {
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
 
 
+export const VendorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  displayName: 'displayName',
+  taxId: 'taxId',
+  website: 'website',
+  companyName: 'companyName',
+  jobTitle: 'jobTitle',
+  email: 'email',
+  phone: 'phone',
+  city: 'city',
+  province: 'province',
+  postalCode: 'postalCode',
+  country: 'country',
+  paymentTerms: 'paymentTerms',
+  currency: 'currency',
+  accountNumber: 'accountNumber',
+  creditLimit: 'creditLimit',
+  expenseAccount: 'expenseAccount',
+  bankName: 'bankName',
+  accountName: 'accountName',
+  entityId: 'entityId',
+  routingNumber: 'routingNumber',
+  internalNote: 'internalNote',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof VendorScalarFieldEnum]
+
+
+export const ExpensesScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  reference: 'reference',
+  supplier: 'supplier',
+  category: 'category',
+  paymentMethod: 'paymentMethod',
+  account: 'account',
+  amount: 'amount',
+  tax: 'tax',
+  description: 'description',
+  tags: 'tags',
+  attachment: 'attachment',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type ExpensesScalarFieldEnum = (typeof ExpensesScalarFieldEnum)[keyof typeof ExpensesScalarFieldEnum]
+
+
+export const ReceiptScalarFieldEnum = {
+  id: 'id',
+  customerName: 'customerName',
+  date: 'date',
+  entityId: 'entityId',
+  paymentMethod: 'paymentMethod',
+  items: 'items',
+  total: 'total',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type ReceiptScalarFieldEnum = (typeof ReceiptScalarFieldEnum)[keyof typeof ReceiptScalarFieldEnum]
+
+
 export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -189,6 +273,13 @@ export const SortOrder = {
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: 'JsonNull'
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const NullableJsonNullValueInput = {

@@ -43,9 +43,13 @@ export class AuthController {
       loginDto.password,
     );
     const token = await encryptSession(user);
+    // res.setHeader(
+    //   'Set-Cookie',
+    //   createCookie(req, 'xf', token, 60 * 60 * 24 * 7),
+    // );
     res.setHeader(
       'Set-Cookie',
-      createCookie(req, 'xf', token, 60 * 60 * 24 * 7),
+      createCookie('xf', token, 60 * 60 * 24 * 7),
     );
     return res.send(user);
   }
@@ -69,9 +73,13 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const token = await encryptSession({ groupId, groupName }, '7d');
+    // res.setHeader(
+    //   'Set-Cookie',
+    //   createCookie(req, 'xf_group', token, 60 * 60 * 24 * 7),
+    // );
     res.setHeader(
       'Set-Cookie',
-      createCookie(req, 'xf_group', token, 60 * 60 * 24 * 7),
+      createCookie('xf_group', token, 60 * 60 * 24 * 7),
     );
     return res.send({ success: true });
   }
@@ -80,7 +88,9 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin)
   stopGroup(@Req() req: Request, @Res() res: Response) {
-    res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
+    // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
+        res.setHeader('Set-Cookie', deleteCookie('xf_group'));
+
     return res.send({ success: true });
   }
 
@@ -93,9 +103,13 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const token = await encryptSession({ entityId, entityName }, '7d');
+    // res.setHeader(
+    //   'Set-Cookie',
+    //   createCookie(req, 'xf_entity', token, 60 * 60 * 24 * 7),
+    // );
     res.setHeader(
       'Set-Cookie',
-      createCookie(req, 'xf_entity', token, 60 * 60 * 24 * 7),
+      createCookie('xf_entity', token, 60 * 60 * 24 * 7),
     );
     return res.send({ success: true });
   }
@@ -104,7 +118,9 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(systemRole.superadmin, systemRole.admin)
   stopEntity(@Req() req: Request, @Res() res: Response) {
-    res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
+    // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
+        res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
+
     return res.send({ success: true });
   }
 }

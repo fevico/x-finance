@@ -1,0 +1,128 @@
+import { PrismaService } from '@/prisma/prisma.service';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { CreateReceiptDto } from './dto/receipt.dto';
+import { GetReceiptsQueryDto } from './dto/get-receipts-query.dto';
+import { GetReceiptsResponseDto } from './dto/get-receipts-response.dto';
+import { ReceiptStatus, PaymentMethod } from 'prisma/generated/enums';
+
+@Injectable()
+export class ReceiptService {
+  constructor(private prisma: PrismaService) {}
+
+  async createReceipt(body: CreateReceiptDto, entityId: string) {
+    try {
+      const receipt = await this.prisma.receipt.create({
+        data: {
+          ...body,
+          entityId,
+        },
+      });
+      return receipt;
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  async getEntityReceipts(
+    entityId: string,
+    query: GetReceiptsQueryDto,
+  ): Promise<GetReceiptsResponseDto> {
+    try {
+      const page = query.page || 1;
+      const limit = query.limit || 10;
+      const skip = (page - 1) * limit;
+
+      const whereClause: any = { entityId };
+      if (query.status) whereClause.status = query.status;
+      if (query.paymentMethod) whereClause.paymentMethod = query.paymentMethod;
+      if (query.search) {
+        whereClause.customerName = {
+          contains: query.search,
+          mode: 'insensitive',
+        };
+      }
+
+      // Paginated receipts
+      const [receipts, totalCount] = await Promise.all([
+        this.prisma.receipt.findMany({
+          where: whereClause,
+          skip,
+          take: limit,
+          orderBy: { date: 'desc' },
+        }),
+        this.prisma.receipt.count({ where: whereClause }),
+      ]);
+
+      // Aggregates for filtered set
+      const aggregate = await this.prisma.receipt.aggregate({
+        _sum: { total: true },
+        _count: { _all: true },
+        where: whereClause,
+      });
+
+      const totalSales = aggregate._sum.total ?? 0;
+      const totalReceipts = aggregate._count._all ?? 0;
+
+      // Today's sales (for entity, and matching filters where applicable)
+      const now = new Date();
+      const startOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        0,
+        0,
+        0,
+      );
+      const endOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+      );
+
+      const todaysWhere = {
+        ...whereClause,
+        date: { gte: startOfDay, lte: endOfDay },
+      };
+      const todaysAggregate = await this.prisma.receipt.aggregate({
+        _sum: { total: true },
+        where: todaysWhere,
+      });
+      const todaysSales = todaysAggregate._sum.total ?? 0;
+
+      const averageReceiptValue =
+        totalReceipts > 0 ? Math.round(totalSales / totalReceipts) : 0;
+
+      const transformed = receipts.map((r) => ({
+        id: r.id,
+        customerName: r.customerName,
+        date: r.date.toISOString(),
+        paymentMethod: r.paymentMethod,
+        items: r.items,
+        total: r.total,
+        status: r.status,
+        createdAt: r.createdAt.toISOString(),
+      }));
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        receipts: transformed,
+        stats: {
+          totalReceipts: totalReceipts,
+          totalSales,
+          todaysSales,
+          averageReceiptValue,
+        },
+        totalCount,
+        totalPages,
+        currentPage: page,
+        limit,
+      };
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+}

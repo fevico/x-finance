@@ -22,14 +22,13 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Customers')
-@Controller('customer')
+@Controller('customers')
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @Post('create')
+  @Post()
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Create a customer for the current entity' })
-  @ApiBearerAuth('jwt')
   @ApiCookieAuth('cookieAuth')
   @ApiBody({ type: CreateCustomerDto })
   @ApiUnauthorizedResponse({ description: 'Access denied' })
@@ -49,6 +48,6 @@ export class CustomerController {
   async getCustersByEntity(@Req() req) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.customerService.getAllCustomer(entityId);
+    return this.customerService.getAllCustomer(entityId); 
   }
 }

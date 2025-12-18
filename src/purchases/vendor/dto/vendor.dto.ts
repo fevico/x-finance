@@ -1,0 +1,123 @@
+import { IsString, IsOptional, IsEmail, IsUrl } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class CreateVendorDto {
+  @ApiProperty({ example: 'Acme Supplies', description: 'Vendor name' })
+  @IsString()
+  name: string;
+
+  @ApiPropertyOptional({ example: 'supplier', description: 'Vendor type' })
+  @IsString()
+  type: string;
+
+  @ApiPropertyOptional({ example: 'Acme', description: 'Display name' })
+  @IsString()
+  displayName: string;
+
+  @ApiPropertyOptional({ example: '12-3456789', description: 'Tax ID' })
+  @IsString()
+  taxId: string;
+
+  @ApiPropertyOptional({
+    example: 'https://acme.example.com',
+    description: 'Website URL',
+  })
+  @IsOptional()
+  @IsUrl()
+  website?: string;
+
+  @ApiPropertyOptional({
+    example: 'Acme Corporation',
+    description: 'Company name',
+  })
+  @IsString()
+  companyName: string;
+
+  @ApiPropertyOptional({
+    example: 'Purchasing Manager',
+    description: 'Job title',
+  })
+  @IsString()
+  jobTitle: string;
+
+  @ApiPropertyOptional({
+    example: 'vendor@example.com',
+    description: 'Contact email',
+  })
+  @IsEmail()
+  email: string;
+
+  @ApiPropertyOptional({ example: '+1234567890', description: 'Contact phone' })
+  @IsString()
+  phone: string;
+
+  @ApiPropertyOptional({ example: 'Lagos', description: 'City' })
+  @IsString()
+  city: string;
+
+  @ApiPropertyOptional({
+    example: 'Lagos State',
+    description: 'Province/State',
+  })
+  @IsString()
+  province: string;
+
+  @ApiPropertyOptional({ example: '100001', description: 'Postal code' })
+  @IsString()
+  postalCode: string;
+
+  @ApiPropertyOptional({ example: 'Nigeria', description: 'Country' })
+  @IsString()
+  country: string;
+
+  @ApiPropertyOptional({ example: 'Net 30', description: 'Payment terms' })
+  @IsString()
+  paymentTerms: string;
+
+  @ApiPropertyOptional({ example: 'NGN', description: 'Currency code' })
+  @IsString()
+  currency: string;
+
+  @ApiPropertyOptional({ example: '1234567890', description: 'Account number' })
+  @IsString()
+  accountNumber: string;
+
+  @ApiPropertyOptional({ example: '10000', description: 'Credit limit' })
+  @IsString()
+  creditLimit: string;
+
+  @ApiPropertyOptional({
+    example: 'Expenses:Supplies',
+    description: 'Expense account',
+  })
+  @IsString()
+  expenseAccount: string;
+
+  @ApiPropertyOptional({ example: 'First Bank', description: 'Bank name' })
+  @IsString()
+  bankName: string;
+
+  @ApiPropertyOptional({ example: 'Acme Account', description: 'Account name' })
+  @IsString()
+  accountName: string;
+
+  @ApiPropertyOptional({ example: '111000025', description: 'Routing number' })
+  @IsString()
+  routingNumber: string;
+
+  @ApiPropertyOptional({
+    example: 'Internal notes...',
+    description: 'Internal note',
+  })
+  @IsOptional()
+  @IsString()
+  internalNote?: string;
+}
+
+export class VendorDto extends CreateVendorDto {
+  @ApiProperty({ example: 'vendor_cuid', description: 'Vendor id' })
+  id: string;
+
+  @ApiProperty({ example: '2025-12-18T00:00:00Z', description: 'Created at' })
+  createdAt: string;
+}

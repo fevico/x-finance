@@ -3,9 +3,10 @@ import { GroupService } from './group.service';
 import { GroupController } from './group.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthService } from '@/auth/auth.service';
+import { FileuploadModule } from '@/fileupload/fileupload.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, FileuploadModule],
   controllers: [GroupController],
   providers: [GroupService, AuthService],
 })

@@ -13,7 +13,6 @@ export class CustomerService {
   constructor(private prisma: PrismaService) {}
 
   async createCustomer(body: CreateCustomerDto, entityId: string) {
-    const { address, city } = body;
     try {
       const customerExist = await this.prisma.customer.findUnique({
         where: { email: body.email },
@@ -23,6 +22,7 @@ export class CustomerService {
       const customer = await this.prisma.customer.create({
         data: {
           ...body,
+          entityId,
         },
       });
     } catch (error) {
