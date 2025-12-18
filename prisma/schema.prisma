@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "./generated"
@@ -13,61 +7,78 @@ datasource db {
   provider = "postgresql"
 }
 
-model Group {
-  id   String @id @default(cuid())
-  name String @unique
+enum BillingCycle {
+  Monthly 
+  Annual 
+}
 
+model Group {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  legalName  String 
+  logo       Json 
+  taxId      String 
+  industry   String 
+  address    String
+  city       String
+  province   String
+  postalCode String
+  country    String 
+  email      String 
+  phone      String 
+  website    String?
+  subscriptionId String?
+  billingCycle   BillingCycle?
+  entities   Entity[]
   groupRoles GroupRole[]
-  entities  Entity[]
-  users     User[]
+  users      User[]
 }
 
 model Entity {
-  id      String @id @default(cuid())
-  name    String @unique
-  groupId String
-  group   Group  @relation(fields: [groupId], references: [id])
-  legalName String?
-  taxId     String?
-  country   String? 
-  currency  String? 
-  yearEnd   String? 
-  address   String?
-  city      String?
-  state     String?
-  postalCode  String? 
-  phoneNumber String? 
-  email       String?
-  website     String? 
-  users   User[]
-  customer  Customer[]
-  invoice    Invoice[]
-
-  @@unique([email])
+  id          String     @id @default(cuid())
+  name        String     @unique
+  groupId     String
+  address     String?
+  city        String?
+  country     String?
+  currency    String?
+  email       String?    @unique
+  legalName   String?
+  phoneNumber String?
+  postalCode  String?
+  state       String?
+  taxId       String?
+  website     String?
+  yearEnd     String?
+  customer    Customer[]
+  group       Group      @relation(fields: [groupId], references: [id])
+  invoice     Invoice[]
+  users       User[]
+  receipt     Receipt[]
+  vendor      vendor[]
+  expenses    Expenses[]
   @@index([name, taxId, email])
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String     @id @default(cuid())
+  email         String     @unique
   firstName     String?
   lastName      String?
   password      String?
-  image         Json? // {url: string, public_id: string}
-  provider      String? // "google", "github", "credentials", etc.
+  image         Json?
+  provider      String?
   providerId    String?
   emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  groupRoleId String?
-  groupRole  GroupRole?  @relation(fields: [groupRoleId], references: [id])
-  systemRole systemRole  @default(user)
-
-  groupId  String?
-  group    Group?  @relation(fields: [groupId], references: [id])
-  entityId String?
-  entity   Entity? @relation(fields: [entityId], references: [id])
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  groupRoleId   String?
+  systemRole    systemRole @default(user)
+  groupId       String?
+  entityId      String?
+  entity        Entity?    @relation(fields: [entityId], references: [id])
+  group         Group?     @relation(fields: [groupId], references: [id])
+  groupRole     GroupRole? @relation(fields: [groupRoleId], references: [id])
 
   @@unique([provider, providerId])
 }
@@ -75,65 +86,125 @@ model User {
 model GroupRole {
   id          String       @id @default(cuid())
   name        String
-  users       User[]
-  permissions Permission[]
   groupId     String
   group       Group        @relation(fields: [groupId], references: [id])
+  users       User[]
+  permissions Permission[] @relation("GroupRoleToPermission")
 
   @@unique([name, groupId])
 }
 
 model Customer {
-  id            String  @id @default(cuid())
-  type          String 
-  name          String  
-  email         String
-  phoneNumber   String 
-  companyName   String 
-  address       String 
-  city          String 
-  state         String  
-  postalCode    String 
-  paymentTerms  String
-  creditLimit   String
-  note          String?
-  entityId      String 
-  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  isActive      Boolean @default(true)
-  invoice       Invoice[]
-  @@unique([email])
+  id           String    @id @default(cuid())
+  type         String
+  name         String
+  email        String    @unique
+  phoneNumber  String
+  companyName  String
+  address      String
+  city         String
+  state        String
+  postalCode   String
+  paymentTerms String
+  creditLimit  String
+  note         String?
+  entityId     String
+  isActive     Boolean   @default(true)
+  entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  invoice      Invoice[]
+
   @@index([email, name])
 }
 
 model Invoice {
-  id           String @id @default(cuid())
-  customerId   String
-  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  entityId      String 
-  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  invoiceNumber  String
-  invoiceDate    DateTime
-  dueDate        DateTime
-  paymentTerms   String
-  currency       String
-  items          String[]
-  total          Int
-  notes          String?
-  status         InvoiceStatus @default(Pending)
-  @@unique([invoiceNumber])
+  id            String        @id @default(cuid())
+  customerId    String
+  entityId      String
+  invoiceNumber String        @unique
+  invoiceDate   DateTime
+  dueDate       DateTime
+  paymentTerms  String
+  currency      String
+  items         String[]
+  total         Int
+  notes         String?
+  status        InvoiceStatus @default(Pending)
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  entity        Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
   @@index([invoiceNumber, customerId, currency])
 }
 
+model vendor {
+  id            String @id @default(cuid())
+  name          String
+  type          String
+  displayName   String
+  taxId         String 
+  website       String? 
+  companyName   String
+  jobTitle      String
+  email         String
+  phone         String
+  city          String
+  province      String
+  postalCode    String 
+  country       String 
+  paymentTerms  String 
+  currency      String 
+  accountNumber String 
+  creditLimit   String
+  expenseAccount String
+  bankName       String 
+  accountName    String 
+  entityId      String
+  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  routingNumber  String?
+  internalNote   String?
+  status         vendorStatus @default(Active)
+  createdAt      DateTime @default(now())
+  @@unique([email, phone])
+  @@index([type, email])
+}
+
+model Expenses {
+  id            String @id @default(cuid())
+  date          DateTime 
+  reference     String 
+  supplier       String 
+  category      String
+  paymentMethod PaymentMethod
+  account       String 
+  amount        Int
+  tax           String
+  description   String?
+  tags          String[]
+  attachment    Json?
+  entityId      String
+  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  @@index([reference, category])
+}
+
 model Receipt {
-  id          String @id @default(cuid())     
+  id          String @id @default(cuid())   
+  customerName            String
+  date                    DateTime
+  entityId                String
+  entity                  Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  paymentMethod           PaymentMethod 
+  items                   String[]
+  total                   Int
+  status                  ReceiptStatus @default(Void)
+  createdAt               DateTime @default(now())
+  @@index([date])
 }
 
 model Permission {
-  id          String  @id @default(cuid())
-  name        String  @unique // e.g., "dashboard:group:view", "dashboard:entity:view", (module:scope)
+  id          String      @id @default(cuid())
+  name        String      @unique
   description String?
-  groupRoles  GroupRole[]
-
+  groupRoles  GroupRole[] @relation("GroupRoleToPermission")
 }
 
 enum systemRole {
@@ -142,10 +213,27 @@ enum systemRole {
   user
 }
 
+enum vendorStatus {
+  Active
+  Inactive
+}
+enum PaymentMethod {
+  Cash
+  Card
+  Bank_Transfer
+  Mobile_Money
+  Check
+  Debit_Card
+  Credit_Card
+}
+enum ReceiptStatus {
+  Completed 
+  Void
+}
 enum InvoiceStatus {
-  Overdue 
+  Overdue
   Paid
-  Draft 
+  Draft
   Sent
   Pending
 }

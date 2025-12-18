@@ -166,18 +166,18 @@ export type GroupRoleWhereInput = {
   id?: Prisma.StringFilter<"GroupRole"> | string
   name?: Prisma.StringFilter<"GroupRole"> | string
   groupId?: Prisma.StringFilter<"GroupRole"> | string
+  group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   users?: Prisma.UserListRelationFilter
   permissions?: Prisma.PermissionListRelationFilter
-  group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
 }
 
 export type GroupRoleOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  group?: Prisma.GroupOrderByWithRelationInput
   users?: Prisma.UserOrderByRelationAggregateInput
   permissions?: Prisma.PermissionOrderByRelationAggregateInput
-  group?: Prisma.GroupOrderByWithRelationInput
 }
 
 export type GroupRoleWhereUniqueInput = Prisma.AtLeast<{
@@ -188,9 +188,9 @@ export type GroupRoleWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.GroupRoleWhereInput | Prisma.GroupRoleWhereInput[]
   name?: Prisma.StringFilter<"GroupRole"> | string
   groupId?: Prisma.StringFilter<"GroupRole"> | string
+  group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   users?: Prisma.UserListRelationFilter
   permissions?: Prisma.PermissionListRelationFilter
-  group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
 }, "id" | "name_groupId">
 
 export type GroupRoleOrderByWithAggregationInput = {
@@ -214,9 +214,9 @@ export type GroupRoleScalarWhereWithAggregatesInput = {
 export type GroupRoleCreateInput = {
   id?: string
   name: string
+  group: Prisma.GroupCreateNestedOneWithoutGroupRolesInput
   users?: Prisma.UserCreateNestedManyWithoutGroupRoleInput
   permissions?: Prisma.PermissionCreateNestedManyWithoutGroupRolesInput
-  group: Prisma.GroupCreateNestedOneWithoutGroupRolesInput
 }
 
 export type GroupRoleUncheckedCreateInput = {
@@ -230,9 +230,9 @@ export type GroupRoleUncheckedCreateInput = {
 export type GroupRoleUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupRoleNestedInput
   permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
-  group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
 }
 
 export type GroupRoleUncheckedUpdateInput = {
@@ -446,8 +446,8 @@ export type GroupRoleScalarWhereInput = {
 export type GroupRoleCreateWithoutUsersInput = {
   id?: string
   name: string
-  permissions?: Prisma.PermissionCreateNestedManyWithoutGroupRolesInput
   group: Prisma.GroupCreateNestedOneWithoutGroupRolesInput
+  permissions?: Prisma.PermissionCreateNestedManyWithoutGroupRolesInput
 }
 
 export type GroupRoleUncheckedCreateWithoutUsersInput = {
@@ -476,8 +476,8 @@ export type GroupRoleUpdateToOneWithWhereWithoutUsersInput = {
 export type GroupRoleUpdateWithoutUsersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
+  permissions?: Prisma.PermissionUpdateManyWithoutGroupRolesNestedInput
 }
 
 export type GroupRoleUncheckedUpdateWithoutUsersInput = {
@@ -490,8 +490,8 @@ export type GroupRoleUncheckedUpdateWithoutUsersInput = {
 export type GroupRoleCreateWithoutPermissionsInput = {
   id?: string
   name: string
-  users?: Prisma.UserCreateNestedManyWithoutGroupRoleInput
   group: Prisma.GroupCreateNestedOneWithoutGroupRolesInput
+  users?: Prisma.UserCreateNestedManyWithoutGroupRoleInput
 }
 
 export type GroupRoleUncheckedCreateWithoutPermissionsInput = {
@@ -549,8 +549,8 @@ export type GroupRoleUncheckedUpdateManyWithoutGroupInput = {
 export type GroupRoleUpdateWithoutPermissionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  users?: Prisma.UserUpdateManyWithoutGroupRoleNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutGroupRolesNestedInput
+  users?: Prisma.UserUpdateManyWithoutGroupRoleNestedInput
 }
 
 export type GroupRoleUncheckedUpdateWithoutPermissionsInput = {
@@ -610,9 +610,9 @@ export type GroupRoleSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   name?: boolean
   groupId?: boolean
+  group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   users?: boolean | Prisma.GroupRole$usersArgs<ExtArgs>
   permissions?: boolean | Prisma.GroupRole$permissionsArgs<ExtArgs>
-  group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.GroupRoleCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["groupRole"]>
 
@@ -638,9 +638,9 @@ export type GroupRoleSelectScalar = {
 
 export type GroupRoleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "groupId", ExtArgs["result"]["groupRole"]>
 export type GroupRoleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   users?: boolean | Prisma.GroupRole$usersArgs<ExtArgs>
   permissions?: boolean | Prisma.GroupRole$permissionsArgs<ExtArgs>
-  group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.GroupRoleCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GroupRoleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -653,9 +653,9 @@ export type GroupRoleIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type $GroupRolePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "GroupRole"
   objects: {
+    group: Prisma.$GroupPayload<ExtArgs>
     users: Prisma.$UserPayload<ExtArgs>[]
     permissions: Prisma.$PermissionPayload<ExtArgs>[]
-    group: Prisma.$GroupPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1055,9 +1055,9 @@ readonly fields: GroupRoleFieldRefs;
  */
 export interface Prisma__GroupRoleClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  group<T extends Prisma.GroupDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   users<T extends Prisma.GroupRole$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupRole$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   permissions<T extends Prisma.GroupRole$permissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupRole$permissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  group<T extends Prisma.GroupDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

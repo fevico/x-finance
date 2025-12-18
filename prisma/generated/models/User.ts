@@ -258,9 +258,9 @@ export type UserWhereInput = {
   systemRole?: Prisma.EnumsystemRoleFilter<"User"> | $Enums.systemRole
   groupId?: Prisma.StringNullableFilter<"User"> | string | null
   entityId?: Prisma.StringNullableFilter<"User"> | string | null
-  groupRole?: Prisma.XOR<Prisma.GroupRoleNullableScalarRelationFilter, Prisma.GroupRoleWhereInput> | null
-  group?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
   entity?: Prisma.XOR<Prisma.EntityNullableScalarRelationFilter, Prisma.EntityWhereInput> | null
+  group?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
+  groupRole?: Prisma.XOR<Prisma.GroupRoleNullableScalarRelationFilter, Prisma.GroupRoleWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -279,9 +279,9 @@ export type UserOrderByWithRelationInput = {
   systemRole?: Prisma.SortOrder
   groupId?: Prisma.SortOrderInput | Prisma.SortOrder
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
-  groupRole?: Prisma.GroupRoleOrderByWithRelationInput
-  group?: Prisma.GroupOrderByWithRelationInput
   entity?: Prisma.EntityOrderByWithRelationInput
+  group?: Prisma.GroupOrderByWithRelationInput
+  groupRole?: Prisma.GroupRoleOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -304,9 +304,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   systemRole?: Prisma.EnumsystemRoleFilter<"User"> | $Enums.systemRole
   groupId?: Prisma.StringNullableFilter<"User"> | string | null
   entityId?: Prisma.StringNullableFilter<"User"> | string | null
-  groupRole?: Prisma.XOR<Prisma.GroupRoleNullableScalarRelationFilter, Prisma.GroupRoleWhereInput> | null
-  group?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
   entity?: Prisma.XOR<Prisma.EntityNullableScalarRelationFilter, Prisma.EntityWhereInput> | null
+  group?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
+  groupRole?: Prisma.XOR<Prisma.GroupRoleNullableScalarRelationFilter, Prisma.GroupRoleWhereInput> | null
 }, "id" | "email" | "provider_providerId">
 
 export type UserOrderByWithAggregationInput = {
@@ -364,9 +364,9 @@ export type UserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
-  groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
-  group?: Prisma.GroupCreateNestedOneWithoutUsersInput
   entity?: Prisma.EntityCreateNestedOneWithoutUsersInput
+  group?: Prisma.GroupCreateNestedOneWithoutUsersInput
+  groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -400,9 +400,9 @@ export type UserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
-  groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
-  group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
   entity?: Prisma.EntityUpdateOneWithoutUsersNestedInput
+  group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
+  groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -692,8 +692,8 @@ export type UserCreateWithoutGroupInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
-  groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
   entity?: Prisma.EntityCreateNestedOneWithoutUsersInput
+  groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutGroupInput = {
@@ -773,8 +773,8 @@ export type UserCreateWithoutEntityInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
-  groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
   group?: Prisma.GroupCreateNestedOneWithoutUsersInput
+  groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutEntityInput = {
@@ -833,8 +833,8 @@ export type UserCreateWithoutGroupRoleInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
-  group?: Prisma.GroupCreateNestedOneWithoutUsersInput
   entity?: Prisma.EntityCreateNestedOneWithoutUsersInput
+  group?: Prisma.GroupCreateNestedOneWithoutUsersInput
 }
 
 export type UserUncheckedCreateWithoutGroupRoleInput = {
@@ -910,8 +910,8 @@ export type UserUpdateWithoutGroupInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
-  groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
   entity?: Prisma.EntityUpdateOneWithoutUsersNestedInput
+  groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupInput = {
@@ -978,8 +978,8 @@ export type UserUpdateWithoutEntityInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
-  groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
   group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
+  groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutEntityInput = {
@@ -1046,8 +1046,8 @@ export type UserUpdateWithoutGroupRoleInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
-  group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
   entity?: Prisma.EntityUpdateOneWithoutUsersNestedInput
+  group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupRoleInput = {
@@ -1102,9 +1102,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   systemRole?: boolean
   groupId?: boolean
   entityId?: boolean
-  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  group?: boolean | Prisma.User$groupArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
+  group?: boolean | Prisma.User$groupArgs<ExtArgs>
+  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1123,9 +1123,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   systemRole?: boolean
   groupId?: boolean
   entityId?: boolean
-  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  group?: boolean | Prisma.User$groupArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
+  group?: boolean | Prisma.User$groupArgs<ExtArgs>
+  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1144,9 +1144,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   systemRole?: boolean
   groupId?: boolean
   entityId?: boolean
-  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  group?: boolean | Prisma.User$groupArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
+  group?: boolean | Prisma.User$groupArgs<ExtArgs>
+  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -1169,27 +1169,27 @@ export type UserSelectScalar = {
 
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "password" | "image" | "provider" | "providerId" | "emailVerified" | "createdAt" | "updatedAt" | "groupRoleId" | "systemRole" | "groupId" | "entityId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  group?: boolean | Prisma.User$groupArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
+  group?: boolean | Prisma.User$groupArgs<ExtArgs>
+  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  group?: boolean | Prisma.User$groupArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
+  group?: boolean | Prisma.User$groupArgs<ExtArgs>
+  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
 }
 export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  group?: boolean | Prisma.User$groupArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
+  group?: boolean | Prisma.User$groupArgs<ExtArgs>
+  groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
 }
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
-    groupRole: Prisma.$GroupRolePayload<ExtArgs> | null
-    group: Prisma.$GroupPayload<ExtArgs> | null
     entity: Prisma.$EntityPayload<ExtArgs> | null
+    group: Prisma.$GroupPayload<ExtArgs> | null
+    groupRole: Prisma.$GroupRolePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1601,9 +1601,9 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  groupRole<T extends Prisma.User$groupRoleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupRoleArgs<ExtArgs>>): Prisma.Prisma__GroupRoleClient<runtime.Types.Result.GetResult<Prisma.$GroupRolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  group<T extends Prisma.User$groupArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   entity<T extends Prisma.User$entityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$entityArgs<ExtArgs>>): Prisma.Prisma__EntityClient<runtime.Types.Result.GetResult<Prisma.$EntityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  group<T extends Prisma.User$groupArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  groupRole<T extends Prisma.User$groupRoleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupRoleArgs<ExtArgs>>): Prisma.Prisma__GroupRoleClient<runtime.Types.Result.GetResult<Prisma.$GroupRolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2044,22 +2044,22 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 /**
- * User.groupRole
+ * User.entity
  */
-export type User$groupRoleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$entityArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the GroupRole
+   * Select specific fields to fetch from the Entity
    */
-  select?: Prisma.GroupRoleSelect<ExtArgs> | null
+  select?: Prisma.EntitySelect<ExtArgs> | null
   /**
-   * Omit specific fields from the GroupRole
+   * Omit specific fields from the Entity
    */
-  omit?: Prisma.GroupRoleOmit<ExtArgs> | null
+  omit?: Prisma.EntityOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.GroupRoleInclude<ExtArgs> | null
-  where?: Prisma.GroupRoleWhereInput
+  include?: Prisma.EntityInclude<ExtArgs> | null
+  where?: Prisma.EntityWhereInput
 }
 
 /**
@@ -2082,22 +2082,22 @@ export type User$groupArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
 }
 
 /**
- * User.entity
+ * User.groupRole
  */
-export type User$entityArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type User$groupRoleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Entity
+   * Select specific fields to fetch from the GroupRole
    */
-  select?: Prisma.EntitySelect<ExtArgs> | null
+  select?: Prisma.GroupRoleSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Entity
+   * Omit specific fields from the GroupRole
    */
-  omit?: Prisma.EntityOmit<ExtArgs> | null
+  omit?: Prisma.GroupRoleOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.EntityInclude<ExtArgs> | null
-  where?: Prisma.EntityWhereInput
+  include?: Prisma.GroupRoleInclude<ExtArgs> | null
+  where?: Prisma.GroupRoleWhereInput
 }
 
 /**
