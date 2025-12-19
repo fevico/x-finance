@@ -49,7 +49,13 @@ export class FileuploadService {
         (error, result) => {
           if (error) {
             console.log(error);
-            reject(error);
+            reject(
+              error instanceof Error
+                ? error
+                : new Error(
+                    typeof error === 'string' ? error : JSON.stringify(error),
+                  ),
+            );
           } else if (result) {
             resolve({
               publicId: result.public_id,
@@ -73,7 +79,7 @@ export class FileuploadService {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : (error as any)?.message || 'Unknown error';
+          : error?.message || 'Unknown error';
       throw new Error(`File deletion failed: ${errorMessage}`);
     }
   }
