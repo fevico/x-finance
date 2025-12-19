@@ -19,15 +19,9 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { systemRole } from 'prisma/generated/enums';
 import { Request } from 'express';
 import { getEffectiveGroupId } from '../auth/utils/context.util';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiCookieAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@ApiTags('Entities') 
+@ApiTags('Entities')
 @UseGuards(AuthGuard)
 // @ApiBearerAuth('jwt')
 // @ApiCookieAuth('cookieAuth')
@@ -55,7 +49,7 @@ export class EntityController {
     const effectiveGroupId = getEffectiveGroupId(req);
     if (!effectiveGroupId) {
       throw new ForbiddenException('No effective group ID found.');
-    } 
+    }
     return this.entityService.findAll(effectiveGroupId);
   }
 

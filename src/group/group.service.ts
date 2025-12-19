@@ -20,10 +20,16 @@ export class GroupService {
         logo = await this.fileuploadService.uploadFile(file, 'groups');
       }
 
+      // Always set logo with publicId and secureUrl, defaulting to empty string if not provided
+      const logoData = {
+        publicId: logo?.publicId || '',
+        secureUrl: logo?.secureUrl || ''
+      };
+
       return this.prisma.group.create({
         data: {
           ...createGroupDto,
-          logo: { publicId: logo.publicId, secureUrl: logo.secureUrl }
+          logo: logoData
         }
       });
     } catch (error) {

@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsEmail,
-  IsUrl,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsString, IsOptional, IsEmail, IsUrl } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEntityDto {
@@ -12,11 +6,6 @@ export class CreateEntityDto {
   @IsString()
   @IsOptional()
   name: string;
-
-  @ApiProperty({ example: 'group-id-uuid', description: 'Related group id' })
-  @IsString()
-  @IsNotEmpty()
-  groupId: string;
 
   @ApiProperty({
     example: 'Acme Corporation Ltd',

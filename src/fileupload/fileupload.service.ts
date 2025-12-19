@@ -9,25 +9,28 @@ export interface UploadResult {
 
 @Injectable()
 export class FileuploadService {
-     constructor(private readonly configService: ConfigService) {
-    // Configure Cloudinary once during service initialization 
+  constructor(private readonly configService: ConfigService) {
+    // Configure Cloudinary once during service initialization
     cloudinary.config({
       cloud_name: this.configService.get<string>('CLOUDINARY_CLOUD_NAME'),
       api_key: this.configService.get<string>('CLOUDINARY_API_KEY'),
-      api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET'), 
-    });    
+      api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET'),
+    });
 
     // Validate required Cloudinary config
     const cloudName = this.configService.get<string>('CLOUDINARY_CLOUD_NAME');
     const apiKey = this.configService.get<string>('CLOUDINARY_API_KEY');
-    const apiSecret = this.configService.get<string>('CLOUDINARY_API_SECRET'); 
+    const apiSecret = this.configService.get<string>('CLOUDINARY_API_SECRET');
 
     if (!cloudName || !apiKey || !apiSecret) {
       throw new NotFoundException('Cloudinary configuration is incomplete');
     }
   }
 
-  async uploadFile(file: Express.Multer.File, folder: string): Promise<UploadResult> {
+  async uploadFile(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<UploadResult> {
     if (!file.buffer || file.buffer.length === 0) {
       throw new Error('Invalid file buffer');
     }
@@ -41,19 +44,22 @@ export class FileuploadService {
     };
 
     return new Promise<UploadResult>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
-        if (error) {
-          console.log(error);
-          reject(error);
-        } else if (result) {
-          resolve({
-            publicId: result.public_id,
-            secureUrl: result.secure_url,
-          });
-        } else {
-          reject(new Error('Upload result is empty'));
-        }
-      });
+      const stream = cloudinary.uploader.upload_stream(
+        options,
+        (error, result) => {
+          if (error) {
+            console.log(error);
+            reject(error);
+          } else if (result) {
+            resolve({
+              publicId: result.public_id,
+              secureUrl: result.secure_url,
+            });
+          } else {
+            reject(new Error('Upload result is empty'));
+          }
+        },
+      );
 
       stream.end(file.buffer);
     });
@@ -64,7 +70,10 @@ export class FileuploadService {
       await cloudinary.uploader.destroy(publicId);
     } catch (error) {
       console.log(error);
-      const errorMessage = error instanceof Error ? error.message : (error as any)?.message || 'Unknown error';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as any)?.message || 'Unknown error';
       throw new Error(`File deletion failed: ${errorMessage}`);
     }
   }
