@@ -25,7 +25,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Vendors')
-@Controller('vendors')
+@Controller('purchases/vendors')
 export class VendorController {
   constructor(private vendorService: VendorService) {}
 

@@ -3,7 +3,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/customer.dto';
@@ -19,7 +18,7 @@ export class CustomerService {
       });
       if (customerExist)
         throw new UnauthorizedException('Customer already exist!');
-      const customer = await this.prisma.customer.create({
+      return await this.prisma.customer.create({
         data: {
           ...body,
           entityId,
