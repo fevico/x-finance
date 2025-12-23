@@ -1,6 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import { CreateExpenseDto } from './dto/expense.dto';
 import { GetExpensesQueryDto } from './dto/get-expenses-query.dto';
 import { FileuploadService } from '@/fileupload/fileupload.service';
