@@ -12,13 +12,8 @@ export class EntityService {
   constructor(private prisma: PrismaService) {}
 
   async create(createEntityDto: CreateEntityDto, effectiveGroupId: string) {
-    if (createEntityDto.groupId !== effectiveGroupId) {
-      throw new ForbiddenException(
-        'You can only create entities within your effective group.',
-      );
-    }
     return this.prisma.entity.create({
-      data: createEntityDto, 
+      data: { ...createEntityDto, groupId: effectiveGroupId },
     });
   }
 

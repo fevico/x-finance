@@ -11,6 +11,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
@@ -79,7 +80,7 @@ export class GroupController {
   })
   create(
     @Body() createGroupDto: CreateGroupDto,
-    @UploadedFile() file: Express.Multer.File | undefined,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     return this.groupService.create(createGroupDto, file);
   }
@@ -90,7 +91,9 @@ export class GroupController {
   @ApiOperation({ summary: 'List groups' })
   @ApiResponse({ status: 200, description: 'List of groups' })
   findAll() {
-    return this.groupService.findAll();
+    const groups = this.groupService.findAll();
+    console.log(groups)
+    return groups;
   }
 
   @Get(':id')
@@ -112,7 +115,7 @@ export class GroupController {
   update(
     @Param('id') id: string,
     @Body() updateGroupDto: UpdateGroupDto,
-    @UploadedFile() file: Express.Multer.File | undefined,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     return this.groupService.update(id, updateGroupDto, file);
   }

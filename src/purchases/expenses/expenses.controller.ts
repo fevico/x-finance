@@ -29,7 +29,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Expenses')
-@Controller('expenses')
+@Controller('purchases/expenses')
 export class ExpensesController {
   constructor(private expensesService: ExpensesService) {}
 

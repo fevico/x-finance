@@ -102,6 +102,7 @@ model Customer {
   email        String    @unique
   phoneNumber  String
   companyName  String
+  country      String?
   address      String
   city         String
   state        String

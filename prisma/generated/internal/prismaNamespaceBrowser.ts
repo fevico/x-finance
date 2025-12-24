@@ -161,6 +161,7 @@ export const CustomerScalarFieldEnum = {
   email: 'email',
   phoneNumber: 'phoneNumber',
   companyName: 'companyName',
+  country: 'country',
   address: 'address',
   city: 'city',
   state: 'state',

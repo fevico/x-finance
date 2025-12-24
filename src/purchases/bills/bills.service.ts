@@ -132,7 +132,7 @@ export class BillsService {
       poNumber: b.poNumber ?? undefined,
       notes: b.notes ?? undefined,
       attachment:
-        b.attachment === null
+        b.attachment === null 
           ? undefined
           : (b.attachment as Record<string, any>),
       createdAt:

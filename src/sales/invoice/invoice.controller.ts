@@ -26,7 +26,7 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Invoices')
-@Controller('invoices')
+@Controller('sales/invoices')
 export class InvoiceController {
   constructor(private invoiceService: InvoiceService) {}
 
