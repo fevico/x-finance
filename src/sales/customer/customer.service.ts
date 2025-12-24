@@ -6,7 +6,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateCustomerDto } from './dto/customer.dto';
+import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 
 @Injectable()
 export class CustomerService {
@@ -45,6 +45,25 @@ export class CustomerService {
       };
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateCustomer(body: UpdateCustomerDto, entityId: string) {
+    try {
+      const customer = await this.prisma.customer.findFirst({
+        where: { id: body.customerId, entityId },
+      });
+      if (!customer)
+        throw new UnauthorizedException(
+          'Customer not found or does not belong to this entity!',
+        );
+      const updateEntityCustomer = await this.prisma.customer.update({
+        where: { id: body.customerId, entityId },
+        data: {...body},
+      });
+      return updateEntityCustomer
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST)  
     }
   }
 }

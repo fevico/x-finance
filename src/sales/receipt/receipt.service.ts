@@ -97,7 +97,7 @@ export class ReceiptService {
 
       const transformed = receipts.map((r) => ({
         id: r.id,
-        customerName: r.customerName,
+        customerId: r.customerId,
         date: r.date.toISOString(),
         paymentMethod: r.paymentMethod,
         items: r.items,

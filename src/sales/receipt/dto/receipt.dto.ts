@@ -11,9 +11,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethod } from 'prisma/generated/enums';
 
 export class CreateReceiptDto {
-  @ApiProperty({ example: 'Jane Doe', description: 'Customer name' })
+  @ApiProperty({ example: '1234567890', description: 'Customer ID' })
   @IsString()
-  customerName: string;
+  customerId: string;
 
   @ApiProperty({ example: '2025-12-18T00:00:00Z', description: 'Receipt date' })
   @IsDate()

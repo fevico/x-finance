@@ -11,9 +11,22 @@ import { ReceiptModule } from './sales/receipt/receipt.module';
 import { VendorModule } from './purchases/vendor/vendor.module';
 import { ExpensesModule } from './purchases/expenses/expenses.module';
 import { FileuploadModule } from './fileupload/fileupload.module';
+import { BillsModule } from './purchases/bills/bills.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, GroupModule, EntityModule, CustomerModule, InvoiceModule, ReceiptModule, VendorModule, ExpensesModule, FileuploadModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    GroupModule,
+    EntityModule,
+    CustomerModule,
+    InvoiceModule,
+    ReceiptModule,
+    VendorModule,
+    ExpensesModule,
+    FileuploadModule,
+    BillsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

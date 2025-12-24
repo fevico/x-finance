@@ -57,6 +57,7 @@ model Entity {
   receipt     Receipt[]
   vendor      vendor[]
   expenses    Expenses[]
+  bills       Bills[]
   @@index([name, taxId, email])
 }
 
@@ -112,6 +113,7 @@ model Customer {
   isActive     Boolean   @default(true)
   entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
   invoice      Invoice[]
+  receipt      Receipt[]
 
   @@index([email, name])
 }
@@ -163,6 +165,7 @@ model vendor {
   internalNote   String?
   status         vendorStatus @default(Active)
   createdAt      DateTime @default(now())
+  bills          Bills[]
   @@unique([email, phone])
   @@index([type, email])
 }
@@ -186,9 +189,46 @@ model Expenses {
   @@index([reference, category])
 }
 
+model Bills {
+  id            String @id @default(cuid())
+  billDate          DateTime 
+  billNumber        String?
+  vendorId          String 
+  vendor            vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  dueDate           DateTime
+  poNumber          String?
+  paymentTerms      String 
+  items             String[]
+  total             Int 
+  category          String  
+  notes             String?
+  attachment        Json?
+  status            BillStatus @default(unpaid)
+  entityId          String
+  entity            Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  paymentRecord      PaymentRecord[]
+  @@index([billDate, category])
+}
+
+model PaymentRecord {
+  id                String @id @default(uuid())
+  billId            String 
+  bill              Bills @relation(fields: [billId], references: [id], onDelete: Cascade)
+  paidAt            DateTime 
+  paymentMethod     PaymentMethod 
+  reference         String 
+  account           String 
+  note              String?
+  createdAt         DateTime @default(now())
+  
+  @@index([billId])
+}
+
 model Receipt {
-  id          String @id @default(cuid())   
-  customerName            String
+  id                    String @id @default(cuid())   
+  customerId            String
+  customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   date                    DateTime
   entityId                String
   entity                  Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
@@ -213,6 +253,11 @@ enum systemRole {
   user
 }
 
+enum BillStatus {
+  paid 
+  unpaid
+}
+
 enum vendorStatus {
   Active
   Inactive
@@ -225,6 +270,8 @@ enum PaymentMethod {
   Check
   Debit_Card
   Credit_Card
+  ACH 
+  Wire_Transfer
 }
 enum ReceiptStatus {
   Completed 

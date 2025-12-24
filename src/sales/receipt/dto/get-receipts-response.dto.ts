@@ -4,8 +4,8 @@ export class ReceiptListItemDto {
   @ApiProperty({ example: 'rec_abc123' })
   id: string;
 
-  @ApiProperty({ example: 'Jane Doe' })
-  customerName: string;
+  @ApiProperty({ example: '1234567890' })
+  customerId: string;
 
   @ApiProperty({ example: '2025-12-18T00:00:00Z' })
   date: string;

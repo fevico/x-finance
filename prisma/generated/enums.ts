@@ -26,6 +26,14 @@ export const systemRole = {
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
 
 
+export const BillStatus = {
+  paid: 'paid',
+  unpaid: 'unpaid'
+} as const
+
+export type BillStatus = (typeof BillStatus)[keyof typeof BillStatus]
+
+
 export const vendorStatus = {
   Active: 'Active',
   Inactive: 'Inactive'
@@ -41,7 +49,9 @@ export const PaymentMethod = {
   Mobile_Money: 'Mobile_Money',
   Check: 'Check',
   Debit_Card: 'Debit_Card',
-  Credit_Card: 'Credit_Card'
+  Credit_Card: 'Credit_Card',
+  ACH: 'ACH',
+  Wire_Transfer: 'Wire_Transfer'
 } as const
 
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]

@@ -59,6 +59,8 @@ export const ModelName = {
   Invoice: 'Invoice',
   vendor: 'vendor',
   Expenses: 'Expenses',
+  Bills: 'Bills',
+  PaymentRecord: 'PaymentRecord',
   Receipt: 'Receipt',
   Permission: 'Permission'
 } as const
@@ -243,9 +245,44 @@ export const ExpensesScalarFieldEnum = {
 export type ExpensesScalarFieldEnum = (typeof ExpensesScalarFieldEnum)[keyof typeof ExpensesScalarFieldEnum]
 
 
+export const BillsScalarFieldEnum = {
+  id: 'id',
+  billDate: 'billDate',
+  billNumber: 'billNumber',
+  vendorId: 'vendorId',
+  dueDate: 'dueDate',
+  poNumber: 'poNumber',
+  paymentTerms: 'paymentTerms',
+  items: 'items',
+  total: 'total',
+  category: 'category',
+  notes: 'notes',
+  attachment: 'attachment',
+  status: 'status',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type BillsScalarFieldEnum = (typeof BillsScalarFieldEnum)[keyof typeof BillsScalarFieldEnum]
+
+
+export const PaymentRecordScalarFieldEnum = {
+  id: 'id',
+  billId: 'billId',
+  paidAt: 'paidAt',
+  paymentMethod: 'paymentMethod',
+  reference: 'reference',
+  account: 'account',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentRecordScalarFieldEnum = (typeof PaymentRecordScalarFieldEnum)[keyof typeof PaymentRecordScalarFieldEnum]
+
+
 export const ReceiptScalarFieldEnum = {
   id: 'id',
-  customerName: 'customerName',
+  customerId: 'customerId',
   date: 'date',
   entityId: 'entityId',
   paymentMethod: 'paymentMethod',

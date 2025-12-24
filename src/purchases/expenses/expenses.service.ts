@@ -34,7 +34,7 @@ export class ExpensesService {
           entityId,
           attachment: attachment
             ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
-            : undefined,
+            : undefined, 
         }, 
       });
       return expense;

@@ -78,6 +78,16 @@ export type vendor = Prisma.vendorModel
  */
 export type Expenses = Prisma.ExpensesModel
 /**
+ * Model Bills
+ * 
+ */
+export type Bills = Prisma.BillsModel
+/**
+ * Model PaymentRecord
+ * 
+ */
+export type PaymentRecord = Prisma.PaymentRecordModel
+/**
  * Model Receipt
  * 
  */
