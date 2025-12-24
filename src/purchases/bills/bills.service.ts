@@ -4,6 +4,7 @@ import { FileuploadService } from '@/fileupload/fileupload.service';
 import { CreateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
+import { CreatePaymentDto, PaymentDto } from './dto/payment.dto';
 
 @Injectable()
 export class BillsService {
@@ -132,7 +133,7 @@ export class BillsService {
       poNumber: b.poNumber ?? undefined,
       notes: b.notes ?? undefined,
       attachment:
-        b.attachment === null 
+        b.attachment === null
           ? undefined
           : (b.attachment as Record<string, any>),
       createdAt:
@@ -145,6 +146,76 @@ export class BillsService {
       currentPage: page,
       pageSize: limit,
       totalPages,
+    };
+  }
+
+  async getBillById(entityId: string, billId: string) {
+    const bill = await this.prisma.bills.findUnique({
+      where: { id: billId },
+      include: {
+        vendor: {
+          select: { id: true, displayName: true, email: true, phone: true },
+        },
+        paymentRecord: true,
+      },
+    });
+
+    if (!bill || bill.entityId !== entityId) return null;
+
+    return {
+      ...bill,
+      billNumber: bill.billNumber ?? undefined,
+      poNumber: bill.poNumber ?? undefined,
+      notes: bill.notes ?? undefined,
+      attachment:
+        bill.attachment === null
+          ? undefined
+          : (bill.attachment as Record<string, any>),
+      createdAt:
+        bill.createdAt instanceof Date
+          ? bill.createdAt.toISOString()
+          : bill.createdAt,
+      paymentRecord: bill.paymentRecord.map((p) => ({
+        ...p,
+        note: p.note ?? undefined,
+        paidAt: p.paidAt instanceof Date ? p.paidAt.toISOString() : p.paidAt,
+        createdAt:
+          p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
+      })),
+    };
+  }
+
+  async createPayment(
+    billId: string,
+    entityId: string,
+    body: CreatePaymentDto,
+  ): Promise<any> {
+    // Ensure bill belongs to entity
+    const bill = await this.prisma.bills.findUnique({ where: { id: billId } });
+    if (!bill || bill.entityId !== entityId) {
+      throw new BadRequestException('Bill not found for this entity');
+    }
+
+    const payment = await this.prisma.paymentRecord.create({
+      data: {
+        billId,
+        paidAt: body.paidAt,
+        paymentMethod: body.paymentMethod, 
+        reference: body.reference,
+        account: body.account,
+        note: body.note ?? undefined,  
+      },
+    });
+
+    // Optionally update bill status to paid
+    await this.prisma.bills.update({
+      where: { id: billId },
+      data: { status: 'paid' },
+    });
+
+    return {
+      ...payment,
+      note: payment.note ?? undefined,
     };
   }
 }

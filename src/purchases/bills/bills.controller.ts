@@ -24,6 +24,8 @@ import { BillsService } from './bills.service';
 import { CreateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
+import { CreatePaymentDto, PaymentDto } from './dto/payment.dto';
+import { Param } from '@nestjs/common';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { Req } from '@nestjs/common';
 import { Request } from 'express';
@@ -148,5 +150,36 @@ export class BillsController {
     }
 
     return this.billsService.getBills(entityId, query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get bill details by ID' })
+  @ApiResponse({ status: 200, description: 'Bill details returned' })
+  @ApiResponse({ status: 404, description: 'Bill not found' })
+  async getBillById(@Param('id') id: string, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+
+    const bill = await this.billsService.getBillById(entityId, id);
+    if (!bill) throw new BadRequestException('Bill not found');
+    return bill;
+  }
+
+  @Post(':id/payments')
+  @ApiOperation({ summary: 'Create a payment record for a bill' })
+  @ApiResponse({
+    status: 201,
+    description: 'Payment recorded',
+    type: PaymentDto,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async createPayment(
+    @Param('id') id: string,
+    @Body() body: CreatePaymentDto,
+    @Req() req: Request,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.billsService.createPayment(id, entityId, body);
   }
 }
