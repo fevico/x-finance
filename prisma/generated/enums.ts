@@ -26,6 +26,14 @@ export const systemRole = {
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
 
 
+export const paymentRecordStatus = {
+  pending: 'pending',
+  cleared: 'cleared'
+} as const
+
+export type paymentRecordStatus = (typeof paymentRecordStatus)[keyof typeof paymentRecordStatus]
+
+
 export const BillStatus = {
   paid: 'paid',
   unpaid: 'unpaid'

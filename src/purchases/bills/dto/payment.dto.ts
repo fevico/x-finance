@@ -35,4 +35,7 @@ export class PaymentDto extends CreatePaymentDto {
 
   @ApiProperty({ example: '2025-12-24T00:00:00Z' })
   createdAt: string;
+
+  @ApiProperty({ example: 'vendor name', description: 'Vendor display name' })
+  vendorName?: string;
 }

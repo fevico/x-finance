@@ -25,6 +25,7 @@ import { CreateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
 import { CreatePaymentDto, PaymentDto } from './dto/payment.dto';
+import { GetPaymentsResponseDto } from './dto/get-payments-response.dto';
 import { Param } from '@nestjs/common';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { Req } from '@nestjs/common';
@@ -181,5 +182,14 @@ export class BillsController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     return this.billsService.createPayment(id, entityId, body);
+  }
+
+  @Get(':id/payments')
+  @ApiOperation({ summary: 'Get all payments for the entity' })
+  @ApiResponse({ status: 200, description: 'Payments returned', type: GetPaymentsResponseDto })
+  async getPayments(@Param('id') id: string, @Query('page') page = 1, @Query('limit') limit = 10, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.billsService.getPayments(entityId, Number(page), Number(limit));
   }
 }

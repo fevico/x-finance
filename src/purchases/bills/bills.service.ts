@@ -200,10 +200,10 @@ export class BillsService {
       data: {
         billId,
         paidAt: body.paidAt,
-        paymentMethod: body.paymentMethod, 
+        paymentMethod: body.paymentMethod,
         reference: body.reference,
         account: body.account,
-        note: body.note ?? undefined,  
+        note: body.note ?? undefined,
       },
     });
 
@@ -216,6 +216,48 @@ export class BillsService {
     return {
       ...payment,
       note: payment.note ?? undefined,
+    };
+  }
+
+  async getPayments(entityId: string, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+
+    const [payments, total] = await Promise.all([
+      this.prisma.paymentRecord.findMany({
+        where: {
+          bill: { entityId },
+        },
+        include: {
+          bill: {
+            select: {
+              vendor: { select: { displayName: true } },
+            },
+          },
+        },
+        orderBy: { paidAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.paymentRecord.count({ where: { bill: { entityId } } }),
+    ]);
+
+    const paymentsTransformed = payments.map((p) => ({
+      ...p,
+      paidAt: p.paidAt instanceof Date ? p.paidAt.toISOString() : p.paidAt,
+      createdAt:
+        p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
+      note: p.note ?? undefined,
+      vendorName: p.bill?.vendor?.displayName ?? undefined,
+    }));
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      payments: paymentsTransformed,
+      total,
+      currentPage: page,
+      pageSize: limit,
+      totalPages,
     };
   }
 }

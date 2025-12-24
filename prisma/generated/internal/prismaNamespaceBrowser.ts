@@ -275,6 +275,7 @@ export const PaymentRecordScalarFieldEnum = {
   reference: 'reference',
   account: 'account',
   note: 'note',
+  status: 'status',
   createdAt: 'createdAt'
 } as const
 

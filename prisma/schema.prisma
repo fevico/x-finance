@@ -221,6 +221,7 @@ model PaymentRecord {
   reference         String 
   account           String 
   note              String?
+  status            paymentRecordStatus @default(cleared)
   createdAt         DateTime @default(now())
   
   @@index([billId])
@@ -252,6 +253,11 @@ enum systemRole {
   superadmin
   admin
   user
+}
+
+enum paymentRecordStatus {
+  pending 
+  cleared
 }
 
 enum BillStatus {
