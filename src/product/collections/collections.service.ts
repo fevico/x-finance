@@ -18,7 +18,7 @@ export class CollectionsService {
     body: CreateCollectionDto,
     file?: Express.Multer.File,
   ) {
-    let image: { publicId: string; secureUrl: string } | undefined = undefined;
+    let image: { publicId: any; secureUrl: any } | undefined = undefined;
 
     if (file) {
       try {
@@ -43,7 +43,7 @@ export class CollectionsService {
         visibility: body.visibility ?? false,
         featured: body.featured ?? false,
         entityId,
-        image: image
+        image: image  
           ? { publicId: image.publicId, secureUrl: image.secureUrl }
           : undefined,
       },

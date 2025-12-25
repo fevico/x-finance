@@ -31,7 +31,7 @@ import { getEffectiveEntityId } from '@/auth/utils/context.util';
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
-  @Post('create')
+  @Post()
   @ApiOperation({ summary: 'Create a new item for the entity' })
   @ApiResponse({
     status: 201,

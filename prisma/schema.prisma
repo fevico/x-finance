@@ -269,7 +269,7 @@ model Collection {
   id               String @id @default(cuid())
   name             String 
   slug             String 
-  image            Json 
+  image            Json? 
   description      String 
   visibility       Boolean @default(false)
   featured         Boolean @default(false)

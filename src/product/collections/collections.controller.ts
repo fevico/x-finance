@@ -39,7 +39,7 @@ import { getEffectiveEntityId } from '@/auth/utils/context.util';
 export class CollectionsController {
   constructor(private readonly collectionService: CollectionsService) {}
 
-  @Post('create')
+  @Post()
   @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: 'Create a new collection' })
   @ApiConsumes('multipart/form-data')
