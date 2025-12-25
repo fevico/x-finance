@@ -12,6 +12,8 @@ import { VendorModule } from './purchases/vendor/vendor.module';
 import { ExpensesModule } from './purchases/expenses/expenses.module';
 import { FileuploadModule } from './fileupload/fileupload.module';
 import { BillsModule } from './purchases/bills/bills.module';
+import { ItemsModule } from './product/items/items.module';
+import { CollectionsModule } from './product/collections/collections.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { BillsModule } from './purchases/bills/bills.module';
     ExpensesModule,
     FileuploadModule,
     BillsModule,
+    ItemsModule,
+    CollectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

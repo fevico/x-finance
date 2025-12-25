@@ -34,6 +34,14 @@ export const paymentRecordStatus = {
 export type paymentRecordStatus = (typeof paymentRecordStatus)[keyof typeof paymentRecordStatus]
 
 
+export const ItemsType = {
+  product: 'product',
+  service: 'service'
+} as const
+
+export type ItemsType = (typeof ItemsType)[keyof typeof ItemsType]
+
+
 export const BillStatus = {
   paid: 'paid',
   unpaid: 'unpaid'

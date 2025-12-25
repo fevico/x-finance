@@ -62,6 +62,8 @@ export const ModelName = {
   Bills: 'Bills',
   PaymentRecord: 'PaymentRecord',
   Receipt: 'Receipt',
+  Items: 'Items',
+  Collection: 'Collection',
   Permission: 'Permission'
 } as const
 
@@ -295,6 +297,40 @@ export const ReceiptScalarFieldEnum = {
 } as const
 
 export type ReceiptScalarFieldEnum = (typeof ReceiptScalarFieldEnum)[keyof typeof ReceiptScalarFieldEnum]
+
+
+export const ItemsScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  sku: 'sku',
+  unit: 'unit',
+  description: 'description',
+  sellingPrice: 'sellingPrice',
+  costPrice: 'costPrice',
+  rate: 'rate',
+  taxable: 'taxable',
+  currentStock: 'currentStock',
+  lowStock: 'lowStock',
+  type: 'type',
+  entityId: 'entityId'
+} as const
+
+export type ItemsScalarFieldEnum = (typeof ItemsScalarFieldEnum)[keyof typeof ItemsScalarFieldEnum]
+
+
+export const CollectionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  image: 'image',
+  description: 'description',
+  visibility: 'visibility',
+  featured: 'featured',
+  entityId: 'entityId'
+} as const
+
+export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
 
 
 export const PermissionScalarFieldEnum = {

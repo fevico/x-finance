@@ -73,6 +73,16 @@ export type PaymentRecord = Prisma.PaymentRecordModel
  */
 export type Receipt = Prisma.ReceiptModel
 /**
+ * Model Items
+ * 
+ */
+export type Items = Prisma.ItemsModel
+/**
+ * Model Collection
+ * 
+ */
+export type Collection = Prisma.CollectionModel
+/**
  * Model Permission
  * 
  */

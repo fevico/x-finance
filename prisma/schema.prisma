@@ -58,6 +58,8 @@ model Entity {
   vendor      vendor[]
   expenses    Expenses[]
   bills       Bills[]
+  items       Items[]
+  collection  Collection[]
   @@index([name, taxId, email])
 }
 
@@ -242,6 +244,38 @@ model Receipt {
   @@index([date])
 }
 
+model Items {
+  id            String @id @default(cuid())
+  name          String 
+  category      String 
+  sku           String?
+  unit          String? 
+  description   String
+  sellingPrice  Int?
+  costPrice     Int?
+  rate          Int?
+  taxable       Boolean @default(false)
+  currentStock  Int?
+  lowStock      Int?
+  type          ItemsType @default(product)
+  entityId      String 
+  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId, type])
+}
+
+model Collection {
+  id               String @id @default(cuid())
+  name             String 
+  slug             String 
+  image            Json 
+  description      String 
+  visibility       Boolean @default(false)
+  featured         Boolean @default(false)
+  entityId         String 
+  entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
 model Permission {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -258,6 +292,11 @@ enum systemRole {
 enum paymentRecordStatus {
   pending 
   cleared
+}
+
+enum ItemsType {
+  product 
+  service
 }
 
 enum BillStatus {
