@@ -1722,7 +1722,8 @@ export const ItemsScalarFieldEnum = {
   currentStock: 'currentStock',
   lowStock: 'lowStock',
   type: 'type',
-  entityId: 'entityId'
+  entityId: 'entityId',
+  createdAt: 'createdAt'
 } as const
 
 export type ItemsScalarFieldEnum = (typeof ItemsScalarFieldEnum)[keyof typeof ItemsScalarFieldEnum]
@@ -1736,7 +1737,8 @@ export const CollectionScalarFieldEnum = {
   description: 'description',
   visibility: 'visibility',
   featured: 'featured',
-  entityId: 'entityId'
+  entityId: 'entityId',
+  createdAt: 'createdAt'
 } as const
 
 export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]

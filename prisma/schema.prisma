@@ -260,6 +260,7 @@ model Items {
   type          ItemsType @default(product)
   entityId      String 
   entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
 
   @@index([entityId, type])
 }
@@ -274,6 +275,9 @@ model Collection {
   featured         Boolean @default(false)
   entityId         String 
   entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@index([entityId])
 }
 
 model Permission {
