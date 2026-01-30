@@ -11,9 +11,9 @@ export class CollectionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileuploadService: FileuploadService,
-  ) {}
-
-  async createCollection(
+  ) {} 
+         
+  async createCollection(    
     entityId: string,
     body: CreateCollectionDto,
     file?: Express.Multer.File,
@@ -92,7 +92,7 @@ export class CollectionsService {
       image: c.image === null ? undefined : (c.image as Record<string, any>),
       createdAt:
         c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
-    }));
+    })); 
 
     const totalPages = Math.ceil(total / limit);
 

@@ -14,6 +14,11 @@ import { FileuploadModule } from './fileupload/fileupload.module';
 import { BillsModule } from './purchases/bills/bills.module';
 import { ItemsModule } from './product/items/items.module';
 import { CollectionsModule } from './product/collections/collections.module';
+import { InventoryModule } from './product/inventory/inventory.module';
+// import { AssetModule } from './asset/asset.module';
+import { AccountModule } from './accounts/account/account.module';
+import { JournalModule } from './accounts/journal/journal.module';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -30,6 +35,11 @@ import { CollectionsModule } from './product/collections/collections.module';
     BillsModule,
     ItemsModule,
     CollectionsModule,
+    InventoryModule,
+    // AssetModule,
+    AccountModule,
+    JournalModule,
+    LogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

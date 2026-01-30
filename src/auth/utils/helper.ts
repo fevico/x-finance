@@ -14,6 +14,14 @@ export function generateRandomInvoiceNumber(length: number = 8): string {
   return result;
 }
 
-// Usage example:
-// const invoiceNumber = generateRandomInvoiceNumber();
-// console.log(invoiceNumber); // e.g., "K7M4P9R2"
+
+export function generateJournalReference(prefix: string = 'JRNL'): string {
+  const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
+  const randomPart = Math.random()
+    .toString(36)
+    .substring(2, 8)
+    .toUpperCase();
+
+  return `${prefix}${datePart}${randomPart}`;
+  // Example: JRNL250410K7N4P9
+}

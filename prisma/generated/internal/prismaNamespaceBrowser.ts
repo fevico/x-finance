@@ -64,7 +64,11 @@ export const ModelName = {
   Receipt: 'Receipt',
   Items: 'Items',
   Collection: 'Collection',
-  Permission: 'Permission'
+  Asset: 'Asset',
+  Account: 'Account',
+  Journal: 'Journal',
+  Permission: 'Permission',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -335,6 +339,62 @@ export const CollectionScalarFieldEnum = {
 export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
 
 
+export const AssetScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  department: 'department',
+  assigned: 'assigned',
+  description: 'description',
+  purchaseDate: 'purchaseDate',
+  purchaseCost: 'purchaseCost',
+  currentValue: 'currentValue',
+  expiryDate: 'expiryDate',
+  trackDepreciation: 'trackDepreciation',
+  depreciationMethod: 'depreciationMethod',
+  years: 'years',
+  salvageValue: 'salvageValue',
+  activeAsset: 'activeAsset',
+  status: 'status',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
+
+
+export const AccountScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  category: 'category',
+  subCategory: 'subCategory',
+  description: 'description',
+  type: 'type',
+  balance: 'balance',
+  credit: 'credit',
+  debit: 'debit',
+  date: 'date',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const JournalScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  date: 'date',
+  lines: 'lines',
+  reference: 'reference',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type JournalScalarFieldEnum = (typeof JournalScalarFieldEnum)[keyof typeof JournalScalarFieldEnum]
+
+
 export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -342,6 +402,19 @@ export const PermissionScalarFieldEnum = {
 } as const
 
 export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  ipAddress: 'ipAddress',
+  device: 'device',
+  location: 'location',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -26,6 +26,14 @@ export const systemRole = {
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
 
 
+export const AssetStatus = {
+  in_use: 'in_use',
+  in_storage: 'in_storage'
+} as const
+
+export type AssetStatus = (typeof AssetStatus)[keyof typeof AssetStatus]
+
+
 export const paymentRecordStatus = {
   pending: 'pending',
   cleared: 'cleared'

@@ -60,6 +60,9 @@ model Entity {
   bills       Bills[]
   items       Items[]
   collection  Collection[]
+  asset       Asset[]
+  account     Account[]
+  journal     Journal[]
   @@index([name, taxId, email])
 }
 
@@ -82,6 +85,7 @@ model User {
   entity        Entity?    @relation(fields: [entityId], references: [id])
   group         Group?     @relation(fields: [groupId], references: [id])
   groupRole     GroupRole? @relation(fields: [groupRoleId], references: [id])
+  auditLogs     AuditLog[]
 
   @@unique([provider, providerId])
 }
@@ -280,6 +284,64 @@ model Collection {
   @@index([entityId])
 }
 
+// order .
+
+model Asset {
+  id            String @id @default(cuid())
+  name          String
+  type          String 
+  department    String 
+  assigned      String 
+  description   String 
+  purchaseDate  DateTime
+  purchaseCost  Int
+  currentValue  Int 
+  expiryDate    DateTime 
+  trackDepreciation Boolean @default(false)
+  depreciationMethod String 
+  years             Int 
+  salvageValue      Int 
+  activeAsset       Boolean @default(false)
+  status           AssetStatus @default(in_use)
+  entityId         String 
+  entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@index([id, entityId])
+}
+
+model Account {
+  id            String  @id @default(cuid())
+  name          String 
+  code          String 
+  category      String 
+  subCategory   String 
+  description   String 
+  type          String 
+  balance       Int @default(0)
+  credit        Int?
+  debit         Int?
+  date          DateTime?
+  entityId      String 
+  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@index([id, entityId])
+}
+
+model Journal {
+  id               String @id @default(cuid())
+  description      String 
+  date             DateTime
+  lines            Json
+  reference        String
+  entityId         String 
+  entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@index([id, entityId])
+}
+
 model Permission {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -287,10 +349,30 @@ model Permission {
   groupRoles  GroupRole[] @relation("GroupRoleToPermission")
 }
 
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String  // or clerkId, auth0 id, etc.
+  user       User     @relation(fields: [userId], references: [id])
+  action     String   // "CREATE_JOURNAL", "UPDATE_ENTITY", "DELETE_INVOICE", ...
+  ipAddress String?   @map("ip_address")
+  device    String?
+  location  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
 enum systemRole {
   superadmin
   admin
   user
+}
+
+enum AssetStatus {
+  in_use
+  in_storage
 }
 
 enum paymentRecordStatus {

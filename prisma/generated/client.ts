@@ -103,7 +103,27 @@ export type Items = Prisma.ItemsModel
  */
 export type Collection = Prisma.CollectionModel
 /**
+ * Model Asset
+ * 
+ */
+export type Asset = Prisma.AssetModel
+/**
+ * Model Account
+ * 
+ */
+export type Account = Prisma.AccountModel
+/**
+ * Model Journal
+ * 
+ */
+export type Journal = Prisma.JournalModel
+/**
  * Model Permission
  * 
  */
 export type Permission = Prisma.PermissionModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
