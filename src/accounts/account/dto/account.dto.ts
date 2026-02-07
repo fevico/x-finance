@@ -88,3 +88,11 @@ export class AccountResponseDto {
   @Transform(({ value }) => value.toISOString())
   createdAt: Date;
 }
+
+export class OpeningBalanceDto {
+  lines: {
+    accountId: string;
+    debit: number;
+    credit: number;
+  }[];
+}

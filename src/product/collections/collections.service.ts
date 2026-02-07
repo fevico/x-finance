@@ -10,7 +10,7 @@ import { Prisma } from '@prisma/client';
 export class CollectionsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fileuploadService: FileuploadService,
+    private readonly fileuploadService: FileuploadService,  
   ) {} 
          
   async createCollection(    

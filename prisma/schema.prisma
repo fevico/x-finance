@@ -63,6 +63,9 @@ model Entity {
   asset       Asset[]
   account     Account[]
   journal     Journal[]
+  budget      Budget[]
+  employee    Employee[]
+  attendance  Attendance[]
   @@index([name, taxId, email])
 }
 
@@ -322,6 +325,7 @@ model Account {
   credit        Int?
   debit         Int?
   date          DateTime?
+  budget        Budget[]
   entityId      String 
   entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
@@ -340,6 +344,75 @@ model Journal {
   createdAt        DateTime @default(now())
 
   @@index([id, entityId])
+}
+
+model Budget {
+  id            String  @id @default(cuid())
+  name          String 
+  amount        Int 
+  periodType   String 
+  month        String
+  fiscalYear    String
+  note          String?
+  accountId     String 
+  account       Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  entityId      String
+  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  @@index([entityId])
+}
+
+model Employee {
+  id              String  @id @default(cuid())
+  firstName       String
+  lastName        String  
+  email           String @unique
+  phoneNumber     String
+  dateOfBirth    DateTime 
+  employeeId      String @unique
+  department      String
+  position        String
+  profileImage   Json?
+  employmentType String
+  dateOfHire     DateTime
+  reportingManager String
+  anualLeave       Int
+  salary          Int
+  allowances      Int
+  status          EmployeeStatus @default(Active)
+  perFrequency    String
+  currency        String
+  bankName        String 
+  acountType      String 
+  accountNumber   String 
+  routingNumber   String
+  addressInfo     Json?
+  emergencyContact Json?
+  note             String?
+  asdraft           Boolean @default(false)
+  attendance       Attendance[]
+  entityId        String
+  entity          Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@index([employeeId, email, entityId])
+}
+
+model Attendance {
+  id            String  @id @default(cuid())
+  employeeId    String
+  employe       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date          DateTime
+  status        String
+  checkInTime   DateTime?
+  checkOutTime  DateTime?
+  notes         String?
+  asdraft        Boolean @default(false)
+  entityId      String
+  entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@index([employeeId, entityId, date])
 }
 
 model Permission {
@@ -368,6 +441,12 @@ enum systemRole {
   superadmin
   admin
   user
+}
+
+enum EmployeeStatus {
+  Active
+  Inactive
+  On_Leave
 }
 
 enum AssetStatus {

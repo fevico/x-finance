@@ -67,6 +67,9 @@ export const ModelName = {
   Asset: 'Asset',
   Account: 'Account',
   Journal: 'Journal',
+  Budget: 'Budget',
+  Employee: 'Employee',
+  Attendance: 'Attendance',
   Permission: 'Permission',
   AuditLog: 'AuditLog'
 } as const
@@ -393,6 +396,73 @@ export const JournalScalarFieldEnum = {
 } as const
 
 export type JournalScalarFieldEnum = (typeof JournalScalarFieldEnum)[keyof typeof JournalScalarFieldEnum]
+
+
+export const BudgetScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  amount: 'amount',
+  periodType: 'periodType',
+  month: 'month',
+  fiscalYear: 'fiscalYear',
+  note: 'note',
+  accountId: 'accountId',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof BudgetScalarFieldEnum]
+
+
+export const EmployeeScalarFieldEnum = {
+  id: 'id',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'email',
+  phoneNumber: 'phoneNumber',
+  dateOfBirth: 'dateOfBirth',
+  employeeId: 'employeeId',
+  department: 'department',
+  position: 'position',
+  profileImage: 'profileImage',
+  employmentType: 'employmentType',
+  dateOfHire: 'dateOfHire',
+  reportingManager: 'reportingManager',
+  anualLeave: 'anualLeave',
+  salary: 'salary',
+  allowances: 'allowances',
+  status: 'status',
+  perFrequency: 'perFrequency',
+  currency: 'currency',
+  bankName: 'bankName',
+  acountType: 'acountType',
+  accountNumber: 'accountNumber',
+  routingNumber: 'routingNumber',
+  addressInfo: 'addressInfo',
+  emergencyContact: 'emergencyContact',
+  note: 'note',
+  asdraft: 'asdraft',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
+
+
+export const AttendanceScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  date: 'date',
+  status: 'status',
+  checkInTime: 'checkInTime',
+  checkOutTime: 'checkOutTime',
+  notes: 'notes',
+  asdraft: 'asdraft',
+  entityId: 'entityId',
+  createdAt: 'createdAt'
+} as const
+
+export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
 
 
 export const PermissionScalarFieldEnum = {

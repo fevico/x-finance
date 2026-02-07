@@ -26,6 +26,15 @@ export const systemRole = {
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
 
 
+export const EmployeeStatus = {
+  Active: 'Active',
+  Inactive: 'Inactive',
+  On_Leave: 'On_Leave'
+} as const
+
+export type EmployeeStatus = (typeof EmployeeStatus)[keyof typeof EmployeeStatus]
+
+
 export const AssetStatus = {
   in_use: 'in_use',
   in_storage: 'in_storage'

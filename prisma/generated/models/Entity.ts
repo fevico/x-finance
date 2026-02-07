@@ -275,6 +275,9 @@ export type EntityWhereInput = {
   asset?: Prisma.AssetListRelationFilter
   account?: Prisma.AccountListRelationFilter
   journal?: Prisma.JournalListRelationFilter
+  budget?: Prisma.BudgetListRelationFilter
+  employee?: Prisma.EmployeeListRelationFilter
+  attendance?: Prisma.AttendanceListRelationFilter
 }
 
 export type EntityOrderByWithRelationInput = {
@@ -306,6 +309,9 @@ export type EntityOrderByWithRelationInput = {
   asset?: Prisma.AssetOrderByRelationAggregateInput
   account?: Prisma.AccountOrderByRelationAggregateInput
   journal?: Prisma.JournalOrderByRelationAggregateInput
+  budget?: Prisma.BudgetOrderByRelationAggregateInput
+  employee?: Prisma.EmployeeOrderByRelationAggregateInput
+  attendance?: Prisma.AttendanceOrderByRelationAggregateInput
 }
 
 export type EntityWhereUniqueInput = Prisma.AtLeast<{
@@ -340,6 +346,9 @@ export type EntityWhereUniqueInput = Prisma.AtLeast<{
   asset?: Prisma.AssetListRelationFilter
   account?: Prisma.AccountListRelationFilter
   journal?: Prisma.JournalListRelationFilter
+  budget?: Prisma.BudgetListRelationFilter
+  employee?: Prisma.EmployeeListRelationFilter
+  attendance?: Prisma.AttendanceListRelationFilter
 }, "id" | "name" | "email">
 
 export type EntityOrderByWithAggregationInput = {
@@ -412,6 +421,9 @@ export type EntityCreateInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateInput = {
@@ -442,6 +454,9 @@ export type EntityUncheckedCreateInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUpdateInput = {
@@ -472,6 +487,9 @@ export type EntityUpdateInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateInput = {
@@ -502,6 +520,9 @@ export type EntityUncheckedUpdateInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateManyInput = {
@@ -843,6 +864,48 @@ export type EntityUpdateOneRequiredWithoutJournalNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutJournalInput, Prisma.EntityUpdateWithoutJournalInput>, Prisma.EntityUncheckedUpdateWithoutJournalInput>
 }
 
+export type EntityCreateNestedOneWithoutBudgetInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutBudgetInput, Prisma.EntityUncheckedCreateWithoutBudgetInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutBudgetInput
+  connect?: Prisma.EntityWhereUniqueInput
+}
+
+export type EntityUpdateOneRequiredWithoutBudgetNestedInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutBudgetInput, Prisma.EntityUncheckedCreateWithoutBudgetInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutBudgetInput
+  upsert?: Prisma.EntityUpsertWithoutBudgetInput
+  connect?: Prisma.EntityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutBudgetInput, Prisma.EntityUpdateWithoutBudgetInput>, Prisma.EntityUncheckedUpdateWithoutBudgetInput>
+}
+
+export type EntityCreateNestedOneWithoutEmployeeInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutEmployeeInput, Prisma.EntityUncheckedCreateWithoutEmployeeInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutEmployeeInput
+  connect?: Prisma.EntityWhereUniqueInput
+}
+
+export type EntityUpdateOneRequiredWithoutEmployeeNestedInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutEmployeeInput, Prisma.EntityUncheckedCreateWithoutEmployeeInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutEmployeeInput
+  upsert?: Prisma.EntityUpsertWithoutEmployeeInput
+  connect?: Prisma.EntityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutEmployeeInput, Prisma.EntityUpdateWithoutEmployeeInput>, Prisma.EntityUncheckedUpdateWithoutEmployeeInput>
+}
+
+export type EntityCreateNestedOneWithoutAttendanceInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutAttendanceInput, Prisma.EntityUncheckedCreateWithoutAttendanceInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutAttendanceInput
+  connect?: Prisma.EntityWhereUniqueInput
+}
+
+export type EntityUpdateOneRequiredWithoutAttendanceNestedInput = {
+  create?: Prisma.XOR<Prisma.EntityCreateWithoutAttendanceInput, Prisma.EntityUncheckedCreateWithoutAttendanceInput>
+  connectOrCreate?: Prisma.EntityCreateOrConnectWithoutAttendanceInput
+  upsert?: Prisma.EntityUpsertWithoutAttendanceInput
+  connect?: Prisma.EntityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EntityUpdateToOneWithWhereWithoutAttendanceInput, Prisma.EntityUpdateWithoutAttendanceInput>, Prisma.EntityUncheckedUpdateWithoutAttendanceInput>
+}
+
 export type EntityCreateWithoutGroupInput = {
   id?: string
   name: string
@@ -870,6 +933,9 @@ export type EntityCreateWithoutGroupInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutGroupInput = {
@@ -899,6 +965,9 @@ export type EntityUncheckedCreateWithoutGroupInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutGroupInput = {
@@ -975,6 +1044,9 @@ export type EntityCreateWithoutUsersInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutUsersInput = {
@@ -1004,6 +1076,9 @@ export type EntityUncheckedCreateWithoutUsersInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutUsersInput = {
@@ -1049,6 +1124,9 @@ export type EntityUpdateWithoutUsersInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutUsersInput = {
@@ -1078,6 +1156,9 @@ export type EntityUncheckedUpdateWithoutUsersInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutCustomerInput = {
@@ -1107,6 +1188,9 @@ export type EntityCreateWithoutCustomerInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutCustomerInput = {
@@ -1136,6 +1220,9 @@ export type EntityUncheckedCreateWithoutCustomerInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutCustomerInput = {
@@ -1181,6 +1268,9 @@ export type EntityUpdateWithoutCustomerInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutCustomerInput = {
@@ -1210,6 +1300,9 @@ export type EntityUncheckedUpdateWithoutCustomerInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutInvoiceInput = {
@@ -1239,6 +1332,9 @@ export type EntityCreateWithoutInvoiceInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutInvoiceInput = {
@@ -1268,6 +1364,9 @@ export type EntityUncheckedCreateWithoutInvoiceInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutInvoiceInput = {
@@ -1313,6 +1412,9 @@ export type EntityUpdateWithoutInvoiceInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutInvoiceInput = {
@@ -1342,6 +1444,9 @@ export type EntityUncheckedUpdateWithoutInvoiceInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutVendorInput = {
@@ -1371,6 +1476,9 @@ export type EntityCreateWithoutVendorInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutVendorInput = {
@@ -1400,6 +1508,9 @@ export type EntityUncheckedCreateWithoutVendorInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutVendorInput = {
@@ -1445,6 +1556,9 @@ export type EntityUpdateWithoutVendorInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutVendorInput = {
@@ -1474,6 +1588,9 @@ export type EntityUncheckedUpdateWithoutVendorInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutExpensesInput = {
@@ -1503,6 +1620,9 @@ export type EntityCreateWithoutExpensesInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutExpensesInput = {
@@ -1532,6 +1652,9 @@ export type EntityUncheckedCreateWithoutExpensesInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutExpensesInput = {
@@ -1577,6 +1700,9 @@ export type EntityUpdateWithoutExpensesInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutExpensesInput = {
@@ -1606,6 +1732,9 @@ export type EntityUncheckedUpdateWithoutExpensesInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutBillsInput = {
@@ -1635,6 +1764,9 @@ export type EntityCreateWithoutBillsInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutBillsInput = {
@@ -1664,6 +1796,9 @@ export type EntityUncheckedCreateWithoutBillsInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutBillsInput = {
@@ -1709,6 +1844,9 @@ export type EntityUpdateWithoutBillsInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutBillsInput = {
@@ -1738,6 +1876,9 @@ export type EntityUncheckedUpdateWithoutBillsInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutReceiptInput = {
@@ -1767,6 +1908,9 @@ export type EntityCreateWithoutReceiptInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutReceiptInput = {
@@ -1796,6 +1940,9 @@ export type EntityUncheckedCreateWithoutReceiptInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutReceiptInput = {
@@ -1841,6 +1988,9 @@ export type EntityUpdateWithoutReceiptInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutReceiptInput = {
@@ -1870,6 +2020,9 @@ export type EntityUncheckedUpdateWithoutReceiptInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutItemsInput = {
@@ -1899,6 +2052,9 @@ export type EntityCreateWithoutItemsInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutItemsInput = {
@@ -1928,6 +2084,9 @@ export type EntityUncheckedCreateWithoutItemsInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutItemsInput = {
@@ -1973,6 +2132,9 @@ export type EntityUpdateWithoutItemsInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutItemsInput = {
@@ -2002,6 +2164,9 @@ export type EntityUncheckedUpdateWithoutItemsInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutCollectionInput = {
@@ -2031,6 +2196,9 @@ export type EntityCreateWithoutCollectionInput = {
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutCollectionInput = {
@@ -2060,6 +2228,9 @@ export type EntityUncheckedCreateWithoutCollectionInput = {
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutCollectionInput = {
@@ -2105,6 +2276,9 @@ export type EntityUpdateWithoutCollectionInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutCollectionInput = {
@@ -2134,6 +2308,9 @@ export type EntityUncheckedUpdateWithoutCollectionInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutAssetInput = {
@@ -2163,6 +2340,9 @@ export type EntityCreateWithoutAssetInput = {
   collection?: Prisma.CollectionCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutAssetInput = {
@@ -2192,6 +2372,9 @@ export type EntityUncheckedCreateWithoutAssetInput = {
   collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutAssetInput = {
@@ -2237,6 +2420,9 @@ export type EntityUpdateWithoutAssetInput = {
   collection?: Prisma.CollectionUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutAssetInput = {
@@ -2266,6 +2452,9 @@ export type EntityUncheckedUpdateWithoutAssetInput = {
   collection?: Prisma.CollectionUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutAccountInput = {
@@ -2295,6 +2484,9 @@ export type EntityCreateWithoutAccountInput = {
   collection?: Prisma.CollectionCreateNestedManyWithoutEntityInput
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutAccountInput = {
@@ -2324,6 +2516,9 @@ export type EntityUncheckedCreateWithoutAccountInput = {
   collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutEntityInput
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutAccountInput = {
@@ -2369,6 +2564,9 @@ export type EntityUpdateWithoutAccountInput = {
   collection?: Prisma.CollectionUpdateManyWithoutEntityNestedInput
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutAccountInput = {
@@ -2398,6 +2596,9 @@ export type EntityUncheckedUpdateWithoutAccountInput = {
   collection?: Prisma.CollectionUncheckedUpdateManyWithoutEntityNestedInput
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateWithoutJournalInput = {
@@ -2427,6 +2628,9 @@ export type EntityCreateWithoutJournalInput = {
   collection?: Prisma.CollectionCreateNestedManyWithoutEntityInput
   asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
 }
 
 export type EntityUncheckedCreateWithoutJournalInput = {
@@ -2456,6 +2660,9 @@ export type EntityUncheckedCreateWithoutJournalInput = {
   collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutEntityInput
   asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
   account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
 }
 
 export type EntityCreateOrConnectWithoutJournalInput = {
@@ -2501,6 +2708,9 @@ export type EntityUpdateWithoutJournalInput = {
   collection?: Prisma.CollectionUpdateManyWithoutEntityNestedInput
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutJournalInput = {
@@ -2530,6 +2740,441 @@ export type EntityUncheckedUpdateWithoutJournalInput = {
   collection?: Prisma.CollectionUncheckedUpdateManyWithoutEntityNestedInput
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityCreateWithoutBudgetInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  currency?: string | null
+  email?: string | null
+  legalName?: string | null
+  phoneNumber?: string | null
+  postalCode?: string | null
+  state?: string | null
+  taxId?: string | null
+  website?: string | null
+  yearEnd?: string | null
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+  group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
+  users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  receipt?: Prisma.ReceiptCreateNestedManyWithoutEntityInput
+  vendor?: Prisma.vendorCreateNestedManyWithoutEntityInput
+  expenses?: Prisma.ExpensesCreateNestedManyWithoutEntityInput
+  bills?: Prisma.BillsCreateNestedManyWithoutEntityInput
+  items?: Prisma.ItemsCreateNestedManyWithoutEntityInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutEntityInput
+  asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
+  account?: Prisma.AccountCreateNestedManyWithoutEntityInput
+  journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
+}
+
+export type EntityUncheckedCreateWithoutBudgetInput = {
+  id?: string
+  name: string
+  groupId: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  currency?: string | null
+  email?: string | null
+  legalName?: string | null
+  phoneNumber?: string | null
+  postalCode?: string | null
+  state?: string | null
+  taxId?: string | null
+  website?: string | null
+  yearEnd?: string | null
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutEntityInput
+  vendor?: Prisma.vendorUncheckedCreateNestedManyWithoutEntityInput
+  expenses?: Prisma.ExpensesUncheckedCreateNestedManyWithoutEntityInput
+  bills?: Prisma.BillsUncheckedCreateNestedManyWithoutEntityInput
+  items?: Prisma.ItemsUncheckedCreateNestedManyWithoutEntityInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutEntityInput
+  asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
+  account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
+  journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
+}
+
+export type EntityCreateOrConnectWithoutBudgetInput = {
+  where: Prisma.EntityWhereUniqueInput
+  create: Prisma.XOR<Prisma.EntityCreateWithoutBudgetInput, Prisma.EntityUncheckedCreateWithoutBudgetInput>
+}
+
+export type EntityUpsertWithoutBudgetInput = {
+  update: Prisma.XOR<Prisma.EntityUpdateWithoutBudgetInput, Prisma.EntityUncheckedUpdateWithoutBudgetInput>
+  create: Prisma.XOR<Prisma.EntityCreateWithoutBudgetInput, Prisma.EntityUncheckedCreateWithoutBudgetInput>
+  where?: Prisma.EntityWhereInput
+}
+
+export type EntityUpdateToOneWithWhereWithoutBudgetInput = {
+  where?: Prisma.EntityWhereInput
+  data: Prisma.XOR<Prisma.EntityUpdateWithoutBudgetInput, Prisma.EntityUncheckedUpdateWithoutBudgetInput>
+}
+
+export type EntityUpdateWithoutBudgetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+  group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
+  users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  receipt?: Prisma.ReceiptUpdateManyWithoutEntityNestedInput
+  vendor?: Prisma.vendorUpdateManyWithoutEntityNestedInput
+  expenses?: Prisma.ExpensesUpdateManyWithoutEntityNestedInput
+  bills?: Prisma.BillsUpdateManyWithoutEntityNestedInput
+  items?: Prisma.ItemsUpdateManyWithoutEntityNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutEntityNestedInput
+  asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
+  account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
+  journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityUncheckedUpdateWithoutBudgetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutEntityNestedInput
+  vendor?: Prisma.vendorUncheckedUpdateManyWithoutEntityNestedInput
+  expenses?: Prisma.ExpensesUncheckedUpdateManyWithoutEntityNestedInput
+  bills?: Prisma.BillsUncheckedUpdateManyWithoutEntityNestedInput
+  items?: Prisma.ItemsUncheckedUpdateManyWithoutEntityNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutEntityNestedInput
+  asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
+  account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
+  journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityCreateWithoutEmployeeInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  currency?: string | null
+  email?: string | null
+  legalName?: string | null
+  phoneNumber?: string | null
+  postalCode?: string | null
+  state?: string | null
+  taxId?: string | null
+  website?: string | null
+  yearEnd?: string | null
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+  group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
+  users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  receipt?: Prisma.ReceiptCreateNestedManyWithoutEntityInput
+  vendor?: Prisma.vendorCreateNestedManyWithoutEntityInput
+  expenses?: Prisma.ExpensesCreateNestedManyWithoutEntityInput
+  bills?: Prisma.BillsCreateNestedManyWithoutEntityInput
+  items?: Prisma.ItemsCreateNestedManyWithoutEntityInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutEntityInput
+  asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
+  account?: Prisma.AccountCreateNestedManyWithoutEntityInput
+  journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutEntityInput
+}
+
+export type EntityUncheckedCreateWithoutEmployeeInput = {
+  id?: string
+  name: string
+  groupId: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  currency?: string | null
+  email?: string | null
+  legalName?: string | null
+  phoneNumber?: string | null
+  postalCode?: string | null
+  state?: string | null
+  taxId?: string | null
+  website?: string | null
+  yearEnd?: string | null
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutEntityInput
+  vendor?: Prisma.vendorUncheckedCreateNestedManyWithoutEntityInput
+  expenses?: Prisma.ExpensesUncheckedCreateNestedManyWithoutEntityInput
+  bills?: Prisma.BillsUncheckedCreateNestedManyWithoutEntityInput
+  items?: Prisma.ItemsUncheckedCreateNestedManyWithoutEntityInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutEntityInput
+  asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
+  account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
+  journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutEntityInput
+}
+
+export type EntityCreateOrConnectWithoutEmployeeInput = {
+  where: Prisma.EntityWhereUniqueInput
+  create: Prisma.XOR<Prisma.EntityCreateWithoutEmployeeInput, Prisma.EntityUncheckedCreateWithoutEmployeeInput>
+}
+
+export type EntityUpsertWithoutEmployeeInput = {
+  update: Prisma.XOR<Prisma.EntityUpdateWithoutEmployeeInput, Prisma.EntityUncheckedUpdateWithoutEmployeeInput>
+  create: Prisma.XOR<Prisma.EntityCreateWithoutEmployeeInput, Prisma.EntityUncheckedCreateWithoutEmployeeInput>
+  where?: Prisma.EntityWhereInput
+}
+
+export type EntityUpdateToOneWithWhereWithoutEmployeeInput = {
+  where?: Prisma.EntityWhereInput
+  data: Prisma.XOR<Prisma.EntityUpdateWithoutEmployeeInput, Prisma.EntityUncheckedUpdateWithoutEmployeeInput>
+}
+
+export type EntityUpdateWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+  group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
+  users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  receipt?: Prisma.ReceiptUpdateManyWithoutEntityNestedInput
+  vendor?: Prisma.vendorUpdateManyWithoutEntityNestedInput
+  expenses?: Prisma.ExpensesUpdateManyWithoutEntityNestedInput
+  bills?: Prisma.BillsUpdateManyWithoutEntityNestedInput
+  items?: Prisma.ItemsUpdateManyWithoutEntityNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutEntityNestedInput
+  asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
+  account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
+  journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityUncheckedUpdateWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutEntityNestedInput
+  vendor?: Prisma.vendorUncheckedUpdateManyWithoutEntityNestedInput
+  expenses?: Prisma.ExpensesUncheckedUpdateManyWithoutEntityNestedInput
+  bills?: Prisma.BillsUncheckedUpdateManyWithoutEntityNestedInput
+  items?: Prisma.ItemsUncheckedUpdateManyWithoutEntityNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutEntityNestedInput
+  asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
+  account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
+  journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityCreateWithoutAttendanceInput = {
+  id?: string
+  name: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  currency?: string | null
+  email?: string | null
+  legalName?: string | null
+  phoneNumber?: string | null
+  postalCode?: string | null
+  state?: string | null
+  taxId?: string | null
+  website?: string | null
+  yearEnd?: string | null
+  customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
+  group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
+  invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
+  users?: Prisma.UserCreateNestedManyWithoutEntityInput
+  receipt?: Prisma.ReceiptCreateNestedManyWithoutEntityInput
+  vendor?: Prisma.vendorCreateNestedManyWithoutEntityInput
+  expenses?: Prisma.ExpensesCreateNestedManyWithoutEntityInput
+  bills?: Prisma.BillsCreateNestedManyWithoutEntityInput
+  items?: Prisma.ItemsCreateNestedManyWithoutEntityInput
+  collection?: Prisma.CollectionCreateNestedManyWithoutEntityInput
+  asset?: Prisma.AssetCreateNestedManyWithoutEntityInput
+  account?: Prisma.AccountCreateNestedManyWithoutEntityInput
+  journal?: Prisma.JournalCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeCreateNestedManyWithoutEntityInput
+}
+
+export type EntityUncheckedCreateWithoutAttendanceInput = {
+  id?: string
+  name: string
+  groupId: string
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  currency?: string | null
+  email?: string | null
+  legalName?: string | null
+  phoneNumber?: string | null
+  postalCode?: string | null
+  state?: string | null
+  taxId?: string | null
+  website?: string | null
+  yearEnd?: string | null
+  customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
+  invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
+  receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutEntityInput
+  vendor?: Prisma.vendorUncheckedCreateNestedManyWithoutEntityInput
+  expenses?: Prisma.ExpensesUncheckedCreateNestedManyWithoutEntityInput
+  bills?: Prisma.BillsUncheckedCreateNestedManyWithoutEntityInput
+  items?: Prisma.ItemsUncheckedCreateNestedManyWithoutEntityInput
+  collection?: Prisma.CollectionUncheckedCreateNestedManyWithoutEntityInput
+  asset?: Prisma.AssetUncheckedCreateNestedManyWithoutEntityInput
+  account?: Prisma.AccountUncheckedCreateNestedManyWithoutEntityInput
+  journal?: Prisma.JournalUncheckedCreateNestedManyWithoutEntityInput
+  budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutEntityInput
+  employee?: Prisma.EmployeeUncheckedCreateNestedManyWithoutEntityInput
+}
+
+export type EntityCreateOrConnectWithoutAttendanceInput = {
+  where: Prisma.EntityWhereUniqueInput
+  create: Prisma.XOR<Prisma.EntityCreateWithoutAttendanceInput, Prisma.EntityUncheckedCreateWithoutAttendanceInput>
+}
+
+export type EntityUpsertWithoutAttendanceInput = {
+  update: Prisma.XOR<Prisma.EntityUpdateWithoutAttendanceInput, Prisma.EntityUncheckedUpdateWithoutAttendanceInput>
+  create: Prisma.XOR<Prisma.EntityCreateWithoutAttendanceInput, Prisma.EntityUncheckedCreateWithoutAttendanceInput>
+  where?: Prisma.EntityWhereInput
+}
+
+export type EntityUpdateToOneWithWhereWithoutAttendanceInput = {
+  where?: Prisma.EntityWhereInput
+  data: Prisma.XOR<Prisma.EntityUpdateWithoutAttendanceInput, Prisma.EntityUncheckedUpdateWithoutAttendanceInput>
+}
+
+export type EntityUpdateWithoutAttendanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
+  group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
+  invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
+  users?: Prisma.UserUpdateManyWithoutEntityNestedInput
+  receipt?: Prisma.ReceiptUpdateManyWithoutEntityNestedInput
+  vendor?: Prisma.vendorUpdateManyWithoutEntityNestedInput
+  expenses?: Prisma.ExpensesUpdateManyWithoutEntityNestedInput
+  bills?: Prisma.BillsUpdateManyWithoutEntityNestedInput
+  items?: Prisma.ItemsUpdateManyWithoutEntityNestedInput
+  collection?: Prisma.CollectionUpdateManyWithoutEntityNestedInput
+  asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
+  account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
+  journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+}
+
+export type EntityUncheckedUpdateWithoutAttendanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  legalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
+  invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
+  receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutEntityNestedInput
+  vendor?: Prisma.vendorUncheckedUpdateManyWithoutEntityNestedInput
+  expenses?: Prisma.ExpensesUncheckedUpdateManyWithoutEntityNestedInput
+  bills?: Prisma.BillsUncheckedUpdateManyWithoutEntityNestedInput
+  items?: Prisma.ItemsUncheckedUpdateManyWithoutEntityNestedInput
+  collection?: Prisma.CollectionUncheckedUpdateManyWithoutEntityNestedInput
+  asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
+  account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
+  journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityCreateManyGroupInput = {
@@ -2576,6 +3221,9 @@ export type EntityUpdateWithoutGroupInput = {
   asset?: Prisma.AssetUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateWithoutGroupInput = {
@@ -2605,6 +3253,9 @@ export type EntityUncheckedUpdateWithoutGroupInput = {
   asset?: Prisma.AssetUncheckedUpdateManyWithoutEntityNestedInput
   account?: Prisma.AccountUncheckedUpdateManyWithoutEntityNestedInput
   journal?: Prisma.JournalUncheckedUpdateManyWithoutEntityNestedInput
+  budget?: Prisma.BudgetUncheckedUpdateManyWithoutEntityNestedInput
+  employee?: Prisma.EmployeeUncheckedUpdateManyWithoutEntityNestedInput
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutEntityNestedInput
 }
 
 export type EntityUncheckedUpdateManyWithoutGroupInput = {
@@ -2642,6 +3293,9 @@ export type EntityCountOutputType = {
   asset: number
   account: number
   journal: number
+  budget: number
+  employee: number
+  attendance: number
 }
 
 export type EntityCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2657,6 +3311,9 @@ export type EntityCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   asset?: boolean | EntityCountOutputTypeCountAssetArgs
   account?: boolean | EntityCountOutputTypeCountAccountArgs
   journal?: boolean | EntityCountOutputTypeCountJournalArgs
+  budget?: boolean | EntityCountOutputTypeCountBudgetArgs
+  employee?: boolean | EntityCountOutputTypeCountEmployeeArgs
+  attendance?: boolean | EntityCountOutputTypeCountAttendanceArgs
 }
 
 /**
@@ -2753,6 +3410,27 @@ export type EntityCountOutputTypeCountJournalArgs<ExtArgs extends runtime.Types.
   where?: Prisma.JournalWhereInput
 }
 
+/**
+ * EntityCountOutputType without action
+ */
+export type EntityCountOutputTypeCountBudgetArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BudgetWhereInput
+}
+
+/**
+ * EntityCountOutputType without action
+ */
+export type EntityCountOutputTypeCountEmployeeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EmployeeWhereInput
+}
+
+/**
+ * EntityCountOutputType without action
+ */
+export type EntityCountOutputTypeCountAttendanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AttendanceWhereInput
+}
+
 
 export type EntitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2783,6 +3461,9 @@ export type EntitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   asset?: boolean | Prisma.Entity$assetArgs<ExtArgs>
   account?: boolean | Prisma.Entity$accountArgs<ExtArgs>
   journal?: boolean | Prisma.Entity$journalArgs<ExtArgs>
+  budget?: boolean | Prisma.Entity$budgetArgs<ExtArgs>
+  employee?: boolean | Prisma.Entity$employeeArgs<ExtArgs>
+  attendance?: boolean | Prisma.Entity$attendanceArgs<ExtArgs>
   _count?: boolean | Prisma.EntityCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["entity"]>
 
@@ -2857,6 +3538,9 @@ export type EntityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   asset?: boolean | Prisma.Entity$assetArgs<ExtArgs>
   account?: boolean | Prisma.Entity$accountArgs<ExtArgs>
   journal?: boolean | Prisma.Entity$journalArgs<ExtArgs>
+  budget?: boolean | Prisma.Entity$budgetArgs<ExtArgs>
+  employee?: boolean | Prisma.Entity$employeeArgs<ExtArgs>
+  attendance?: boolean | Prisma.Entity$attendanceArgs<ExtArgs>
   _count?: boolean | Prisma.EntityCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EntityIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2882,6 +3566,9 @@ export type $EntityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     asset: Prisma.$AssetPayload<ExtArgs>[]
     account: Prisma.$AccountPayload<ExtArgs>[]
     journal: Prisma.$JournalPayload<ExtArgs>[]
+    budget: Prisma.$BudgetPayload<ExtArgs>[]
+    employee: Prisma.$EmployeePayload<ExtArgs>[]
+    attendance: Prisma.$AttendancePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3306,6 +3993,9 @@ export interface Prisma__EntityClient<T, Null = never, ExtArgs extends runtime.T
   asset<T extends Prisma.Entity$assetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$assetArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   account<T extends Prisma.Entity$accountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$accountArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   journal<T extends Prisma.Entity$journalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$journalArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JournalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  budget<T extends Prisma.Entity$budgetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$budgetArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  employee<T extends Prisma.Entity$employeeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$employeeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmployeePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  attendance<T extends Prisma.Entity$attendanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Entity$attendanceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4031,6 +4721,78 @@ export type Entity$journalArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.JournalScalarFieldEnum | Prisma.JournalScalarFieldEnum[]
+}
+
+/**
+ * Entity.budget
+ */
+export type Entity$budgetArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Budget
+   */
+  select?: Prisma.BudgetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Budget
+   */
+  omit?: Prisma.BudgetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BudgetInclude<ExtArgs> | null
+  where?: Prisma.BudgetWhereInput
+  orderBy?: Prisma.BudgetOrderByWithRelationInput | Prisma.BudgetOrderByWithRelationInput[]
+  cursor?: Prisma.BudgetWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BudgetScalarFieldEnum | Prisma.BudgetScalarFieldEnum[]
+}
+
+/**
+ * Entity.employee
+ */
+export type Entity$employeeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null
+  where?: Prisma.EmployeeWhereInput
+  orderBy?: Prisma.EmployeeOrderByWithRelationInput | Prisma.EmployeeOrderByWithRelationInput[]
+  cursor?: Prisma.EmployeeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EmployeeScalarFieldEnum | Prisma.EmployeeScalarFieldEnum[]
+}
+
+/**
+ * Entity.attendance
+ */
+export type Entity$attendanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Attendance
+   */
+  select?: Prisma.AttendanceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Attendance
+   */
+  omit?: Prisma.AttendanceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AttendanceInclude<ExtArgs> | null
+  where?: Prisma.AttendanceWhereInput
+  orderBy?: Prisma.AttendanceOrderByWithRelationInput | Prisma.AttendanceOrderByWithRelationInput[]
+  cursor?: Prisma.AttendanceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AttendanceScalarFieldEnum | Prisma.AttendanceScalarFieldEnum[]
 }
 
 /**

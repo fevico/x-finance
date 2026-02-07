@@ -98,6 +98,21 @@ export type Account = Prisma.AccountModel
  */
 export type Journal = Prisma.JournalModel
 /**
+ * Model Budget
+ * 
+ */
+export type Budget = Prisma.BudgetModel
+/**
+ * Model Employee
+ * 
+ */
+export type Employee = Prisma.EmployeeModel
+/**
+ * Model Attendance
+ * 
+ */
+export type Attendance = Prisma.AttendanceModel
+/**
  * Model Permission
  * 
  */

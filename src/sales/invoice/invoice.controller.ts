@@ -41,7 +41,7 @@ export class InvoiceController {
     return this.invoiceService.createInvoice(body, entityId);
   }
 
-  @Get()
+  @Get() 
   @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get invoices for an entity (with pagination & filters)',
