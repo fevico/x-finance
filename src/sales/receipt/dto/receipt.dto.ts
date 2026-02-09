@@ -45,7 +45,7 @@ export class UpdateReceiptDto {
   @ApiPropertyOptional({ example: 'Jane Doe', description: 'Customer name' })
   @IsOptional()
   @IsString()
-  customerName?: string;
+  customerId?: string;
 
   @ApiPropertyOptional({
     example: '2025-12-18T00:00:00Z',

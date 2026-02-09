@@ -22,6 +22,7 @@ import { LogModule } from './log/log.module';
 import { BudgetModule } from './accounts/budget/budget.module';
 import { AttendanceModule } from './hr-payroll/attendance/attendance.module';
 import { EmployeeModule } from './hr-payroll/employee/employee.module';
+import { BullmqModule } from './bullmq/bullmq.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { EmployeeModule } from './hr-payroll/employee/employee.module';
     BudgetModule,
     AttendanceModule,
     EmployeeModule,
+    BullmqModule,
   ],
   controllers: [AppController],
   providers: [AppService],

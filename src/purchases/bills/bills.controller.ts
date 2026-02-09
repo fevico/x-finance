@@ -44,7 +44,7 @@ export class BillsController {
   @UseInterceptors(FileInterceptor('attachment'))
   @ApiOperation({ summary: 'Create a new bill' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
+  @ApiBody({ 
     schema: {
       type: 'object',
       properties: {
@@ -116,7 +116,7 @@ export class BillsController {
       throw new BadRequestException('Entity ID is required');
     }
 
-    return this.billsService.createBill(body, entityId, file);
+    return this.billsService.createBill({...body, total: body.total ? Number(body.total) : 0}, entityId, file);
   }
 
   @Get()

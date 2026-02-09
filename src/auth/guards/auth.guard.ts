@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    req.user = mainPayload as Request['user'];
+    req.user = mainPayload as Request['user']; 
 
     // Group impersonation
     const groupToken: string | undefined = req.cookies?.['xf_group'] as

@@ -38,19 +38,14 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const user = await this.authService.login(
+    const { user, tokenPayload } = await this.authService.login(
       loginDto.email,
       loginDto.password,
     );
-    const token = await encryptSession(user);
-    // res.setHeader(
-    //   'Set-Cookie',
-    //   createCookie(req, 'xf', token, 60 * 60 * 24 * 7),
-    // );
-    res.setHeader(
-      'Set-Cookie',
-      createCookie('xf', token, 60 * 60 * 24 * 7),
-    );
+    // Encrypt minimal payload (userId, groupId, entityId, systemRole) to keep token size small
+    const token = await encryptSession(tokenPayload);
+    res.setHeader('Set-Cookie', createCookie('xf', token, 60 * 60 * 24 * 7));
+    // Send full user data to client
     return res.send(user);
   }
 
@@ -89,7 +84,7 @@ export class AuthController {
   @Roles(systemRole.superadmin)
   stopGroup(@Req() req: Request, @Res() res: Response) {
     // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
-        res.setHeader('Set-Cookie', deleteCookie('xf_group'));
+    res.setHeader('Set-Cookie', deleteCookie('xf_group'));
 
     return res.send({ success: true });
   }
@@ -119,7 +114,7 @@ export class AuthController {
   @Roles(systemRole.superadmin, systemRole.admin)
   stopEntity(@Req() req: Request, @Res() res: Response) {
     // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
-        res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
+    res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
 
     return res.send({ success: true });
   }

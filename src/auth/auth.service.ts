@@ -11,7 +11,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
-        groupRole: {   
+        groupRole: {
           include: {
             permissions: true,
           },
@@ -36,12 +36,24 @@ export class AuthService {
 
     const uniquePermissions = [...new Set(permissions)];
 
+    // Return minimal user data for token (to keep token size small)
+    const tokenPayload = {
+      userId: user.id,
+      groupId: user.groupId,
+      entityId: user.entityId,
+      systemRole: user.systemRole,
+    };
+
+    // Return full user data (without password) for response to client
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
 
     return {
-      ...userWithoutPassword,
-      permissions: uniquePermissions,
+      user: {
+        ...userWithoutPassword,
+        permissions: uniquePermissions,
+      },
+      tokenPayload,
     };
   }
 }

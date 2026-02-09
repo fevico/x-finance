@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateReceiptDto } from './dto/receipt.dto';
+import { CreateReceiptDto, UpdateReceiptDto } from './dto/receipt.dto';
 import { GetReceiptsQueryDto } from './dto/get-receipts-query.dto';
 import { GetReceiptsResponseDto } from './dto/get-receipts-response.dto';
 import { ReceiptStatus, PaymentMethod } from 'prisma/generated/enums';
@@ -122,6 +122,67 @@ export class ReceiptService {
         limit,
       };
     } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getReceiptById(receiptId: string, entityId: string) {
+    try {
+      const receipt = await this.prisma.receipt.findUnique({
+        where: { id: receiptId },
+        include: {
+          customer: true,
+        },
+      });
+
+      if (!receipt) {
+        throw new HttpException('Receipt not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (receipt.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to access this receipt',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      return receipt;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateReceipt(receiptId: string, entityId: string, body: UpdateReceiptDto) {
+    try {
+      const receipt = await this.prisma.receipt.findUnique({
+        where: { id: receiptId },
+      });
+
+      if (!receipt) {
+        throw new HttpException('Receipt not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (receipt.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to update this receipt',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const updatedReceipt = await this.prisma.receipt.update({
+        where: { id: receiptId },
+        data: {
+          ...body,
+        },
+        include: {
+          customer: true,
+        },
+      });
+
+      return updatedReceipt;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }

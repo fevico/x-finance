@@ -48,7 +48,7 @@ export class GroupController {
     schema: {
       type: 'object',
       properties: {
-        name: { type: 'string' },
+        name: { type: 'string' }, 
         legalName: { type: 'string' },
         taxId: { type: 'string' },
         industry: { type: 'string' },

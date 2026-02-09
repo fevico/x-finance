@@ -78,7 +78,19 @@ export class ExpensesController {
   ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.expensesService.createExpense(body, entityId, file);
+    return this.expensesService.createExpense(
+      {
+        ...body,
+        amount: body.amount ? Number(body.amount) : 0,
+        tags: body.tags
+          ? Array.isArray(body.tags)
+            ? body.tags
+            : [body.tags]
+          : [],
+      },
+      entityId,
+      file,
+    );
   }
 
   @Get()

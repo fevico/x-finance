@@ -74,8 +74,8 @@ export class CreateEntityDto {
     description: 'Contact email address',
   })
   @IsEmail()
-  @IsOptional()
-  email?: string;
+  @IsString()
+  email: string;
 
   @ApiPropertyOptional({
     example: 'https://www.acmecorp.com',

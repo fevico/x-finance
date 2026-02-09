@@ -35,12 +35,13 @@ export class CreateBillDto {
   paymentTerms: string;
 
   @ApiProperty({ example: ['item 1', 'item 2'], description: 'Bill items' })
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   items: string[];
 
   @ApiProperty({ example: 50000, description: 'Total amount' })
-  @IsInt()
+  @Type(() => Number) 
   total: number;
 
   @ApiProperty({ example: 'Office Supplies', description: 'Category' })

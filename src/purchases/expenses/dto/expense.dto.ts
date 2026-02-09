@@ -17,10 +17,6 @@ export class CreateExpenseDto {
   @Type(() => Date)
   date: Date;
 
-  @ApiProperty({ example: 'EXP-001', description: 'Reference number' })
-  @IsString()
-  reference: string;
-
   @ApiProperty({ example: 'Acme Supplies', description: 'Supplier name' })
   @IsString()
   supplier: string;
@@ -45,7 +41,8 @@ export class CreateExpenseDto {
     example: 5000,
     description: 'Amount in smallest currency unit',
   })
-  @IsNumber()
+  @IsNumber({}, { message: 'amount must be a valid number' })
+  @Type(() => Number)
   amount: number;
 
   @ApiPropertyOptional({ example: '500', description: 'Tax amount' })
@@ -61,6 +58,7 @@ export class CreateExpenseDto {
   description?: string;
 
   @ApiPropertyOptional({ example: ['office', 'supplies'], description: 'Tags' })
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   tags: string[];

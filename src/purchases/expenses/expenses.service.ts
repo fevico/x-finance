@@ -3,6 +3,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreateExpenseDto } from './dto/expense.dto';
 import { GetExpensesQueryDto } from './dto/get-expenses-query.dto';
 import { FileuploadService } from '@/fileupload/fileupload.service';
+import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 
 @Injectable()
 export class ExpensesService {
@@ -27,9 +28,12 @@ export class ExpensesService {
         );
       }
 
+      const reference = generateRandomInvoiceNumber()
+
       const expense = await this.prisma.expenses.create({
         data: {
           ...body,
+          reference,
           entityId,
           attachment: attachment
             ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }

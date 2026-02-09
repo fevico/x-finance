@@ -37,6 +37,7 @@ export class InvoiceController {
   @ApiUnauthorizedResponse({ description: 'Access denied' })
   async createInvoice(@Body() body: CreateInvoiceDto, @Req() req) {
     const entityId = getEffectiveEntityId(req);
+    console.log("entityId", entityId)
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.createInvoice(body, entityId);
   }
