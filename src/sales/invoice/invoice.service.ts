@@ -5,7 +5,6 @@ import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
 import {
   GetEntityInvoicesResponseDto,
-  InvoiceAggregatesDto,
 } from './dto/get-entity-invoices-response.dto';
 import { GetPaidInvoicesResponseDto } from './dto/get-paid-invoices-response.dto';
 import { GetPaidInvoicesQueryDto } from './dto/get-paid-invoices-query.dto';
