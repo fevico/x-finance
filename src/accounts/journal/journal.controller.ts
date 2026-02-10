@@ -45,7 +45,7 @@ export class JournalController {
   async create(@Body() createJournalDto: CreateJournalDto): Promise<Journal> {
     return this.journalsService.create(createJournalDto);
   }
- 
+
   @Get()
   @ApiOperation({ summary: 'Get all journals (optionally filtered by entity)' })
   @ApiResponse({ status: 200, description: 'List of journals' })

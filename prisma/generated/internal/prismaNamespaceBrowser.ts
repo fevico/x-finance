@@ -107,7 +107,9 @@ export const GroupScalarFieldEnum = {
   phone: 'phone',
   website: 'website',
   subscriptionId: 'subscriptionId',
-  billingCycle: 'billingCycle'
+  billingCycle: 'billingCycle',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type GroupScalarFieldEnum = (typeof GroupScalarFieldEnum)[keyof typeof GroupScalarFieldEnum]
@@ -128,7 +130,9 @@ export const EntityScalarFieldEnum = {
   state: 'state',
   taxId: 'taxId',
   website: 'website',
-  yearEnd: 'yearEnd'
+  yearEnd: 'yearEnd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type EntityScalarFieldEnum = (typeof EntityScalarFieldEnum)[keyof typeof EntityScalarFieldEnum]
@@ -158,7 +162,9 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 export const GroupRoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  groupId: 'groupId'
+  groupId: 'groupId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type GroupRoleScalarFieldEnum = (typeof GroupRoleScalarFieldEnum)[keyof typeof GroupRoleScalarFieldEnum]
@@ -181,7 +187,8 @@ export const CustomerScalarFieldEnum = {
   note: 'note',
   entityId: 'entityId',
   isActive: 'isActive',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
@@ -199,7 +206,9 @@ export const InvoiceScalarFieldEnum = {
   items: 'items',
   total: 'total',
   notes: 'notes',
-  status: 'status'
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
@@ -231,7 +240,8 @@ export const VendorScalarFieldEnum = {
   routingNumber: 'routingNumber',
   internalNote: 'internalNote',
   status: 'status',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type VendorScalarFieldEnum = (typeof VendorScalarFieldEnum)[keyof typeof VendorScalarFieldEnum]
@@ -249,7 +259,8 @@ export const PaymentReceivedScalarFieldEnum = {
   note: 'note',
   status: 'status',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type PaymentReceivedScalarFieldEnum = (typeof PaymentReceivedScalarFieldEnum)[keyof typeof PaymentReceivedScalarFieldEnum]
@@ -269,7 +280,8 @@ export const ExpensesScalarFieldEnum = {
   tags: 'tags',
   attachment: 'attachment',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ExpensesScalarFieldEnum = (typeof ExpensesScalarFieldEnum)[keyof typeof ExpensesScalarFieldEnum]
@@ -290,7 +302,8 @@ export const BillsScalarFieldEnum = {
   attachment: 'attachment',
   status: 'status',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type BillsScalarFieldEnum = (typeof BillsScalarFieldEnum)[keyof typeof BillsScalarFieldEnum]
@@ -305,7 +318,8 @@ export const PaymentRecordScalarFieldEnum = {
   account: 'account',
   note: 'note',
   status: 'status',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type PaymentRecordScalarFieldEnum = (typeof PaymentRecordScalarFieldEnum)[keyof typeof PaymentRecordScalarFieldEnum]
@@ -321,7 +335,8 @@ export const ReceiptScalarFieldEnum = {
   items: 'items',
   total: 'total',
   status: 'status',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ReceiptScalarFieldEnum = (typeof ReceiptScalarFieldEnum)[keyof typeof ReceiptScalarFieldEnum]
@@ -342,7 +357,8 @@ export const ItemsScalarFieldEnum = {
   lowStock: 'lowStock',
   type: 'type',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ItemsScalarFieldEnum = (typeof ItemsScalarFieldEnum)[keyof typeof ItemsScalarFieldEnum]
@@ -357,7 +373,8 @@ export const CollectionScalarFieldEnum = {
   visibility: 'visibility',
   featured: 'featured',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
@@ -381,7 +398,8 @@ export const AssetScalarFieldEnum = {
   activeAsset: 'activeAsset',
   status: 'status',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
@@ -400,7 +418,8 @@ export const AccountScalarFieldEnum = {
   debit: 'debit',
   date: 'date',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
@@ -413,7 +432,8 @@ export const JournalScalarFieldEnum = {
   lines: 'lines',
   reference: 'reference',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type JournalScalarFieldEnum = (typeof JournalScalarFieldEnum)[keyof typeof JournalScalarFieldEnum]
@@ -429,7 +449,8 @@ export const BudgetScalarFieldEnum = {
   note: 'note',
   accountId: 'accountId',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof BudgetScalarFieldEnum]
@@ -464,7 +485,8 @@ export const EmployeeScalarFieldEnum = {
   note: 'note',
   asdraft: 'asdraft',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
@@ -480,7 +502,8 @@ export const AttendanceScalarFieldEnum = {
   notes: 'notes',
   asdraft: 'asdraft',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
@@ -489,7 +512,9 @@ export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof
 export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  description: 'description'
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
@@ -502,7 +527,8 @@ export const AuditLogScalarFieldEnum = {
   ipAddress: 'ipAddress',
   device: 'device',
   location: 'location',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]

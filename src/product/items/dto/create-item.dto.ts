@@ -9,7 +9,6 @@ import {
 import { Type } from 'class-transformer';
 import { ItemsType } from 'prisma/generated/enums';
 
-
 export class CreateItemDto {
   @ApiProperty({ example: 'Office Chair', description: 'Item name' })
   @IsString()

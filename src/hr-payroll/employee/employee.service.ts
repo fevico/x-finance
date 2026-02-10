@@ -63,11 +63,10 @@ export class EmployeeService {
       // Calculate stats
       const totalEmployees = employees.length;
       const totalActive = employees.filter(
-        (emp) =>
-          emp.status === 'Active',
+        (emp) => emp.status === 'Active',
       ).length; // Assuming 'Active' status
-      const totalOnLeave = employees.filter((emp) =>
-        emp.status === 'On_Leave',
+      const totalOnLeave = employees.filter(
+        (emp) => emp.status === 'On_Leave',
       ).length; // Assuming status indicates leave
 
       // Hired this month
@@ -75,18 +74,18 @@ export class EmployeeService {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const totalHiredThisMonth = employees.filter(
         (emp) => emp.dateOfHire >= startOfMonth,
-      ).length; 
+      ).length;
 
-      const stats: EmployeeStatsDto = {               
+      const stats: EmployeeStatsDto = {
         totalEmployees,
         totalActive,
         totalOnLeave,
         totalHiredThisMonth,
       };
 
-      return { employees: employees as EmployeeResponseDto[], stats }; 
+      return { employees: employees as EmployeeResponseDto[], stats };
     } catch (error) {
-      throw new HttpException( 
+      throw new HttpException(
         `${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );

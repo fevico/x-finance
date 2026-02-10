@@ -12,7 +12,7 @@ export class ReceiptService {
 
   async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
-      const receiptNumber = generateRandomInvoiceNumber()
+      const receiptNumber = generateRandomInvoiceNumber();
       const receipt = await this.prisma.receipt.create({
         data: {
           ...body,
@@ -50,7 +50,7 @@ export class ReceiptService {
         this.prisma.receipt.findMany({
           where: whereClause,
           skip,
-          take: limit,
+          take: Number(limit),
           orderBy: { date: 'desc' },
         }),
         this.prisma.receipt.count({ where: whereClause }),

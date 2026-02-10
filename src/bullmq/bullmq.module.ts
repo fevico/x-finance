@@ -16,6 +16,6 @@ import { BullmqProcessor } from './bullmq.processor';
     PrismaModule,
   ],
   providers: [BullmqService, BullmqProcessor],
-  exports: [BullmqService]
+  exports: [BullmqService],
 })
 export class BullmqModule {}

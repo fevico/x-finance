@@ -49,7 +49,7 @@ export class ItemsService {
         where,
         orderBy: { name: 'asc' },
         skip,
-        take: limit,
+        take: Number(limit),
       }),
       this.prisma.items.count({ where }),
     ]);

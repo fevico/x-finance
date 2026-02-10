@@ -65,7 +65,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true },  
+    swaggerOptions: { persistAuthorization: true },
   });
 
   // Set global prefix after Swagger setup
@@ -74,4 +74,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3810);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
-void bootstrap();   
+void bootstrap();

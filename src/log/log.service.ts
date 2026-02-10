@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class LogService {
-    constructor(private prisma: PrismaService){}
+  constructor(private prisma: PrismaService) {}
   async log({
     userId,
     action,

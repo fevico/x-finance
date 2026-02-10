@@ -40,6 +40,8 @@ export type EntityMinAggregateOutputType = {
   taxId: string | null
   website: string | null
   yearEnd: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type EntityMaxAggregateOutputType = {
@@ -58,6 +60,8 @@ export type EntityMaxAggregateOutputType = {
   taxId: string | null
   website: string | null
   yearEnd: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type EntityCountAggregateOutputType = {
@@ -76,6 +80,8 @@ export type EntityCountAggregateOutputType = {
   taxId: number
   website: number
   yearEnd: number
+  createdAt: number
+  updatedAt: number
   _all: number
 }
 
@@ -96,6 +102,8 @@ export type EntityMinAggregateInputType = {
   taxId?: true
   website?: true
   yearEnd?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type EntityMaxAggregateInputType = {
@@ -114,6 +122,8 @@ export type EntityMaxAggregateInputType = {
   taxId?: true
   website?: true
   yearEnd?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type EntityCountAggregateInputType = {
@@ -132,6 +142,8 @@ export type EntityCountAggregateInputType = {
   taxId?: true
   website?: true
   yearEnd?: true
+  createdAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -223,6 +235,8 @@ export type EntityGroupByOutputType = {
   taxId: string | null
   website: string | null
   yearEnd: string | null
+  createdAt: Date
+  updatedAt: Date
   _count: EntityCountAggregateOutputType | null
   _min: EntityMinAggregateOutputType | null
   _max: EntityMaxAggregateOutputType | null
@@ -262,6 +276,8 @@ export type EntityWhereInput = {
   taxId?: Prisma.StringNullableFilter<"Entity"> | string | null
   website?: Prisma.StringNullableFilter<"Entity"> | string | null
   yearEnd?: Prisma.StringNullableFilter<"Entity"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
   customer?: Prisma.CustomerListRelationFilter
   group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   invoice?: Prisma.InvoiceListRelationFilter
@@ -297,6 +313,8 @@ export type EntityOrderByWithRelationInput = {
   taxId?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   yearEnd?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByRelationAggregateInput
   group?: Prisma.GroupOrderByWithRelationInput
   invoice?: Prisma.InvoiceOrderByRelationAggregateInput
@@ -335,6 +353,8 @@ export type EntityWhereUniqueInput = Prisma.AtLeast<{
   taxId?: Prisma.StringNullableFilter<"Entity"> | string | null
   website?: Prisma.StringNullableFilter<"Entity"> | string | null
   yearEnd?: Prisma.StringNullableFilter<"Entity"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
   customer?: Prisma.CustomerListRelationFilter
   group?: Prisma.XOR<Prisma.GroupScalarRelationFilter, Prisma.GroupWhereInput>
   invoice?: Prisma.InvoiceListRelationFilter
@@ -370,6 +390,8 @@ export type EntityOrderByWithAggregationInput = {
   taxId?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   yearEnd?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.EntityCountOrderByAggregateInput
   _max?: Prisma.EntityMaxOrderByAggregateInput
   _min?: Prisma.EntityMinOrderByAggregateInput
@@ -394,6 +416,8 @@ export type EntityScalarWhereWithAggregatesInput = {
   taxId?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
   website?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
   yearEnd?: Prisma.StringNullableWithAggregatesFilter<"Entity"> | string | null
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Entity"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Entity"> | Date | string
 }
 
 export type EntityCreateInput = {
@@ -411,6 +435,8 @@ export type EntityCreateInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -446,6 +472,8 @@ export type EntityUncheckedCreateInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -479,6 +507,8 @@ export type EntityUpdateInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -514,6 +544,8 @@ export type EntityUncheckedUpdateInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -548,6 +580,8 @@ export type EntityCreateManyInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EntityUpdateManyMutationInput = {
@@ -565,6 +599,8 @@ export type EntityUpdateManyMutationInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EntityUncheckedUpdateManyInput = {
@@ -583,6 +619,8 @@ export type EntityUncheckedUpdateManyInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EntityListRelationFilter = {
@@ -611,6 +649,8 @@ export type EntityCountOrderByAggregateInput = {
   taxId?: Prisma.SortOrder
   website?: Prisma.SortOrder
   yearEnd?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EntityMaxOrderByAggregateInput = {
@@ -629,6 +669,8 @@ export type EntityMaxOrderByAggregateInput = {
   taxId?: Prisma.SortOrder
   website?: Prisma.SortOrder
   yearEnd?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EntityMinOrderByAggregateInput = {
@@ -647,6 +689,8 @@ export type EntityMinOrderByAggregateInput = {
   taxId?: Prisma.SortOrder
   website?: Prisma.SortOrder
   yearEnd?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EntityNullableScalarRelationFilter = {
@@ -942,6 +986,8 @@ export type EntityCreateWithoutGroupInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
@@ -975,6 +1021,8 @@ export type EntityUncheckedCreateWithoutGroupInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -1038,6 +1086,8 @@ export type EntityScalarWhereInput = {
   taxId?: Prisma.StringNullableFilter<"Entity"> | string | null
   website?: Prisma.StringNullableFilter<"Entity"> | string | null
   yearEnd?: Prisma.StringNullableFilter<"Entity"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Entity"> | Date | string
 }
 
 export type EntityCreateWithoutUsersInput = {
@@ -1055,6 +1105,8 @@ export type EntityCreateWithoutUsersInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -1089,6 +1141,8 @@ export type EntityUncheckedCreateWithoutUsersInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutEntityInput
@@ -1137,6 +1191,8 @@ export type EntityUpdateWithoutUsersInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -1171,6 +1227,8 @@ export type EntityUncheckedUpdateWithoutUsersInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutEntityNestedInput
@@ -1203,6 +1261,8 @@ export type EntityCreateWithoutCustomerInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
@@ -1237,6 +1297,8 @@ export type EntityUncheckedCreateWithoutCustomerInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
   receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutEntityInput
@@ -1285,6 +1347,8 @@ export type EntityUpdateWithoutCustomerInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
@@ -1319,6 +1383,8 @@ export type EntityUncheckedUpdateWithoutCustomerInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
   receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutEntityNestedInput
@@ -1351,6 +1417,8 @@ export type EntityCreateWithoutInvoiceInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   users?: Prisma.UserCreateNestedManyWithoutEntityInput
@@ -1385,6 +1453,8 @@ export type EntityUncheckedCreateWithoutInvoiceInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
   receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutEntityInput
@@ -1433,6 +1503,8 @@ export type EntityUpdateWithoutInvoiceInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
@@ -1467,6 +1539,8 @@ export type EntityUncheckedUpdateWithoutInvoiceInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
   receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutEntityNestedInput
@@ -1499,6 +1573,8 @@ export type EntityCreateWithoutVendorInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -1533,6 +1609,8 @@ export type EntityUncheckedCreateWithoutVendorInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -1581,6 +1659,8 @@ export type EntityUpdateWithoutVendorInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -1615,6 +1695,8 @@ export type EntityUncheckedUpdateWithoutVendorInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -1647,6 +1729,8 @@ export type EntityCreateWithoutPaymentReceivedInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -1681,6 +1765,8 @@ export type EntityUncheckedCreateWithoutPaymentReceivedInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -1729,6 +1815,8 @@ export type EntityUpdateWithoutPaymentReceivedInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -1763,6 +1851,8 @@ export type EntityUncheckedUpdateWithoutPaymentReceivedInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -1795,6 +1885,8 @@ export type EntityCreateWithoutExpensesInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -1829,6 +1921,8 @@ export type EntityUncheckedCreateWithoutExpensesInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -1877,6 +1971,8 @@ export type EntityUpdateWithoutExpensesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -1911,6 +2007,8 @@ export type EntityUncheckedUpdateWithoutExpensesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -1943,6 +2041,8 @@ export type EntityCreateWithoutBillsInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -1977,6 +2077,8 @@ export type EntityUncheckedCreateWithoutBillsInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2025,6 +2127,8 @@ export type EntityUpdateWithoutBillsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2059,6 +2163,8 @@ export type EntityUncheckedUpdateWithoutBillsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2091,6 +2197,8 @@ export type EntityCreateWithoutReceiptInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -2125,6 +2233,8 @@ export type EntityUncheckedCreateWithoutReceiptInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2173,6 +2283,8 @@ export type EntityUpdateWithoutReceiptInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2207,6 +2319,8 @@ export type EntityUncheckedUpdateWithoutReceiptInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2239,6 +2353,8 @@ export type EntityCreateWithoutItemsInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -2273,6 +2389,8 @@ export type EntityUncheckedCreateWithoutItemsInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2321,6 +2439,8 @@ export type EntityUpdateWithoutItemsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2355,6 +2475,8 @@ export type EntityUncheckedUpdateWithoutItemsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2387,6 +2509,8 @@ export type EntityCreateWithoutCollectionInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -2421,6 +2545,8 @@ export type EntityUncheckedCreateWithoutCollectionInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2469,6 +2595,8 @@ export type EntityUpdateWithoutCollectionInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2503,6 +2631,8 @@ export type EntityUncheckedUpdateWithoutCollectionInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2535,6 +2665,8 @@ export type EntityCreateWithoutAssetInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -2569,6 +2701,8 @@ export type EntityUncheckedCreateWithoutAssetInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2617,6 +2751,8 @@ export type EntityUpdateWithoutAssetInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2651,6 +2787,8 @@ export type EntityUncheckedUpdateWithoutAssetInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2683,6 +2821,8 @@ export type EntityCreateWithoutAccountInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -2717,6 +2857,8 @@ export type EntityUncheckedCreateWithoutAccountInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2765,6 +2907,8 @@ export type EntityUpdateWithoutAccountInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2799,6 +2943,8 @@ export type EntityUncheckedUpdateWithoutAccountInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2831,6 +2977,8 @@ export type EntityCreateWithoutJournalInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -2865,6 +3013,8 @@ export type EntityUncheckedCreateWithoutJournalInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -2913,6 +3063,8 @@ export type EntityUpdateWithoutJournalInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -2947,6 +3099,8 @@ export type EntityUncheckedUpdateWithoutJournalInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -2979,6 +3133,8 @@ export type EntityCreateWithoutBudgetInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -3013,6 +3169,8 @@ export type EntityUncheckedCreateWithoutBudgetInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -3061,6 +3219,8 @@ export type EntityUpdateWithoutBudgetInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -3095,6 +3255,8 @@ export type EntityUncheckedUpdateWithoutBudgetInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -3127,6 +3289,8 @@ export type EntityCreateWithoutEmployeeInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -3161,6 +3325,8 @@ export type EntityUncheckedCreateWithoutEmployeeInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -3209,6 +3375,8 @@ export type EntityUpdateWithoutEmployeeInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -3243,6 +3411,8 @@ export type EntityUncheckedUpdateWithoutEmployeeInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -3275,6 +3445,8 @@ export type EntityCreateWithoutAttendanceInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerCreateNestedManyWithoutEntityInput
   group: Prisma.GroupCreateNestedOneWithoutEntitiesInput
   invoice?: Prisma.InvoiceCreateNestedManyWithoutEntityInput
@@ -3309,6 +3481,8 @@ export type EntityUncheckedCreateWithoutAttendanceInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   customer?: Prisma.CustomerUncheckedCreateNestedManyWithoutEntityInput
   invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutEntityInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutEntityInput
@@ -3357,6 +3531,8 @@ export type EntityUpdateWithoutAttendanceInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   group?: Prisma.GroupUpdateOneRequiredWithoutEntitiesNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
@@ -3391,6 +3567,8 @@ export type EntityUncheckedUpdateWithoutAttendanceInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -3423,6 +3601,8 @@ export type EntityCreateManyGroupInput = {
   taxId?: string | null
   website?: string | null
   yearEnd?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type EntityUpdateWithoutGroupInput = {
@@ -3440,6 +3620,8 @@ export type EntityUpdateWithoutGroupInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUpdateManyWithoutEntityNestedInput
@@ -3473,6 +3655,8 @@ export type EntityUncheckedUpdateWithoutGroupInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUncheckedUpdateManyWithoutEntityNestedInput
   invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutEntityNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutEntityNestedInput
@@ -3506,6 +3690,8 @@ export type EntityUncheckedUpdateManyWithoutGroupInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   yearEnd?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -3690,6 +3876,8 @@ export type EntitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   taxId?: boolean
   website?: boolean
   yearEnd?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   customer?: boolean | Prisma.Entity$customerArgs<ExtArgs>
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
   invoice?: boolean | Prisma.Entity$invoiceArgs<ExtArgs>
@@ -3726,6 +3914,8 @@ export type EntitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   taxId?: boolean
   website?: boolean
   yearEnd?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["entity"]>
 
@@ -3745,6 +3935,8 @@ export type EntitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   taxId?: boolean
   website?: boolean
   yearEnd?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["entity"]>
 
@@ -3764,9 +3956,11 @@ export type EntitySelectScalar = {
   taxId?: boolean
   website?: boolean
   yearEnd?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }
 
-export type EntityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "groupId" | "address" | "city" | "country" | "currency" | "email" | "legalName" | "phoneNumber" | "postalCode" | "state" | "taxId" | "website" | "yearEnd", ExtArgs["result"]["entity"]>
+export type EntityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "groupId" | "address" | "city" | "country" | "currency" | "email" | "legalName" | "phoneNumber" | "postalCode" | "state" | "taxId" | "website" | "yearEnd" | "createdAt" | "updatedAt", ExtArgs["result"]["entity"]>
 export type EntityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.Entity$customerArgs<ExtArgs>
   group?: boolean | Prisma.GroupDefaultArgs<ExtArgs>
@@ -3831,6 +4025,8 @@ export type $EntityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     taxId: string | null
     website: string | null
     yearEnd: string | null
+    createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["entity"]>
   composites: {}
 }
@@ -4286,6 +4482,8 @@ export interface EntityFieldRefs {
   readonly taxId: Prisma.FieldRef<"Entity", 'String'>
   readonly website: Prisma.FieldRef<"Entity", 'String'>
   readonly yearEnd: Prisma.FieldRef<"Entity", 'String'>
+  readonly createdAt: Prisma.FieldRef<"Entity", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Entity", 'DateTime'>
 }
     
 

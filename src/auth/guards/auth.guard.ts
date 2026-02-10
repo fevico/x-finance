@@ -28,12 +28,12 @@ export class AuthGuard implements CanActivate {
     const mainPayload = await decryptSession(mainToken);
     if (!mainPayload) {
       // res.setHeader('Set-Cookie', deleteCookie(req, 'xf'));
-            res.setHeader('Set-Cookie', deleteCookie('xf'));
+      res.setHeader('Set-Cookie', deleteCookie('xf'));
 
       throw new UnauthorizedException();
     }
 
-    req.user = mainPayload as Request['user']; 
+    req.user = mainPayload as Request['user'];
 
     // Group impersonation
     const groupToken: string | undefined = req.cookies?.['xf_group'] as
@@ -48,8 +48,7 @@ export class AuthGuard implements CanActivate {
         };
       } else {
         // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
-                res.setHeader('Set-Cookie', deleteCookie('xf_group'));
-
+        res.setHeader('Set-Cookie', deleteCookie('xf_group'));
       }
     }
 
@@ -66,8 +65,7 @@ export class AuthGuard implements CanActivate {
         };
       } else {
         // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
-                res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
-
+        res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
       }
     }
 

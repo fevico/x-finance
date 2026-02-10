@@ -11,9 +11,17 @@ import { LogService } from '@/log/log.service';
 
 @Injectable()
 export class AssetService {
-  constructor(private prisma: PrismaService, private auditService: LogService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: LogService,
+  ) {}
 
-  async create(createAsset: CreateAssetDto, entityId: string, userId: string, req: any) {
+  async create(
+    createAsset: CreateAssetDto,
+    entityId: string,
+    userId: string,
+    req: any,
+  ) {
     try {
       const entity = await this.prisma.entity.findUnique({
         where: { id: entityId },

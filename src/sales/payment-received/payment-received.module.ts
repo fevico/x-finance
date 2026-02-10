@@ -7,6 +7,6 @@ import { AuthService } from '@/auth/auth.service';
 @Module({
   imports: [PrismaModule],
   providers: [PaymentReceivedService, AuthService],
-  controllers: [PaymentReceivedController]
+  controllers: [PaymentReceivedController],
 })
 export class PaymentReceivedModule {}

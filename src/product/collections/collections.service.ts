@@ -9,10 +9,10 @@ import { FileuploadService } from '@/fileupload/fileupload.service';
 export class CollectionsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fileuploadService: FileuploadService,  
-  ) {} 
-         
-  async createCollection(    
+    private readonly fileuploadService: FileuploadService,
+  ) {}
+
+  async createCollection(
     entityId: string,
     body: CreateCollectionDto,
     file?: Express.Multer.File,
@@ -42,7 +42,7 @@ export class CollectionsService {
         visibility: body.visibility ?? false,
         featured: body.featured ?? false,
         entityId,
-        image: image  
+        image: image
           ? { publicId: image.publicId, secureUrl: image.secureUrl }
           : undefined,
       },
@@ -81,7 +81,7 @@ export class CollectionsService {
         where,
         orderBy: { name: 'asc' },
         skip,
-        take: limit,
+        take: Number(limit),
       }),
       this.prisma.collection.count({ where }),
     ]);
@@ -91,7 +91,7 @@ export class CollectionsService {
       image: c.image === null ? undefined : (c.image as Record<string, any>),
       createdAt:
         c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
-    })); 
+    }));
 
     const totalPages = Math.ceil(total / limit);
 

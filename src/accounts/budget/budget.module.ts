@@ -8,6 +8,6 @@ import { LogService } from '@/log/log.service';
 @Module({
   imports: [PrismaModule],
   providers: [BudgetService, AuthService, LogService],
-  controllers: [BudgetController]
+  controllers: [BudgetController],
 })
 export class BudgetModule {}

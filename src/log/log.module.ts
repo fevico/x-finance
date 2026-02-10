@@ -6,6 +6,6 @@ import { PrismaModule } from '@/prisma/prisma.module';
 @Module({
   imports: [PrismaModule],
   providers: [LogService],
-  controllers: [LogController]
+  controllers: [LogController],
 })
 export class LogModule {}

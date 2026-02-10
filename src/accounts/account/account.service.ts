@@ -45,10 +45,7 @@ export class AccountService {
     }
   }
 
-async setOpeningBalances(
-    entityId: string,
-    dto: OpeningBalanceDto,
-  ) {
+  async setOpeningBalances(entityId: string, dto: OpeningBalanceDto) {
     try {
       // Process each line independently as a separate record update for its account
       for (const line of dto.lines) {
@@ -59,7 +56,9 @@ async setOpeningBalances(
           where: { id: accountId, entityId },
         });
         if (!account) {
-          throw new UnauthorizedException(`Access denied for account ${accountId}!`);
+          throw new UnauthorizedException(
+            `Access denied for account ${accountId}!`,
+          );
         }
 
         // Calculate the balance for this specific record (per account)
@@ -81,7 +80,9 @@ async setOpeningBalances(
       }
 
       // Return a success message
-      return { message: 'Opening balances set successfully for all provided accounts.' };
+      return {
+        message: 'Opening balances set successfully for all provided accounts.',
+      };
     } catch (error) {
       // Handle errors (log or rethrow as needed)
       throw error;
