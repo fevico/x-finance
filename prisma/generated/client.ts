@@ -133,6 +133,11 @@ export type Budget = Prisma.BudgetModel
  */
 export type Employee = Prisma.EmployeeModel
 /**
+ * Model AttendanceLog
+ * 
+ */
+export type AttendanceLog = Prisma.AttendanceLogModel
+/**
  * Model Attendance
  * 
  */

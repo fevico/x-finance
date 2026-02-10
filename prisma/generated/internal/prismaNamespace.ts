@@ -403,6 +403,7 @@ export const ModelName = {
   Journal: 'Journal',
   Budget: 'Budget',
   Employee: 'Employee',
+  AttendanceLog: 'AttendanceLog',
   Attendance: 'Attendance',
   Permission: 'Permission',
   AuditLog: 'AuditLog'
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "group" | "entity" | "user" | "groupRole" | "customer" | "invoice" | "vendor" | "paymentReceived" | "expenses" | "bills" | "paymentRecord" | "receipt" | "items" | "collection" | "asset" | "account" | "journal" | "budget" | "employee" | "attendance" | "permission" | "auditLog"
+    modelProps: "group" | "entity" | "user" | "groupRole" | "customer" | "invoice" | "vendor" | "paymentReceived" | "expenses" | "bills" | "paymentRecord" | "receipt" | "items" | "collection" | "asset" | "account" | "journal" | "budget" | "employee" | "attendanceLog" | "attendance" | "permission" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1831,6 +1832,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AttendanceLog: {
+      payload: Prisma.$AttendanceLogPayload<ExtArgs>
+      fields: Prisma.AttendanceLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AttendanceLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AttendanceLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AttendanceLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AttendanceLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>
+        }
+        findMany: {
+          args: Prisma.AttendanceLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>[]
+        }
+        create: {
+          args: Prisma.AttendanceLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>
+        }
+        createMany: {
+          args: Prisma.AttendanceLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AttendanceLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>[]
+        }
+        delete: {
+          args: Prisma.AttendanceLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>
+        }
+        update: {
+          args: Prisma.AttendanceLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AttendanceLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AttendanceLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AttendanceLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.AttendanceLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AttendanceLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AttendanceLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAttendanceLog>
+        }
+        groupBy: {
+          args: Prisma.AttendanceLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AttendanceLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AttendanceLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AttendanceLogCountAggregateOutputType> | number
+        }
+      }
+    }
     Attendance: {
       payload: Prisma.$AttendancePayload<ExtArgs>
       fields: Prisma.AttendanceFieldRefs
@@ -2471,17 +2546,29 @@ export const EmployeeScalarFieldEnum = {
 export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
 
 
+export const AttendanceLogScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  entityId: 'entityId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AttendanceLogScalarFieldEnum = (typeof AttendanceLogScalarFieldEnum)[keyof typeof AttendanceLogScalarFieldEnum]
+
+
 export const AttendanceScalarFieldEnum = {
   id: 'id',
   employeeId: 'employeeId',
-  date: 'date',
+  attendanceLogId: 'attendanceLogId',
   status: 'status',
   checkInTime: 'checkInTime',
   checkOutTime: 'checkOutTime',
   notes: 'notes',
   asdraft: 'asdraft',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
@@ -2921,6 +3008,7 @@ export type GlobalOmitConfig = {
   journal?: Prisma.JournalOmit
   budget?: Prisma.BudgetOmit
   employee?: Prisma.EmployeeOmit
+  attendanceLog?: Prisma.AttendanceLogOmit
   attendance?: Prisma.AttendanceOmit
   permission?: Prisma.PermissionOmit
   auditLog?: Prisma.AuditLogOmit

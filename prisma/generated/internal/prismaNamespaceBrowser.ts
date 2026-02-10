@@ -70,6 +70,7 @@ export const ModelName = {
   Journal: 'Journal',
   Budget: 'Budget',
   Employee: 'Employee',
+  AttendanceLog: 'AttendanceLog',
   Attendance: 'Attendance',
   Permission: 'Permission',
   AuditLog: 'AuditLog'
@@ -470,17 +471,29 @@ export const EmployeeScalarFieldEnum = {
 export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
 
 
+export const AttendanceLogScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  entityId: 'entityId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AttendanceLogScalarFieldEnum = (typeof AttendanceLogScalarFieldEnum)[keyof typeof AttendanceLogScalarFieldEnum]
+
+
 export const AttendanceScalarFieldEnum = {
   id: 'id',
   employeeId: 'employeeId',
-  date: 'date',
+  attendanceLogId: 'attendanceLogId',
   status: 'status',
   checkInTime: 'checkInTime',
   checkOutTime: 'checkOutTime',
   notes: 'notes',
   asdraft: 'asdraft',
   entityId: 'entityId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
