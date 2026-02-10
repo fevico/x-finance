@@ -44,7 +44,7 @@ export class BillsController {
   @UseInterceptors(FileInterceptor('attachment'))
   @ApiOperation({ summary: 'Create a new bill' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ 
+  @ApiBody({
     schema: {
       type: 'object',
       properties: {
@@ -116,7 +116,11 @@ export class BillsController {
       throw new BadRequestException('Entity ID is required');
     }
 
-    return this.billsService.createBill({...body, total: body.total ? Number(body.total) : 0}, entityId, file);
+    return this.billsService.createBill(
+      { ...body, total: body.total ? Number(body.total) : 0 },
+      entityId,
+      file,
+    );
   }
 
   @Get()
@@ -186,8 +190,17 @@ export class BillsController {
 
   @Get(':id/payments')
   @ApiOperation({ summary: 'Get all payments for the entity' })
-  @ApiResponse({ status: 200, description: 'Payments returned', type: GetPaymentsResponseDto })
-  async getPayments(@Param('id') id: string, @Query('page') page = 1, @Query('limit') limit = 10, @Req() req: Request) {
+  @ApiResponse({
+    status: 200,
+    description: 'Payments returned',
+    type: GetPaymentsResponseDto,
+  })
+  async getPayments(
+    @Param('id') id: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Req() req: Request,
+  ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     return this.billsService.getPayments(entityId, Number(page), Number(limit));

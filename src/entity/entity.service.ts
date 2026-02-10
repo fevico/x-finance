@@ -48,7 +48,6 @@ export class EntityService {
     }
   }
 
-
   findAll(effectiveGroupId: string) {
     return this.prisma.entity.findMany({
       where: { groupId: effectiveGroupId },

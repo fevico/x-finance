@@ -56,7 +56,7 @@ export class CustomerService {
         total,
         active,
         averageBalance: 0,
-        outstandinReceivables: 0
+        outstandinReceivables: 0,
       };
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);

@@ -1,49 +1,58 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateJournalDto, UpdateJournalDto } from './dto/journal.dto';
 import { generateJournalReference } from '@/auth/utils/helper';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Journal } from 'prisma/generated/client';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class JournalService {
-  constructor(private prisma: PrismaService) {} 
+  constructor(private prisma: PrismaService) {}
 
-//   async create(createJournalDto: CreateJournalDto, entityId: string) {
-//     const reference = createJournalDto.reference || generateJournalReference();
+  //   async create(createJournalDto: CreateJournalDto, entityId: string) {
+  //     const reference = createJournalDto.reference || generateJournalReference();
 
-//     // Optional: validate that total debit === total credit 
-//     const totalDebit = createJournalDto.lines.reduce(
-//       (sum, line) => sum + (line.debit || 0),
-//       0,
-//     );     
-//     const totalCredit = createJournalDto.lines.reduce(
-//       (sum, line) => sum + (line.credit || 0),
-//       0,
-//     );
+  //     // Optional: validate that total debit === total credit
+  //     const totalDebit = createJournalDto.lines.reduce(
+  //       (sum, line) => sum + (line.debit || 0),
+  //       0,
+  //     );
+  //     const totalCredit = createJournalDto.lines.reduce(
+  //       (sum, line) => sum + (line.credit || 0),
+  //       0,
+  //     );
 
-//     if (totalDebit !== totalCredit) {
-//       throw new BadRequestException(
-//         'Journal must balance: total debit ≠ total credit',
-//       );
-//     }
+  //     if (totalDebit !== totalCredit) {
+  //       throw new BadRequestException(
+  //         'Journal must balance: total debit ≠ total credit',
+  //       );
+  //     }
 
-//     return this.prisma.journal.create({
-//       data: {
-//         ...createJournalDto,
-//         date: new Date(createJournalDto.date), // convert string → Date
-//         reference,
-//         entityId,
-//         lines: createJournalDto.lines as Prisma.JsonObject, // or Prisma.JsonArray
-//       },   
-//     });
-//   }  
+  //     return this.prisma.journal.create({
+  //       data: {
+  //         ...createJournalDto,
+  //         date: new Date(createJournalDto.date), // convert string → Date
+  //         reference,
+  //         entityId,
+  //         lines: createJournalDto.lines as Prisma.JsonObject, // or Prisma.JsonArray
+  //       },
+  //     });
+  //   }
 
-async create(dto: CreateJournalDto): Promise<Journal> {
+  async create(dto: CreateJournalDto): Promise<Journal> {
     // Optional: you can add business validation here
     // e.g. check that total debit == total credit
-    const totalDebit = dto.lines.reduce((sum, line) => sum + (line.debit || 0), 0);
-    const totalCredit = dto.lines.reduce((sum, line) => sum + (line.credit || 0), 0);
+    const totalDebit = dto.lines.reduce(
+      (sum, line) => sum + (line.debit || 0),
+      0,
+    );
+    const totalCredit = dto.lines.reduce(
+      (sum, line) => sum + (line.credit || 0),
+      0,
+    );
 
     if (Math.abs(totalDebit - totalCredit) > 0.001) {
       throw new BadRequestException('Journal is not balanced: debit ≠ credit');
@@ -55,7 +64,7 @@ async create(dto: CreateJournalDto): Promise<Journal> {
       data: {
         description: dto.description,
         date: new Date(dto.date),
-        lines: dto.lines as Prisma.JsonObject, // Ensure lines are of type Prisma.JsonObject
+        lines: dto.lines as any, // Ensure lines are of type Prisma.JsonObject
         reference,
         entityId: dto.entityId,
       },
@@ -64,7 +73,7 @@ async create(dto: CreateJournalDto): Promise<Journal> {
 
   async findAll(entityId: string): Promise<Journal[]> {
     return this.prisma.journal.findMany({
-      where:{ entityId },
+      where: { entityId },
       orderBy: { date: 'desc' },
     });
   }
@@ -73,7 +82,7 @@ async create(dto: CreateJournalDto): Promise<Journal> {
     const journal = await this.prisma.journal.findFirst({
       where: {
         id,
-        entityId ,
+        entityId,
       },
     });
 
@@ -84,8 +93,12 @@ async create(dto: CreateJournalDto): Promise<Journal> {
     return journal;
   }
 
-  async update(id: string, dto: UpdateJournalDto, entityId: string): Promise<Journal> {
-   const journal =  await this.findOne(id, entityId); // check existence
+  async update(
+    id: string,
+    dto: UpdateJournalDto,
+    entityId: string,
+  ): Promise<Journal> {
+    const journal = await this.findOne(id, entityId); // check existence
 
     return this.prisma.journal.update({
       where: { id },
@@ -103,7 +116,10 @@ async create(dto: CreateJournalDto): Promise<Journal> {
   }
 
   // Optional: get journals by reference
-  async findByReference(reference: string, entityId?: string): Promise<Journal[]> {
+  async findByReference(
+    reference: string,
+    entityId?: string,
+  ): Promise<Journal[]> {
     return this.prisma.journal.findMany({
       where: {
         reference,

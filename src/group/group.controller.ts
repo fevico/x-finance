@@ -9,12 +9,14 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { GetGroupsQueryDto } from './dto/get-groups-query.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -48,7 +50,7 @@ export class GroupController {
     schema: {
       type: 'object',
       properties: {
-        name: { type: 'string' }, 
+        name: { type: 'string' },
         legalName: { type: 'string' },
         taxId: { type: 'string' },
         industry: { type: 'string' },
@@ -88,12 +90,32 @@ export class GroupController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles(systemRole.superadmin)
-  @ApiOperation({ summary: 'List groups' })
-  @ApiResponse({ status: 200, description: 'List of groups' })
-  findAll() {
-    const groups = this.groupService.findAll();
-    console.log(groups)
-    return groups;
+  @ApiOperation({ summary: 'List groups with pagination and search filters' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of groups with pagination metadata',
+    schema: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            pages: { type: 'number' },
+          },
+        },
+      },
+    },
+  })
+  findAll(@Query() query: GetGroupsQueryDto) {
+    console.log('Received query params:', query);
+    return this.groupService.findAll(query);
   }
 
   @Get(':id')

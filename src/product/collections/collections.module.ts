@@ -8,6 +8,6 @@ import { FileuploadModule } from '@/fileupload/fileupload.module';
 @Module({
   imports: [PrismaModule, FileuploadModule],
   providers: [CollectionsService, AuthService],
-  controllers: [CollectionsController]
+  controllers: [CollectionsController],
 })
 export class CollectionsModule {}

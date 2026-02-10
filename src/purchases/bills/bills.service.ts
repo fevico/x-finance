@@ -119,7 +119,7 @@ export class BillsService {
           billDate: 'desc',
         },
         skip,
-        take: limit,
+        take: Number(limit),
       }),
       this.prisma.bills.count({ where }),
     ]);
@@ -236,7 +236,7 @@ export class BillsService {
         },
         orderBy: { paidAt: 'desc' },
         skip,
-        take: limit,
+        take: Number(limit),
       }),
       this.prisma.paymentRecord.count({ where: { bill: { entityId } } }),
     ]);

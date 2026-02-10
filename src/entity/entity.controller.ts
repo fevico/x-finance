@@ -25,7 +25,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 @UseGuards(AuthGuard)
 // @ApiBearerAuth('jwt')
 // @ApiCookieAuth('cookieAuth')
-@Controller('entities') 
+@Controller('entities')
 export class EntityController {
   constructor(private readonly entityService: EntityService) {}
 

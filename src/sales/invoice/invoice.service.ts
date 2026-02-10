@@ -59,7 +59,7 @@ export class InvoiceService {
         where: whereClause,
         include: { customer: { select: { name: true, id: true } } },
         skip,
-        take: limit,
+        take: Number(limit),
         orderBy: { invoiceDate: 'desc' },
       });
 
@@ -148,7 +148,7 @@ export class InvoiceService {
         where: whereClause,
         include: { customer: { select: { name: true, id: true } } },
         skip,
-        take: limit,
+        take: Number(limit),
         orderBy: { invoiceDate: 'desc' },
       });
 
@@ -232,7 +232,7 @@ export class InvoiceService {
     }
   }
 
-    async getInvoiceById(invoiceId: string, entityId: string) {
+  async getInvoiceById(invoiceId: string, entityId: string) {
     try {
       const invoice = await this.prisma.invoice.findUnique({
         where: { id: invoiceId },
@@ -257,7 +257,11 @@ export class InvoiceService {
     }
   }
 
-  async updateInvoice(invoiceId: string, entityId: string, body: UpdateInvoiceDto) {
+  async updateInvoice(
+    invoiceId: string,
+    entityId: string,
+    body: UpdateInvoiceDto,
+  ) {
     try {
       const invoice = await this.prisma.invoice.findUnique({
         where: { id: invoiceId },
@@ -314,5 +318,4 @@ export class InvoiceService {
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
-
 }

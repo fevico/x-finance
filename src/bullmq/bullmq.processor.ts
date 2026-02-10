@@ -97,7 +97,8 @@ export class BullmqProcessor extends WorkerHost {
   }
 
   async handleCreateEntityUser(job: Job) {
-    const { groupId, email, entityName, legalName } = job.data as {
+    const { entityId, groupId, email, entityName, legalName } = job.data as {
+      entityId: string;
       groupId: string;
       email: string;
       entityName?: string;
@@ -105,15 +106,15 @@ export class BullmqProcessor extends WorkerHost {
     };
 
     this.logger.log(
-      `[Job ${job.id}] Running create-entity-user for groupId: ${groupId}, email: ${email}, entityName: ${entityName}`,
+      `[Job ${job.id}] Running create-entity-user for groupId: ${groupId}, entityId: ${entityId}, email: ${email}, entityName: ${entityName}`,
     );
 
     try {
       // 1. Fetch the 'entityAdmin' group role for this group
       const entityAdminRole = await this.prisma.groupRole.findFirst({
-        where: {  
+        where: {
           groupId,
-          name: 'entityAdmin',   
+          name: 'entityAdmin',
         },
       });
 
@@ -130,8 +131,8 @@ export class BullmqProcessor extends WorkerHost {
         entityName,
         legalName,
       );
-      console.log("entity password", plainPassword)
-      const hashed = await bcrypt.hash(plainPassword, 10);    
+      console.log('entity password', plainPassword);
+      const hashed = await bcrypt.hash(plainPassword, 10);
 
       this.logger.debug(`[Job ${job.id}] Generated password for entity user`);
 
@@ -142,6 +143,7 @@ export class BullmqProcessor extends WorkerHost {
           firstName: entityName ? entityName.split(' ')[0] : 'Entity',
           lastName: 'Admin',
           password: hashed,
+          entityId,
           groupId,
           groupRoleId: entityAdminRole.id,
           systemRole: systemRole.user,

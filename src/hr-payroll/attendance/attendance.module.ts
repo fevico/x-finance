@@ -6,8 +6,8 @@ import { AuthService } from '@/auth/auth.service';
 import { LogService } from '@/log/log.service';
 
 @Module({
-  imports: [PrismaModule],  
+  imports: [PrismaModule],
   providers: [AttendanceService, AuthService, LogService],
-  controllers: [AttendanceController]
+  controllers: [AttendanceController],
 })
 export class AttendanceModule {}

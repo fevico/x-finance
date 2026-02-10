@@ -95,12 +95,13 @@ export class AccountController {
   @ApiResponse({ status: 401, description: 'Unauthorized access to account.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async setOpeningBalances(
-    @Body() dto: OpeningBalanceDto, @Req() req: Request,
+    @Body() dto: OpeningBalanceDto,
+    @Req() req: Request,
   ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     return this.accountService.setOpeningBalances(entityId, dto);
-  } 
+  }
 
   //   @Patch(':id')
   //   async update(@Param('id') id: string, @Body() account: UpdateAccountDto) {

@@ -40,6 +40,7 @@ export type GroupMinAggregateOutputType = {
   website: string | null
   subscriptionId: string | null
   billingCycle: $Enums.BillingCycle | null
+  createdAt: Date | null
 }
 
 export type GroupMaxAggregateOutputType = {
@@ -58,6 +59,7 @@ export type GroupMaxAggregateOutputType = {
   website: string | null
   subscriptionId: string | null
   billingCycle: $Enums.BillingCycle | null
+  createdAt: Date | null
 }
 
 export type GroupCountAggregateOutputType = {
@@ -77,6 +79,7 @@ export type GroupCountAggregateOutputType = {
   website: number
   subscriptionId: number
   billingCycle: number
+  createdAt: number
   _all: number
 }
 
@@ -97,6 +100,7 @@ export type GroupMinAggregateInputType = {
   website?: true
   subscriptionId?: true
   billingCycle?: true
+  createdAt?: true
 }
 
 export type GroupMaxAggregateInputType = {
@@ -115,6 +119,7 @@ export type GroupMaxAggregateInputType = {
   website?: true
   subscriptionId?: true
   billingCycle?: true
+  createdAt?: true
 }
 
 export type GroupCountAggregateInputType = {
@@ -134,6 +139,7 @@ export type GroupCountAggregateInputType = {
   website?: true
   subscriptionId?: true
   billingCycle?: true
+  createdAt?: true
   _all?: true
 }
 
@@ -226,6 +232,7 @@ export type GroupGroupByOutputType = {
   website: string | null
   subscriptionId: string | null
   billingCycle: $Enums.BillingCycle | null
+  createdAt: Date
   _count: GroupCountAggregateOutputType | null
   _min: GroupMinAggregateOutputType | null
   _max: GroupMaxAggregateOutputType | null
@@ -266,6 +273,7 @@ export type GroupWhereInput = {
   website?: Prisma.StringNullableFilter<"Group"> | string | null
   subscriptionId?: Prisma.StringNullableFilter<"Group"> | string | null
   billingCycle?: Prisma.EnumBillingCycleNullableFilter<"Group"> | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFilter<"Group"> | Date | string
   entities?: Prisma.EntityListRelationFilter
   groupRoles?: Prisma.GroupRoleListRelationFilter
   users?: Prisma.UserListRelationFilter
@@ -288,6 +296,7 @@ export type GroupOrderByWithRelationInput = {
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
   billingCycle?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
   entities?: Prisma.EntityOrderByRelationAggregateInput
   groupRoles?: Prisma.GroupRoleOrderByRelationAggregateInput
   users?: Prisma.UserOrderByRelationAggregateInput
@@ -313,6 +322,7 @@ export type GroupWhereUniqueInput = Prisma.AtLeast<{
   website?: Prisma.StringNullableFilter<"Group"> | string | null
   subscriptionId?: Prisma.StringNullableFilter<"Group"> | string | null
   billingCycle?: Prisma.EnumBillingCycleNullableFilter<"Group"> | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFilter<"Group"> | Date | string
   entities?: Prisma.EntityListRelationFilter
   groupRoles?: Prisma.GroupRoleListRelationFilter
   users?: Prisma.UserListRelationFilter
@@ -335,6 +345,7 @@ export type GroupOrderByWithAggregationInput = {
   website?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
   billingCycle?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
   _count?: Prisma.GroupCountOrderByAggregateInput
   _max?: Prisma.GroupMaxOrderByAggregateInput
   _min?: Prisma.GroupMinOrderByAggregateInput
@@ -360,6 +371,7 @@ export type GroupScalarWhereWithAggregatesInput = {
   website?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
   subscriptionId?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
   billingCycle?: Prisma.EnumBillingCycleNullableWithAggregatesFilter<"Group"> | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Group"> | Date | string
 }
 
 export type GroupCreateInput = {
@@ -379,6 +391,7 @@ export type GroupCreateInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   entities?: Prisma.EntityCreateNestedManyWithoutGroupInput
   groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
   users?: Prisma.UserCreateNestedManyWithoutGroupInput
@@ -401,6 +414,7 @@ export type GroupUncheckedCreateInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   entities?: Prisma.EntityUncheckedCreateNestedManyWithoutGroupInput
   groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupInput
@@ -423,6 +437,7 @@ export type GroupUpdateInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entities?: Prisma.EntityUpdateManyWithoutGroupNestedInput
   groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupNestedInput
@@ -445,6 +460,7 @@ export type GroupUncheckedUpdateInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entities?: Prisma.EntityUncheckedUpdateManyWithoutGroupNestedInput
   groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutGroupNestedInput
@@ -467,6 +483,7 @@ export type GroupCreateManyInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
 }
 
 export type GroupUpdateManyMutationInput = {
@@ -486,6 +503,7 @@ export type GroupUpdateManyMutationInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GroupUncheckedUpdateManyInput = {
@@ -505,6 +523,7 @@ export type GroupUncheckedUpdateManyInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GroupCountOrderByAggregateInput = {
@@ -524,6 +543,7 @@ export type GroupCountOrderByAggregateInput = {
   website?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
   billingCycle?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type GroupMaxOrderByAggregateInput = {
@@ -542,6 +562,7 @@ export type GroupMaxOrderByAggregateInput = {
   website?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
   billingCycle?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type GroupMinOrderByAggregateInput = {
@@ -560,6 +581,7 @@ export type GroupMinOrderByAggregateInput = {
   website?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
   billingCycle?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type GroupScalarRelationFilter = {
@@ -582,6 +604,10 @@ export type NullableStringFieldUpdateOperationsInput = {
 
 export type NullableEnumBillingCycleFieldUpdateOperationsInput = {
   set?: $Enums.BillingCycle | null
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type GroupCreateNestedOneWithoutEntitiesInput = {
@@ -645,6 +671,7 @@ export type GroupCreateWithoutEntitiesInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
   users?: Prisma.UserCreateNestedManyWithoutGroupInput
 }
@@ -666,6 +693,7 @@ export type GroupUncheckedCreateWithoutEntitiesInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -703,6 +731,7 @@ export type GroupUpdateWithoutEntitiesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupNestedInput
 }
@@ -724,6 +753,7 @@ export type GroupUncheckedUpdateWithoutEntitiesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -745,6 +775,7 @@ export type GroupCreateWithoutUsersInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   entities?: Prisma.EntityCreateNestedManyWithoutGroupInput
   groupRoles?: Prisma.GroupRoleCreateNestedManyWithoutGroupInput
 }
@@ -766,6 +797,7 @@ export type GroupUncheckedCreateWithoutUsersInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   entities?: Prisma.EntityUncheckedCreateNestedManyWithoutGroupInput
   groupRoles?: Prisma.GroupRoleUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -803,6 +835,7 @@ export type GroupUpdateWithoutUsersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entities?: Prisma.EntityUpdateManyWithoutGroupNestedInput
   groupRoles?: Prisma.GroupRoleUpdateManyWithoutGroupNestedInput
 }
@@ -824,6 +857,7 @@ export type GroupUncheckedUpdateWithoutUsersInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entities?: Prisma.EntityUncheckedUpdateManyWithoutGroupNestedInput
   groupRoles?: Prisma.GroupRoleUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -845,6 +879,7 @@ export type GroupCreateWithoutGroupRolesInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   entities?: Prisma.EntityCreateNestedManyWithoutGroupInput
   users?: Prisma.UserCreateNestedManyWithoutGroupInput
 }
@@ -866,6 +901,7 @@ export type GroupUncheckedCreateWithoutGroupRolesInput = {
   website?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
+  createdAt?: Date | string
   entities?: Prisma.EntityUncheckedCreateNestedManyWithoutGroupInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutGroupInput
 }
@@ -903,6 +939,7 @@ export type GroupUpdateWithoutGroupRolesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entities?: Prisma.EntityUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUpdateManyWithoutGroupNestedInput
 }
@@ -924,6 +961,7 @@ export type GroupUncheckedUpdateWithoutGroupRolesInput = {
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entities?: Prisma.EntityUncheckedUpdateManyWithoutGroupNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutGroupNestedInput
 }
@@ -994,6 +1032,7 @@ export type GroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   website?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
+  createdAt?: boolean
   entities?: boolean | Prisma.Group$entitiesArgs<ExtArgs>
   groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
   users?: boolean | Prisma.Group$usersArgs<ExtArgs>
@@ -1017,6 +1056,7 @@ export type GroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   website?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
+  createdAt?: boolean
 }, ExtArgs["result"]["group"]>
 
 export type GroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1036,6 +1076,7 @@ export type GroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   website?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
+  createdAt?: boolean
 }, ExtArgs["result"]["group"]>
 
 export type GroupSelectScalar = {
@@ -1055,9 +1096,10 @@ export type GroupSelectScalar = {
   website?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
+  createdAt?: boolean
 }
 
-export type GroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "legalName" | "logo" | "taxId" | "industry" | "address" | "city" | "province" | "postalCode" | "country" | "email" | "phone" | "website" | "subscriptionId" | "billingCycle", ExtArgs["result"]["group"]>
+export type GroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "legalName" | "logo" | "taxId" | "industry" | "address" | "city" | "province" | "postalCode" | "country" | "email" | "phone" | "website" | "subscriptionId" | "billingCycle" | "createdAt", ExtArgs["result"]["group"]>
 export type GroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   entities?: boolean | Prisma.Group$entitiesArgs<ExtArgs>
   groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
@@ -1091,6 +1133,7 @@ export type $GroupPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     website: string | null
     subscriptionId: string | null
     billingCycle: $Enums.BillingCycle | null
+    createdAt: Date
   }, ExtArgs["result"]["group"]>
   composites: {}
 }
@@ -1533,6 +1576,7 @@ export interface GroupFieldRefs {
   readonly website: Prisma.FieldRef<"Group", 'String'>
   readonly subscriptionId: Prisma.FieldRef<"Group", 'String'>
   readonly billingCycle: Prisma.FieldRef<"Group", 'BillingCycle'>
+  readonly createdAt: Prisma.FieldRef<"Group", 'DateTime'>
 }
     
 

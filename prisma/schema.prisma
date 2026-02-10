@@ -32,6 +32,7 @@ model Group {
   entities   Entity[]
   groupRoles GroupRole[]
   users      User[]
+  createdAt  DateTime @default(now())
 }
 
 model Entity {
@@ -504,6 +505,7 @@ enum systemRole {
 enum LeaveStatus {
   Pending 
   Approved
+  Rejected
 }
 
 enum PaymentReceivedStatus {

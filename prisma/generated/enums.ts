@@ -26,6 +26,15 @@ export const systemRole = {
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
 
 
+export const LeaveStatus = {
+  Pending: 'Pending',
+  Approved: 'Approved',
+  Rejected: 'Rejected'
+} as const
+
+export type LeaveStatus = (typeof LeaveStatus)[keyof typeof LeaveStatus]
+
+
 export const PaymentReceivedStatus = {
   Paid: 'Paid',
   Pending: 'Pending',

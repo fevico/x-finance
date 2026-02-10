@@ -72,6 +72,7 @@ export const ModelName = {
   Employee: 'Employee',
   AttendanceLog: 'AttendanceLog',
   Attendance: 'Attendance',
+  Leave: 'Leave',
   Permission: 'Permission',
   AuditLog: 'AuditLog'
 } as const
@@ -108,7 +109,8 @@ export const GroupScalarFieldEnum = {
   phone: 'phone',
   website: 'website',
   subscriptionId: 'subscriptionId',
-  billingCycle: 'billingCycle'
+  billingCycle: 'billingCycle',
+  createdAt: 'createdAt'
 } as const
 
 export type GroupScalarFieldEnum = (typeof GroupScalarFieldEnum)[keyof typeof GroupScalarFieldEnum]
@@ -497,6 +499,24 @@ export const AttendanceScalarFieldEnum = {
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
+
+
+export const LeaveScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  leaveType: 'leaveType',
+  days: 'days',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  reason: 'reason',
+  entityId: 'entityId',
+  status: 'status',
+  contact: 'contact',
+  emergencyContact: 'emergencyContact',
+  createdAt: 'createdAt'
+} as const
+
+export type LeaveScalarFieldEnum = (typeof LeaveScalarFieldEnum)[keyof typeof LeaveScalarFieldEnum]
 
 
 export const PermissionScalarFieldEnum = {

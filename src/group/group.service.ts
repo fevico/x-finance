@@ -4,6 +4,7 @@ import { FileuploadService } from '@/fileupload/fileupload.service';
 import { BullmqService } from '@/bullmq/bullmq.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { GetGroupsQueryDto } from './dto/get-groups-query.dto';
 import * as bcrypt from 'bcrypt';
 import { systemRole } from 'prisma/generated/enums';
 
@@ -121,8 +122,44 @@ export class GroupService {
   //   }
   // }
 
-  findAll() {
-    return this.prisma.group.findMany();
+  findAll(query: GetGroupsQueryDto) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+    const search = query.search || '';
+
+    // Build where clause for search
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { legalName: { contains: search, mode: 'insensitive' } },
+        { industry: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Execute query with pagination
+    return this.prisma.$transaction(async (tx) => {
+      const [data, total] = await Promise.all([
+        tx.group.findMany({
+          where,
+          skip,
+          take: Number(limit),
+          orderBy: { createdAt: 'desc' },
+        }),
+        tx.group.count({ where }),
+      ]);
+
+      return {
+        groups: data,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      };
+    });
   }
 
   findOne(id: string) {

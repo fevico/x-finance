@@ -123,6 +123,11 @@ export type AttendanceLog = Prisma.AttendanceLogModel
  */
 export type Attendance = Prisma.AttendanceModel
 /**
+ * Model Leave
+ * 
+ */
+export type Leave = Prisma.LeaveModel
+/**
  * Model Permission
  * 
  */

@@ -50,7 +50,7 @@ export class VendorService {
         this.prisma.vendor.findMany({
           where,
           skip,
-          take: limit,
+          take: Number(limit),
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.vendor.count({ where }),

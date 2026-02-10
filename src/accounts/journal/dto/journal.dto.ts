@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsDateString, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class JournalLineDto {
@@ -8,7 +14,10 @@ class JournalLineDto {
   @IsNotEmpty()
   account: string;
 
-  @ApiProperty({ example: 15000, description: 'Debit amount (positive number)' })
+  @ApiProperty({
+    example: 15000,
+    description: 'Debit amount (positive number)',
+  })
   @ApiPropertyOptional()
   debit?: number;
 
@@ -29,7 +38,8 @@ export class CreateJournalDto {
 
   @ApiProperty({
     type: [JournalLineDto],
-    description: 'Array of journal entry lines (at least one debit and one credit usually)',
+    description:
+      'Array of journal entry lines (at least one debit and one credit usually)',
   })
   @IsArray()
   @ValidateNested({ each: true })

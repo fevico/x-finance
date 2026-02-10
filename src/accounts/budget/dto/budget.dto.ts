@@ -1,4 +1,10 @@
-import { IsString, IsInt, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BudgetLineDto {
@@ -7,14 +13,20 @@ export class BudgetLineDto {
   @IsNotEmpty()
   accountId: string;
 
-  @ApiProperty({ example: 250000, description: 'Budget amount for this account' })
+  @ApiProperty({
+    example: 250000,
+    description: 'Budget amount for this account',
+  })
   @IsInt()
   @IsNotEmpty()
   amount: number;
 }
 
 export class CreateBulkBudgetDto {
-  @ApiProperty({ example: 'Q1 Marketing 2025', description: 'Name for all budgets in this batch' })
+  @ApiProperty({
+    example: 'Q1 Marketing 2025',
+    description: 'Name for all budgets in this batch',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -28,7 +40,11 @@ export class CreateBulkBudgetDto {
   @IsNotEmpty()
   periodType: string;
 
-  @ApiProperty({ example: '2025-01', description: 'Month (if applicable)', required: false })
+  @ApiProperty({
+    example: '2025-01',
+    description: 'Month (if applicable)',
+    required: false,
+  })
   @IsString()
   month: string;
 
@@ -44,7 +60,8 @@ export class CreateBulkBudgetDto {
 
   @ApiProperty({
     type: [BudgetLineDto],
-    description: 'Array of account + amount pairs. One Budget record created per item.',
+    description:
+      'Array of account + amount pairs. One Budget record created per item.',
   })
   @IsArray()
   lines: BudgetLineDto[];

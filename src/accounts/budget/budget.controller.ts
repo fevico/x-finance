@@ -3,5 +3,5 @@ import { BudgetService } from './budget.service';
 
 @Controller('budget')
 export class BudgetController {
-    constructor(private readonly budgetService: BudgetService) {}
+  constructor(private readonly budgetService: BudgetService) {}
 }

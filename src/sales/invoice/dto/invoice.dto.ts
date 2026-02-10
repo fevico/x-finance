@@ -1,4 +1,12 @@
-import { IsString, IsDate, IsOptional, IsInt, IsEnum, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsDate,
+  IsOptional,
+  IsInt,
+  IsEnum,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { InvoiceStatus } from 'prisma/generated/enums';
 

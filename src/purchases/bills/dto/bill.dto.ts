@@ -41,7 +41,7 @@ export class CreateBillDto {
   items: string[];
 
   @ApiProperty({ example: 50000, description: 'Total amount' })
-  @Type(() => Number) 
+  @Type(() => Number)
   total: number;
 
   @ApiProperty({ example: 'Office Supplies', description: 'Category' })

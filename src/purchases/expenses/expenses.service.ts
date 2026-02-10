@@ -28,7 +28,7 @@ export class ExpensesService {
         );
       }
 
-      const reference = generateRandomInvoiceNumber()
+      const reference = generateRandomInvoiceNumber();
 
       const expense = await this.prisma.expenses.create({
         data: {
@@ -37,8 +37,8 @@ export class ExpensesService {
           entityId,
           attachment: attachment
             ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
-            : undefined, 
-        }, 
+            : undefined,
+        },
       });
       return expense;
     } catch (error) {
@@ -66,7 +66,7 @@ export class ExpensesService {
         this.prisma.expenses.findMany({
           where,
           skip,
-          take: limit,
+          take: Number(limit),
           orderBy: { date: 'desc' },
         }),
         this.prisma.expenses.count({ where }),
