@@ -26,6 +26,15 @@ export const systemRole = {
 export type systemRole = (typeof systemRole)[keyof typeof systemRole]
 
 
+export const PaymentReceivedStatus = {
+  Paid: 'Paid',
+  Pending: 'Pending',
+  Partial: 'Partial'
+} as const
+
+export type PaymentReceivedStatus = (typeof PaymentReceivedStatus)[keyof typeof PaymentReceivedStatus]
+
+
 export const EmployeeStatus = {
   Active: 'Active',
   Inactive: 'Inactive',

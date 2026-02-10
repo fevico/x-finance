@@ -66,6 +66,7 @@ model Entity {
   budget      Budget[]
   employee    Employee[]
   attendance  Attendance[]
+  paymentReceived PaymentReceived[]
   @@index([name, taxId, email])
 }
 
@@ -124,6 +125,7 @@ model Customer {
   entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
   invoice      Invoice[]
   receipt      Receipt[]
+  createdAt    DateTime @default(now())
 
   @@index([email, name])
 }
@@ -143,6 +145,7 @@ model Invoice {
   status        InvoiceStatus @default(Pending)
   customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   entity        Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  paymentReceived PaymentReceived[]
 
   @@index([invoiceNumber, customerId, currency])
 }
@@ -178,6 +181,25 @@ model vendor {
   bills          Bills[]
   @@unique([email, phone])
   @@index([type, email])
+}
+
+model PaymentReceived {
+  id                String  @id @default(cuid())
+  invoiceId         String
+  amount            Int
+  total             Int 
+  invoice           Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  paidAt            DateTime 
+  paymentMethod     String 
+  depositTo         String 
+  reference         String 
+  note              String?
+  status            PaymentReceivedStatus @default(Pending)
+  entityId          String 
+  entity            Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  @@index([invoiceId])
 }
 
 model Expenses {
@@ -239,6 +261,7 @@ model PaymentRecord {
 model Receipt {
   id                    String @id @default(cuid())   
   customerId            String
+  receiptNumber         String @default("123456789")
   customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   date                    DateTime
   entityId                String
@@ -441,6 +464,12 @@ enum systemRole {
   superadmin
   admin
   user
+}
+
+enum PaymentReceivedStatus {
+  Paid
+  Pending
+  Partial
 }
 
 enum EmployeeStatus {

@@ -73,6 +73,11 @@ export type Invoice = Prisma.InvoiceModel
  */
 export type vendor = Prisma.vendorModel
 /**
+ * Model PaymentReceived
+ * 
+ */
+export type PaymentReceived = Prisma.PaymentReceivedModel
+/**
  * Model Expenses
  * 
  */

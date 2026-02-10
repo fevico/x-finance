@@ -4,6 +4,7 @@ import { CreateReceiptDto, UpdateReceiptDto } from './dto/receipt.dto';
 import { GetReceiptsQueryDto } from './dto/get-receipts-query.dto';
 import { GetReceiptsResponseDto } from './dto/get-receipts-response.dto';
 import { ReceiptStatus, PaymentMethod } from 'prisma/generated/enums';
+import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 
 @Injectable()
 export class ReceiptService {
@@ -11,10 +12,12 @@ export class ReceiptService {
 
   async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
+      const receiptNumber = generateRandomInvoiceNumber()
       const receipt = await this.prisma.receipt.create({
         data: {
           ...body,
           entityId,
+          receiptNumber,
         },
       });
       return receipt;
@@ -153,7 +156,11 @@ export class ReceiptService {
     }
   }
 
-  async updateReceipt(receiptId: string, entityId: string, body: UpdateReceiptDto) {
+  async updateReceipt(
+    receiptId: string,
+    entityId: string,
+    body: UpdateReceiptDto,
+  ) {
     try {
       const receipt = await this.prisma.receipt.findUnique({
         where: { id: receiptId },
@@ -178,6 +185,42 @@ export class ReceiptService {
         include: {
           customer: true,
         },
+      });
+
+      return updatedReceipt;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async toggleReceiptStatus(receiptId: string, entityId: string) {
+    try {
+      const receipt = await this.prisma.receipt.findUnique({
+        where: { id: receiptId },
+      });
+
+      if (!receipt) {
+        throw new HttpException('Receipt not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (receipt.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to update this receipt',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      // Toggle status between Void and Completed
+      const newStatus =
+        receipt.status === ReceiptStatus.Void
+          ? ReceiptStatus.Completed
+          : ReceiptStatus.Void;
+
+      const updatedReceipt = await this.prisma.receipt.update({
+        where: { id: receiptId },
+        data: { status: newStatus },
+        include: { customer: true },
       });
 
       return updatedReceipt;

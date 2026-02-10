@@ -6,6 +6,8 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { AuthGuard } from '@/auth/guards/auth.guard';
@@ -19,6 +21,11 @@ import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
   ApiBody,
+} from '@nestjs/swagger';
+import {
+  ApiParam,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 
 @ApiTags('Customers')
@@ -48,6 +55,42 @@ export class CustomerController {
   async getCustersByEntity(@Req() req) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.customerService.getAllCustomer(entityId); 
+    return this.customerService.getAllCustomer(entityId);
+  }
+
+  @Get(':customerId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get a customer by ID with their invoices' })
+  @ApiParam({ name: 'customerId', description: 'Customer ID', type: 'string' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Customer with invoices' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Customer not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to access this customer',
+  })
+  async getCustomer(@Req() req, @Param('customerId') customerId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.customerService.getCustomerById(customerId, entityId);
+  }
+
+  @Delete(':customerId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Delete a customer and their invoices' })
+  @ApiParam({ name: 'customerId', description: 'Customer ID', type: 'string' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Customer deleted successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Customer not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to delete this customer',
+  })
+  async removeCustomer(@Req() req, @Param('customerId') customerId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.customerService.deleteCustomer(customerId, entityId);
   }
 }

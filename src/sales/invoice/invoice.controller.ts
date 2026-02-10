@@ -7,11 +7,14 @@ import {
   UseGuards,
   Get,
   Query,
+  Param,
+  Delete,
+  Patch,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
-import { CreateInvoiceDto } from './dto/invoice.dto';
+import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/invoice.dto';
 import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
 import { GetPaidInvoicesQueryDto } from './dto/get-paid-invoices-query.dto';
 import { GetEntityInvoicesResponseDto } from './dto/get-entity-invoices-response.dto';
@@ -23,6 +26,10 @@ import {
   ApiOperation,
   ApiOkResponse,
   ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+  ApiParam,
+  ApiBody,
 } from '@nestjs/swagger';
 
 @ApiTags('Invoices')
@@ -37,12 +44,12 @@ export class InvoiceController {
   @ApiUnauthorizedResponse({ description: 'Access denied' })
   async createInvoice(@Body() body: CreateInvoiceDto, @Req() req) {
     const entityId = getEffectiveEntityId(req);
-    console.log("entityId", entityId)
+    console.log('entityId', entityId);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.createInvoice(body, entityId);
   }
 
-  @Get() 
+  @Get()
   @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get invoices for an entity (with pagination & filters)',
@@ -66,5 +73,64 @@ export class InvoiceController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.getPaidInvoices(entityId, query);
+  }
+
+  @Get(':invoiceId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get invoice by ID with customer details' })
+  @ApiParam({ name: 'invoiceId', description: 'Invoice ID', type: 'string' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Invoice details with customer' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Invoice not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to access this invoice',
+  })
+  async getInvoice(@Req() req, @Param('invoiceId') invoiceId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.invoiceService.getInvoiceById(invoiceId, entityId);
+  }
+
+  @Patch(':invoiceId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Update an invoice' })
+  @ApiParam({ name: 'invoiceId', description: 'Invoice ID', type: 'string' })
+  @ApiBody({ type: UpdateInvoiceDto })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Invoice updated successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Invoice not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to update this invoice',
+  })
+  async updateInvoice(
+    @Req() req,
+    @Param('invoiceId') invoiceId: string,
+    @Body() body: UpdateInvoiceDto,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.invoiceService.updateInvoice(invoiceId, entityId, body);
+  }
+
+  @Delete(':invoiceId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Delete an invoice (disconnects from customer)' })
+  @ApiParam({ name: 'invoiceId', description: 'Invoice ID', type: 'string' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Invoice deleted successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Invoice not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to delete this invoice',
+  })
+  async deleteInvoice(@Req() req, @Param('invoiceId') invoiceId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.invoiceService.deleteInvoice(invoiceId, entityId);
   }
 }

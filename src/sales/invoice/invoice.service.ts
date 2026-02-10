@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateInvoiceDto } from './dto/invoice.dto';
+import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/invoice.dto';
 import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
 import {
@@ -57,7 +57,7 @@ export class InvoiceService {
       // Fetch paginated invoices with customer data
       const invoices = await this.prisma.invoice.findMany({
         where: whereClause,
-        include: { customer: { select: { name: true } } },
+        include: { customer: { select: { name: true, id: true } } },
         skip,
         take: limit,
         orderBy: { invoiceDate: 'desc' },
@@ -83,6 +83,7 @@ export class InvoiceService {
         id: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
         customerName: invoice.customer.name,
+        customerId: invoice.customer.id,
         status: invoice.status,
         total: invoice.total,
         invoiceDate: invoice.invoiceDate.toISOString(),
@@ -145,7 +146,7 @@ export class InvoiceService {
       // Fetch paginated paid invoices
       const paidInvoices = await this.prisma.invoice.findMany({
         where: whereClause,
-        include: { customer: { select: { name: true } } },
+        include: { customer: { select: { name: true, id: true } } },
         skip,
         take: limit,
         orderBy: { invoiceDate: 'desc' },
@@ -176,7 +177,14 @@ export class InvoiceService {
       const currentMonth = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
 
       const monthStartDate = new Date(currentYear, currentMonthNum - 1, 1);
-      const monthEndDate = new Date(currentYear, currentMonthNum, 0, 23, 59, 59);
+      const monthEndDate = new Date(
+        currentYear,
+        currentMonthNum,
+        0,
+        23,
+        59,
+        59,
+      );
 
       const currentMonthInvoices = allPaidInvoices.filter((invoice) => {
         return (
@@ -196,6 +204,7 @@ export class InvoiceService {
         id: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
         customerName: invoice.customer.name,
+        customerId: invoice.customer.id,
         total: invoice.total,
         invoiceDate: invoice.invoiceDate.toISOString(),
         dueDate: invoice.dueDate.toISOString(),
@@ -221,5 +230,89 @@ export class InvoiceService {
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
-}
   }
+
+    async getInvoiceById(invoiceId: string, entityId: string) {
+    try {
+      const invoice = await this.prisma.invoice.findUnique({
+        where: { id: invoiceId },
+        include: { customer: true },
+      });
+
+      if (!invoice) {
+        throw new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (invoice.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to access this invoice',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      return invoice;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateInvoice(invoiceId: string, entityId: string, body: UpdateInvoiceDto) {
+    try {
+      const invoice = await this.prisma.invoice.findUnique({
+        where: { id: invoiceId },
+      });
+
+      if (!invoice) {
+        throw new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (invoice.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to update this invoice',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const updatedInvoice = await this.prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { ...body },
+        include: { customer: true },
+      });
+
+      return updatedInvoice;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async deleteInvoice(invoiceId: string, entityId: string) {
+    try {
+      const invoice = await this.prisma.invoice.findUnique({
+        where: { id: invoiceId },
+      });
+
+      if (!invoice) {
+        throw new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (invoice.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to delete this invoice',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      await this.prisma.invoice.delete({
+        where: { id: invoiceId },
+      });
+
+      return { success: true };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+}
