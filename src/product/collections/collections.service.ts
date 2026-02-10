@@ -4,7 +4,6 @@ import { CreateCollectionDto } from './dto/create-collection.dto';
 import { GetCollectionsQueryDto } from './dto/get-collections-query.dto';
 import { GetCollectionsResponseDto } from './dto/get-collections-response.dto';
 import { FileuploadService } from '@/fileupload/fileupload.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CollectionsService {

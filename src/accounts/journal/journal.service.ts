@@ -3,7 +3,6 @@ import { CreateJournalDto, UpdateJournalDto } from './dto/journal.dto';
 import { generateJournalReference } from '@/auth/utils/helper';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Journal } from 'prisma/generated/client';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class JournalService {
@@ -55,7 +54,7 @@ async create(dto: CreateJournalDto): Promise<Journal> {
       data: {
         description: dto.description,
         date: new Date(dto.date),
-        lines: dto.lines as Prisma.JsonObject, // Ensure lines are of type Prisma.JsonObject
+        lines: dto.lines as any, // Ensure lines are of type Prisma.JsonObject
         reference,
         entityId: dto.entityId,
       },
