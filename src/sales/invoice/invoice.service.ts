@@ -12,21 +12,65 @@ import { InvoiceStatus } from 'prisma/generated/enums';
 export class InvoiceService {
   constructor(private prisma: PrismaService) {}
 
+  // async createInvoice(body: CreateInvoiceDto, entityId: string) {
+  //   try {
+  //     const invoiceNumber = generateRandomInvoiceNumber();
+  //     const invoice = await this.prisma.invoice.create({
+  //       data: {
+  //         ...body,
+  //         invoiceNumber,
+  //         entityId,
+  //       },
+  //     });
+  //     return invoice;
+  //   } catch (error) {
+  //     throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
+  //   }
+  // }
+
   async createInvoice(body: CreateInvoiceDto, entityId: string) {
-    try {
-      const invoiceNumber = generateRandomInvoiceNumber();
-      const invoice = await this.prisma.invoice.create({
-        data: {
-          ...body,
-          invoiceNumber,
-          entityId,
-        },
-      });
-      return invoice;
-    } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
+  try {
+    const invoiceNumber = generateRandomInvoiceNumber();
+    
+    // Extract items from body
+    const { items, ...invoiceData } = body;
+
+    // Create invoice with invoice items in a transaction
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        ...invoiceData,
+        invoiceNumber,
+        entityId,
+      },
+      include: { 
+        customer: { select: { name: true, id: true } },
+        invoiceItem: true 
+      },
+    });
+
+    // Create invoice items if provided
+    if (items && items.length > 0) {
+      const invoiceItems = await Promise.all(
+        items.map((item) =>
+          this.prisma.invoiceItem.create({
+            data: {
+              itemId: item.itemId,
+              rate: item.rate,
+              quantity: item.quantity,
+              invoiceId: invoice.id, // Add this field to InvoiceItem model
+            },
+          })
+        )
+      );
+
+      return { ...invoice, invoiceItems };
     }
+
+    return invoice;
+  } catch (error) {
+    throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
   }
+}
 
   async getEntityInvoice(
     entityId: string,
@@ -231,11 +275,11 @@ export class InvoiceService {
 
   async getInvoiceById(invoiceId: string, entityId: string) {
     try {
-      const invoice = await this.prisma.invoice.findUnique({
-        where: { id: invoiceId },
+      const invoice = await this.prisma.invoice.findFirst({
+        where: { OR: [{ id: invoiceId }, { invoiceNumber: invoiceId }] },
         include: { customer: true },
       });
-
+ 
       if (!invoice) {
         throw new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
       }

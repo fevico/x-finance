@@ -146,14 +146,29 @@ model Invoice {
   items           String[]
   total           Int
   notes           String?
+  activities      Json?
   status          InvoiceStatus     @default(Pending)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @default(now()) @updatedAt
   customer        Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
   entity          Entity            @relation(fields: [entityId], references: [id], onDelete: Cascade)
   paymentReceived PaymentReceived[]
+  invoiceItem     InvoiceItem[]
 
   @@index([invoiceNumber, customerId, currency])
+}
+
+model InvoiceItem {
+  id               String @id @default(cuid())
+  itemId           String 
+  item             Items @relation(fields: [itemId], references: [id])
+  rate             Int 
+  quantity         Int
+  invoiceId        String
+  invoice          Invoice @relation(fields: [invoiceId], references: [id])
+  createdAt        DateTime @default(now())
+  updateAt         DateTime?
+  @@index([itemId])
 }
 
 model vendor {
@@ -311,6 +326,7 @@ model Items {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @default(now()) @updatedAt
   entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  invoiceItem  InvoiceItem[]
 
   @@index([entityId, type])
 }

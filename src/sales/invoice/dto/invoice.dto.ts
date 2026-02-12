@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsArray,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { InvoiceStatus } from 'prisma/generated/enums';
@@ -30,8 +31,7 @@ export class CreateInvoiceDto {
   currency: string;
 
   @IsArray()
-  @IsString({ each: true })
-  items: string[];
+  items: InvoiceItems[];
 
   @IsInt()
   total: number;
@@ -43,6 +43,17 @@ export class CreateInvoiceDto {
   @IsOptional()
   @IsEnum(InvoiceStatus)
   status?: InvoiceStatus;
+}
+
+class InvoiceItems {
+  @IsString()
+  itemId: string
+
+  @IsNumber()
+  rate: number
+
+  @IsNumber()
+  quantity: number
 }
 
 // Update Invoice DTO (for partial updates)
