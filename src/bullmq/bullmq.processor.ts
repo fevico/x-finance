@@ -4,13 +4,18 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { systemRole } from 'prisma/generated/enums';
+import { EmailService } from '@/email/email.service';
+import * as path from 'path';
 
 @Processor('default')
 @Injectable()
 export class BullmqProcessor extends WorkerHost {
   private readonly logger = new Logger(BullmqProcessor.name);
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {
     super();
   }
 
@@ -77,7 +82,33 @@ export class BullmqProcessor extends WorkerHost {
 
       this.logger.debug(`[Job ${job.id}] Created owner user for group`);
 
-      // TODO: send email with group user password
+      // Send welcome email to group admin
+      try {
+        const htmlContent = this.emailService.renderHtmlTemplate(
+              path.join(process.cwd(), 'src/email/templates/group-admin-welcome.html'),
+          {
+            firstName: groupName || 'Group',
+            groupName: groupName || 'Group',
+            email,
+            password,
+          },
+        );
+        const html = this.emailService.wrapWithBaseTemplate(
+          htmlContent,
+          'Welcome to X-Finance',
+          { year: new Date().getFullYear() },
+        );
+        await this.emailService.sendEmail({
+          to: email,
+          subject: 'Welcome to X-Finance',
+          html,
+        });
+        this.logger.log(`[Job ${job.id}] Sent welcome email to group admin`);
+      } catch (err) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to send group admin welcome email: ${err}`,
+        );
+      }
 
       // Remove job from queue and Redis after successful completion
       await job.remove();
@@ -154,7 +185,26 @@ export class BullmqProcessor extends WorkerHost {
         `[Job ${job.id}] Created entity user with email: ${email}`,
       );
 
-      // TODO: send email with password to user
+      // Send welcome email to entity user
+try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(process.cwd(), 'src/email/templates/entity-user-welcome.html'), { firstName: entityName ? entityName.split(' ')[0] : 'Entity', entityName: entityName || legalName || 'Entity', email, password: plainPassword,
+          },
+        );
+        const html = this.emailService.wrapWithBaseTemplate(
+          htmlContent,
+          'Welcome to X-Finance',
+          { year: new Date().getFullYear() },
+        );
+        await this.emailService.sendEmail({
+          to: email,
+          subject: 'Welcome to X-Finance',
+          html,
+        });
+        this.logger.log(`[Job ${job.id}] Sent welcome email to entity user`);
+      } catch (err) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to send entity user welcome email: ${err}`,
+        );
+      }
 
       // Remove job from queue and Redis after successful completion
       await job.remove();

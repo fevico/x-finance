@@ -9,6 +9,8 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@react-email/components",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
