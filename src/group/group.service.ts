@@ -7,6 +7,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { GetGroupsQueryDto } from './dto/get-groups-query.dto';
 import 'multer';
 import { Prisma } from 'prisma/generated/client';
+import { TenantService } from '@/tenant/tenant.service';
 
 @Injectable()
 export class GroupService {
@@ -14,6 +15,7 @@ export class GroupService {
     private prisma: PrismaService,
     private fileuploadService: FileuploadService,
     private bullmqService: BullmqService,
+    private tenantService: TenantService,
   ) {}
 
   async create(createGroupDto: CreateGroupDto, file?: Express.Multer.File) {
@@ -248,5 +250,9 @@ export class GroupService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  async getTenantConfig() {
+    return this.tenantService.getTenantConfig();
   }
 }

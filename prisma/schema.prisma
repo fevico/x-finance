@@ -22,7 +22,7 @@ model Group {
   email          String
   phone          String
   website        String?
-  slug           String        @unique
+  slug           String?        @unique
   subscriptionId String?
   billingCycle   BillingCycle?
   createdAt      DateTime      @default(now())

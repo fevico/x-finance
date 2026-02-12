@@ -38,6 +38,7 @@ export type GroupMinAggregateOutputType = {
   email: string | null
   phone: string | null
   website: string | null
+  slug: string | null
   subscriptionId: string | null
   billingCycle: $Enums.BillingCycle | null
   createdAt: Date | null
@@ -58,6 +59,7 @@ export type GroupMaxAggregateOutputType = {
   email: string | null
   phone: string | null
   website: string | null
+  slug: string | null
   subscriptionId: string | null
   billingCycle: $Enums.BillingCycle | null
   createdAt: Date | null
@@ -79,6 +81,7 @@ export type GroupCountAggregateOutputType = {
   email: number
   phone: number
   website: number
+  slug: number
   subscriptionId: number
   billingCycle: number
   createdAt: number
@@ -101,6 +104,7 @@ export type GroupMinAggregateInputType = {
   email?: true
   phone?: true
   website?: true
+  slug?: true
   subscriptionId?: true
   billingCycle?: true
   createdAt?: true
@@ -121,6 +125,7 @@ export type GroupMaxAggregateInputType = {
   email?: true
   phone?: true
   website?: true
+  slug?: true
   subscriptionId?: true
   billingCycle?: true
   createdAt?: true
@@ -142,6 +147,7 @@ export type GroupCountAggregateInputType = {
   email?: true
   phone?: true
   website?: true
+  slug?: true
   subscriptionId?: true
   billingCycle?: true
   createdAt?: true
@@ -236,6 +242,7 @@ export type GroupGroupByOutputType = {
   email: string
   phone: string
   website: string | null
+  slug: string | null
   subscriptionId: string | null
   billingCycle: $Enums.BillingCycle | null
   createdAt: Date
@@ -278,6 +285,7 @@ export type GroupWhereInput = {
   email?: Prisma.StringFilter<"Group"> | string
   phone?: Prisma.StringFilter<"Group"> | string
   website?: Prisma.StringNullableFilter<"Group"> | string | null
+  slug?: Prisma.StringNullableFilter<"Group"> | string | null
   subscriptionId?: Prisma.StringNullableFilter<"Group"> | string | null
   billingCycle?: Prisma.EnumBillingCycleNullableFilter<"Group"> | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFilter<"Group"> | Date | string
@@ -302,6 +310,7 @@ export type GroupOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  slug?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
   billingCycle?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -314,6 +323,7 @@ export type GroupOrderByWithRelationInput = {
 export type GroupWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   name?: string
+  slug?: string
   AND?: Prisma.GroupWhereInput | Prisma.GroupWhereInput[]
   OR?: Prisma.GroupWhereInput[]
   NOT?: Prisma.GroupWhereInput | Prisma.GroupWhereInput[]
@@ -336,7 +346,7 @@ export type GroupWhereUniqueInput = Prisma.AtLeast<{
   entities?: Prisma.EntityListRelationFilter
   groupRoles?: Prisma.GroupRoleListRelationFilter
   users?: Prisma.UserListRelationFilter
-}, "id" | "name">
+}, "id" | "name" | "slug">
 
 export type GroupOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -353,6 +363,7 @@ export type GroupOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  slug?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder
   billingCycle?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -380,6 +391,7 @@ export type GroupScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"Group"> | string
   phone?: Prisma.StringWithAggregatesFilter<"Group"> | string
   website?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
+  slug?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
   subscriptionId?: Prisma.StringNullableWithAggregatesFilter<"Group"> | string | null
   billingCycle?: Prisma.EnumBillingCycleNullableWithAggregatesFilter<"Group"> | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Group"> | Date | string
@@ -401,6 +413,7 @@ export type GroupCreateInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -425,6 +438,7 @@ export type GroupUncheckedCreateInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -449,6 +463,7 @@ export type GroupUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -473,6 +488,7 @@ export type GroupUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -497,6 +513,7 @@ export type GroupCreateManyInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -518,6 +535,7 @@ export type GroupUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -539,6 +557,7 @@ export type GroupUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -560,6 +579,7 @@ export type GroupCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
   billingCycle?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -580,6 +600,7 @@ export type GroupMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
   billingCycle?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -600,6 +621,7 @@ export type GroupMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
   billingCycle?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -691,6 +713,7 @@ export type GroupCreateWithoutEntitiesInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -714,6 +737,7 @@ export type GroupUncheckedCreateWithoutEntitiesInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -753,6 +777,7 @@ export type GroupUpdateWithoutEntitiesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -776,6 +801,7 @@ export type GroupUncheckedUpdateWithoutEntitiesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -799,6 +825,7 @@ export type GroupCreateWithoutUsersInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -822,6 +849,7 @@ export type GroupUncheckedCreateWithoutUsersInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -861,6 +889,7 @@ export type GroupUpdateWithoutUsersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -884,6 +913,7 @@ export type GroupUncheckedUpdateWithoutUsersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -907,6 +937,7 @@ export type GroupCreateWithoutGroupRolesInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -930,6 +961,7 @@ export type GroupUncheckedCreateWithoutGroupRolesInput = {
   email: string
   phone: string
   website?: string | null
+  slug?: string | null
   subscriptionId?: string | null
   billingCycle?: $Enums.BillingCycle | null
   createdAt?: Date | string
@@ -969,6 +1001,7 @@ export type GroupUpdateWithoutGroupRolesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -992,6 +1025,7 @@ export type GroupUncheckedUpdateWithoutGroupRolesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCycle?: Prisma.NullableEnumBillingCycleFieldUpdateOperationsInput | $Enums.BillingCycle | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1064,6 +1098,7 @@ export type GroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   email?: boolean
   phone?: boolean
   website?: boolean
+  slug?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
   createdAt?: boolean
@@ -1089,6 +1124,7 @@ export type GroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   email?: boolean
   phone?: boolean
   website?: boolean
+  slug?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
   createdAt?: boolean
@@ -1110,6 +1146,7 @@ export type GroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   email?: boolean
   phone?: boolean
   website?: boolean
+  slug?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
   createdAt?: boolean
@@ -1131,13 +1168,14 @@ export type GroupSelectScalar = {
   email?: boolean
   phone?: boolean
   website?: boolean
+  slug?: boolean
   subscriptionId?: boolean
   billingCycle?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type GroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "legalName" | "logo" | "taxId" | "industry" | "address" | "city" | "province" | "postalCode" | "country" | "email" | "phone" | "website" | "subscriptionId" | "billingCycle" | "createdAt" | "updatedAt", ExtArgs["result"]["group"]>
+export type GroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "legalName" | "logo" | "taxId" | "industry" | "address" | "city" | "province" | "postalCode" | "country" | "email" | "phone" | "website" | "slug" | "subscriptionId" | "billingCycle" | "createdAt" | "updatedAt", ExtArgs["result"]["group"]>
 export type GroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   entities?: boolean | Prisma.Group$entitiesArgs<ExtArgs>
   groupRoles?: boolean | Prisma.Group$groupRolesArgs<ExtArgs>
@@ -1169,6 +1207,7 @@ export type $GroupPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     email: string
     phone: string
     website: string | null
+    slug: string | null
     subscriptionId: string | null
     billingCycle: $Enums.BillingCycle | null
     createdAt: Date
@@ -1613,6 +1652,7 @@ export interface GroupFieldRefs {
   readonly email: Prisma.FieldRef<"Group", 'String'>
   readonly phone: Prisma.FieldRef<"Group", 'String'>
   readonly website: Prisma.FieldRef<"Group", 'String'>
+  readonly slug: Prisma.FieldRef<"Group", 'String'>
   readonly subscriptionId: Prisma.FieldRef<"Group", 'String'>
   readonly billingCycle: Prisma.FieldRef<"Group", 'BillingCycle'>
   readonly createdAt: Prisma.FieldRef<"Group", 'DateTime'>

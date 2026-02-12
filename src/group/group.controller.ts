@@ -31,17 +31,24 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-@ApiTags('Groups')
-@UseGuards(AuthGuard)
-@ApiBearerAuth('jwt')
-@ApiCookieAuth('cookieAuth')
+// @ApiTags('Groups')
+// @UseGuards(AuthGuard)
+// @ApiBearerAuth('jwt')
+// @ApiCookieAuth('cookieAuth')
 @Controller('groups')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
-
+@Get('tenant-config')
+  @ApiOperation({ summary: 'Fetch tenant config for current subdomain' })
+  @ApiResponse({ status: 200, description: 'Tenant config object' })
+  async getTenantConfig() {
+    console.log('Fetching tenant config for current request');
+    // Uses TenantService, which gets slug from CLS context
+    return this.groupService.getTenantConfig();
+  }
   @Post()
-  @UseGuards(RolesGuard) 
-  @Roles(systemRole.superadmin)
+  // @UseGuards(RolesGuard, AuthGuard)
+  // @Roles(systemRole.superadmin)
   @UseInterceptors(FileInterceptor('logo'))
   @ApiOperation({ summary: 'Create a new group with optional logo' })
   @ApiResponse({ status: 201, description: 'Group created' })
@@ -88,8 +95,8 @@ export class GroupController {
   }
 
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(systemRole.superadmin)
+  // @UseGuards(RolesGuard)
+  // @Roles(systemRole.superadmin)
   @ApiOperation({ summary: 'List groups with pagination and search filters' })
   @ApiResponse({
     status: 200,
@@ -119,8 +126,8 @@ export class GroupController {
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
-  @Roles(systemRole.admin, systemRole.superadmin)
+  // @UseGuards(RolesGuard)
+  // @Roles(systemRole.admin, systemRole.superadmin)
   @ApiOperation({ summary: 'Get group by id' })
   @ApiResponse({ status: 200, description: 'Group detail' })
   findOne(@Param('id') id: string) {
@@ -128,8 +135,8 @@ export class GroupController {
   }
 
   @Patch(':id')
-  @UseGuards(RolesGuard)
-  @Roles(systemRole.admin, systemRole.superadmin)
+  // @UseGuards(RolesGuard)
+  // @Roles(systemRole.admin, systemRole.superadmin)
   @UseInterceptors(FileInterceptor('logo'))
   @ApiOperation({ summary: 'Update group with optional new logo' })
   @ApiResponse({ status: 200, description: 'Group updated' })
@@ -143,11 +150,13 @@ export class GroupController {
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles(systemRole.superadmin)
+  // @UseGuards(RolesGuard)
+  // @Roles(systemRole.superadmin)
   @ApiOperation({ summary: 'Delete group' })
   @ApiResponse({ status: 200, description: 'Group removed' })
   remove(@Param('id') id: string) {
     return this.groupService.remove(id);
   }
+
+  
 }

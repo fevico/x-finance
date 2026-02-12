@@ -26,6 +26,9 @@ import { BullmqModule } from './bullmq/bullmq.module';
 import { PaymentReceivedModule } from './sales/payment-received/payment-received.module';
 import { LeaveModule } from './hr-payroll/leave/leave.module';
 import { OrganizationModule } from './settings/organization/organization.module';
+import { RedisModule } from './redis/redis.module';
+import { MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { TenantMiddleware } from './middleware/tenant.middleware';
 
 @Module({
   imports: [
@@ -54,8 +57,14 @@ import { OrganizationModule } from './settings/organization/organization.module'
     PaymentReceivedModule,
     LeaveModule,
     OrganizationModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TenantMiddleware).forRoutes('*');
+  }
+}

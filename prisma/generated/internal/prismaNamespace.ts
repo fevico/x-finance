@@ -2407,6 +2407,7 @@ export const GroupScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   website: 'website',
+  slug: 'slug',
   subscriptionId: 'subscriptionId',
   billingCycle: 'billingCycle',
   createdAt: 'createdAt',
