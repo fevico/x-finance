@@ -25,6 +25,7 @@ import { EmployeeModule } from './hr-payroll/employee/employee.module';
 import { BullmqModule } from './bullmq/bullmq.module';
 import { PaymentReceivedModule } from './sales/payment-received/payment-received.module';
 import { LeaveModule } from './hr-payroll/leave/leave.module';
+import { OrganizationModule } from './settings/organization/organization.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { LeaveModule } from './hr-payroll/leave/leave.module';
     BullmqModule,
     PaymentReceivedModule,
     LeaveModule,
+    OrganizationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

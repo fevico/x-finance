@@ -42,8 +42,10 @@ model Entity {
   currency        String?
   email           String?           @unique
   legalName       String?
+  companyName     String? 
   phoneNumber     String?
   postalCode      String?
+  logo            Json?
   state           String?
   taxId           String?
   website         String?
@@ -529,6 +531,7 @@ model Leave {
 
   @@index([employeeId, status])
 }
+
 
 model Permission {
   id          String      @id @default(cuid())
