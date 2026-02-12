@@ -55,7 +55,7 @@ export class InvoiceService {
           this.prisma.invoiceItem.create({
             data: {
               itemId: item.itemId,
-              rate: item.rate,
+              rate: item.rate, 
               quantity: item.quantity,
               invoiceId: invoice.id, // Add this field to InvoiceItem model
             },
