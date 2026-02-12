@@ -55,6 +55,8 @@ jobs:
           echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> build/.env
           echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> build/.env
           echo "PORT=${{ secrets.PORT }}" >> build/.env
+          echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> build/.env
+          echo "DEFAULT_EMAIL_FROM=${{ secrets.DEFAULT_EMAIL_FROM }}" >> build/.
 
       - name: Set up SSH key
         run: |
