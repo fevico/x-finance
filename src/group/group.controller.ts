@@ -120,7 +120,7 @@ export class GroupController {
 
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles(systemRole.admin)
+  @Roles(systemRole.admin, systemRole.superadmin)
   @ApiOperation({ summary: 'Get group by id' })
   @ApiResponse({ status: 200, description: 'Group detail' })
   findOne(@Param('id') id: string) {
@@ -129,7 +129,7 @@ export class GroupController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles(systemRole.admin)
+  @Roles(systemRole.admin, systemRole.superadmin)
   @UseInterceptors(FileInterceptor('logo'))
   @ApiOperation({ summary: 'Update group with optional new logo' })
   @ApiResponse({ status: 200, description: 'Group updated' })

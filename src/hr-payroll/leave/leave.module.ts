@@ -7,6 +7,6 @@ import { AuthService } from '@/auth/auth.service';
 @Module({
   imports: [PrismaModule],
   providers: [LeaveService, AuthService],
-  controllers: [LeaveController]
+  controllers: [LeaveController],
 })
 export class LeaveModule {}

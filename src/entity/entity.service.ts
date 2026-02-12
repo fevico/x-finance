@@ -8,8 +8,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
+import { GetEntitiesQueryDto } from './dto/get-entities-query.dto';
 import { BullmqService } from '@/bullmq/bullmq.service';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class EntityService {
@@ -44,14 +44,49 @@ export class EntityService {
 
       return entity;
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
-  findAll(effectiveGroupId: string) {
-    return this.prisma.entity.findMany({
-      where: { groupId: effectiveGroupId },
-    });
+  async findAll(query: GetEntitiesQueryDto, effectiveGroupId: string) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+    const search = query.search || '';
+
+    const where: any = { groupId: effectiveGroupId };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { legalName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Avoid starting a DB transaction for simple reads — some serverless DB
+    // providers (e.g. Neon) can error when many transactions are started.
+    const [data, total] = await Promise.all([
+      this.prisma.entity.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.entity.count({ where }),
+    ]);
+
+    return {
+      entities: data,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string, effectiveGroupId: string) {

@@ -33,6 +33,7 @@ model Group {
   groupRoles GroupRole[]
   users      User[]
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Entity {
@@ -69,6 +70,9 @@ model Entity {
   leave       Leave[]
   attendance  AttendanceLog[]
   paymentReceived PaymentReceived[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@index([name, taxId, email])
 }
 
@@ -104,6 +108,9 @@ model GroupRole {
   users       User[]
   permissions Permission[] @relation("GroupRoleToPermission")
 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@unique([name, groupId])
 }
 
@@ -128,6 +135,7 @@ model Customer {
   invoice      Invoice[]
   receipt      Receipt[]
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([email, name])
 }
@@ -148,6 +156,9 @@ model Invoice {
   customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   entity        Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
   paymentReceived PaymentReceived[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([invoiceNumber, customerId, currency])
 }
@@ -180,7 +191,11 @@ model vendor {
   internalNote   String?
   status         vendorStatus @default(Active)
   createdAt      DateTime @default(now())
-  bills          Bills[]
+  bills           Bills[]
+
+  updatedAt       DateTime @updatedAt
+
+  @@index([email, entityId])
   @@unique([email, phone])
   @@index([type, email])
 }
@@ -201,6 +216,8 @@ model PaymentReceived {
   entity            Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt         DateTime @default(now())
 
+  updatedAt         DateTime @updatedAt
+
   @@index([invoiceId])
 }
 
@@ -220,6 +237,7 @@ model Expenses {
   entityId      String
   entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   @@index([reference, category])
 }
 
@@ -241,6 +259,7 @@ model Bills {
   entityId          String
   entity            Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
   paymentRecord      PaymentRecord[]
   @@index([billDate, category])
 }
@@ -256,6 +275,7 @@ model PaymentRecord {
   note              String?
   status            paymentRecordStatus @default(cleared)
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   
   @@index([billId])
 }
@@ -273,6 +293,7 @@ model Receipt {
   total                   Int
   status                  ReceiptStatus @default(Void)
   createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
   @@index([date])
 }
 
@@ -293,6 +314,7 @@ model Items {
   entityId      String 
   entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([entityId, type])
 }
@@ -308,6 +330,7 @@ model Collection {
   entityId         String 
   entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([entityId])
 }
@@ -334,6 +357,7 @@ model Asset {
   entityId         String 
   entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([id, entityId])
 }
@@ -354,6 +378,7 @@ model Account {
   entityId      String 
   entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([id, entityId])
 }
@@ -367,6 +392,7 @@ model Journal {
   entityId         String 
   entity           Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([id, entityId])
 }
@@ -384,6 +410,7 @@ model Budget {
   entityId      String
   entity        Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   @@index([entityId])
 }
 
@@ -420,6 +447,7 @@ model Employee {
   entityId        String
   entity          Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([employeeId, email, entityId])
 }
@@ -471,6 +499,7 @@ model Leave {
   contact         String 
   emergencyContact String 
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([employeeId, status])
 }
@@ -479,6 +508,8 @@ model Permission {
   name        String      @unique
   description String?
   groupRoles  GroupRole[] @relation("GroupRoleToPermission")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model AuditLog {
@@ -490,6 +521,8 @@ model AuditLog {
   device    String?
   location  String?
   createdAt  DateTime @default(now())
+
+  updatedAt  DateTime @updatedAt
 
   @@index([userId])
   @@index([action])

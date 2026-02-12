@@ -8,9 +8,9 @@ import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 
 @Injectable()
 export class ReceiptService {
-  constructor(private prisma: PrismaService) {} 
+  constructor(private prisma: PrismaService) {}
 
-  async createReceipt(body: CreateReceiptDto, entityId: string) {  
+  async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
       const receiptNumber = generateRandomInvoiceNumber();
       const receipt = await this.prisma.receipt.create({

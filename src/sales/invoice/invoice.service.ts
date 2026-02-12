@@ -3,9 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/invoice.dto';
 import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
-import {
-  GetEntityInvoicesResponseDto,
-} from './dto/get-entity-invoices-response.dto';
+import { GetEntityInvoicesResponseDto } from './dto/get-entity-invoices-response.dto';
 import { GetPaidInvoicesResponseDto } from './dto/get-paid-invoices-response.dto';
 import { GetPaidInvoicesQueryDto } from './dto/get-paid-invoices-query.dto';
 import { InvoiceStatus } from 'prisma/generated/enums';

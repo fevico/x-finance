@@ -253,7 +253,10 @@ export class AttendanceService {
     }
   }
 
-  private calculateHours(checkInTime: Date | null, checkOutTime: Date | null): number {
+  private calculateHours(
+    checkInTime: Date | null,
+    checkOutTime: Date | null,
+  ): number {
     if (!checkInTime || !checkOutTime) return 0;
     const diffMs = checkOutTime.getTime() - checkInTime.getTime();
     return Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100; // Hours with 2 decimal places

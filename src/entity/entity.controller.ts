@@ -8,11 +8,13 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
   ForbiddenException,
 } from '@nestjs/common';
 import { EntityService } from './entity.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
+import { GetEntitiesQueryDto } from './dto/get-entities-query.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -45,12 +47,12 @@ export class EntityController {
   @Roles(systemRole.admin, systemRole.superadmin)
   @ApiOperation({ summary: 'List entities for the effective group' })
   @ApiResponse({ status: 200, description: 'List of entities' })
-  findAll(@Req() req: Request) {
+  findAll(@Query() query: GetEntitiesQueryDto, @Req() req: Request) {
     const effectiveGroupId = getEffectiveGroupId(req);
     if (!effectiveGroupId) {
       throw new ForbiddenException('No effective group ID found.');
     }
-    return this.entityService.findAll(effectiveGroupId);
+    return this.entityService.findAll(query, effectiveGroupId);
   }
 
   @Get(':id')

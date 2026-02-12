@@ -5,8 +5,8 @@ import { BullmqService } from '@/bullmq/bullmq.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GetGroupsQueryDto } from './dto/get-groups-query.dto';
-import * as bcrypt from 'bcrypt';
-import { systemRole } from 'prisma/generated/enums';
+import 'multer';
+import { Prisma } from 'prisma/generated/client';
 
 @Injectable()
 export class GroupService {
@@ -48,7 +48,10 @@ export class GroupService {
 
       return group;
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -122,7 +125,7 @@ export class GroupService {
   //   }
   // }
 
-  findAll(query: GetGroupsQueryDto) {
+  async findAll(query: GetGroupsQueryDto) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
@@ -138,28 +141,27 @@ export class GroupService {
       ];
     }
 
-    // Execute query with pagination
-    return this.prisma.$transaction(async (tx) => {
-      const [data, total] = await Promise.all([
-        tx.group.findMany({
-          where,
-          skip,
-          take: Number(limit),
-          orderBy: { createdAt: 'desc' },
-        }),
-        tx.group.count({ where }),
-      ]);
+    // Avoid starting a DB transaction for simple reads — some serverless DB
+    // providers (e.g. Neon) can error when many transactions are started.
+    const [data, total] = await Promise.all([
+      this.prisma.group.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.group.count({ where }),
+    ]);
 
-      return {
-        groups: data,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      };
-    });
+    return {
+      groups: data,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
   }
 
   findOne(id: string) {
@@ -189,11 +191,62 @@ export class GroupService {
         },
       });
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
-  remove(id: string) {
-    return this.prisma.group.delete({ where: { id } });
+  async remove(id: string) {
+    try {
+      const [rolesCount, usersCount, entitiesCount] = await Promise.all([
+        this.prisma.groupRole.count({ where: { groupId: id } }),
+        this.prisma.user.count({ where: { groupId: id } }),
+        this.prisma.entity.count({ where: { groupId: id } }),
+      ]);
+
+      const blockers: string[] = [];
+      if (rolesCount > 0) blockers.push(`group roles (${rolesCount})`);
+      if (usersCount > 0) blockers.push(`users (${usersCount})`);
+      if (entitiesCount > 0) blockers.push(`entities (${entitiesCount})`);
+
+      if (blockers.length > 0) {
+        throw new HttpException(
+          `Cannot delete group because related records exist: ${blockers.join(', ')}`,
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      try {
+        return await this.prisma.group.delete({ where: { id } });
+      } catch (err) {
+        if (
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === 'P2003'
+        ) {
+          throw new HttpException(
+            'Cannot delete group because related records exist',
+            HttpStatus.CONFLICT,
+          );
+        }
+        throw err;
+      }
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2003'
+      ) {
+        throw new HttpException(
+          'Cannot delete group because related records exist',
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }

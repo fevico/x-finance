@@ -1,6 +1,5 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import {
-  HttpCode,
   HttpException,
   HttpStatus,
   Injectable,
