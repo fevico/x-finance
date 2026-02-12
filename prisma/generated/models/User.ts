@@ -258,10 +258,10 @@ export type UserWhereInput = {
   systemRole?: Prisma.EnumsystemRoleFilter<"User"> | $Enums.systemRole
   groupId?: Prisma.StringNullableFilter<"User"> | string | null
   entityId?: Prisma.StringNullableFilter<"User"> | string | null
+  auditLogs?: Prisma.AuditLogListRelationFilter
   entity?: Prisma.XOR<Prisma.EntityNullableScalarRelationFilter, Prisma.EntityWhereInput> | null
   group?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
   groupRole?: Prisma.XOR<Prisma.GroupRoleNullableScalarRelationFilter, Prisma.GroupRoleWhereInput> | null
-  auditLogs?: Prisma.AuditLogListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -280,10 +280,10 @@ export type UserOrderByWithRelationInput = {
   systemRole?: Prisma.SortOrder
   groupId?: Prisma.SortOrderInput | Prisma.SortOrder
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder
+  auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
   entity?: Prisma.EntityOrderByWithRelationInput
   group?: Prisma.GroupOrderByWithRelationInput
   groupRole?: Prisma.GroupRoleOrderByWithRelationInput
-  auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -306,10 +306,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   systemRole?: Prisma.EnumsystemRoleFilter<"User"> | $Enums.systemRole
   groupId?: Prisma.StringNullableFilter<"User"> | string | null
   entityId?: Prisma.StringNullableFilter<"User"> | string | null
+  auditLogs?: Prisma.AuditLogListRelationFilter
   entity?: Prisma.XOR<Prisma.EntityNullableScalarRelationFilter, Prisma.EntityWhereInput> | null
   group?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
   groupRole?: Prisma.XOR<Prisma.GroupRoleNullableScalarRelationFilter, Prisma.GroupRoleWhereInput> | null
-  auditLogs?: Prisma.AuditLogListRelationFilter
 }, "id" | "email" | "provider_providerId">
 
 export type UserOrderByWithAggregationInput = {
@@ -367,10 +367,10 @@ export type UserCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   entity?: Prisma.EntityCreateNestedOneWithoutUsersInput
   group?: Prisma.GroupCreateNestedOneWithoutUsersInput
   groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -405,10 +405,10 @@ export type UserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   entity?: Prisma.EntityUpdateOneWithoutUsersNestedInput
   group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
   groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -714,9 +714,9 @@ export type UserCreateWithoutGroupInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   entity?: Prisma.EntityCreateNestedOneWithoutUsersInput
   groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGroupInput = {
@@ -797,9 +797,9 @@ export type UserCreateWithoutEntityInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   group?: Prisma.GroupCreateNestedOneWithoutUsersInput
   groupRole?: Prisma.GroupRoleCreateNestedOneWithoutUsersInput
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutEntityInput = {
@@ -859,9 +859,9 @@ export type UserCreateWithoutGroupRoleInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   systemRole?: $Enums.systemRole
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   entity?: Prisma.EntityCreateNestedOneWithoutUsersInput
   group?: Prisma.GroupCreateNestedOneWithoutUsersInput
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGroupRoleInput = {
@@ -1026,9 +1026,9 @@ export type UserUpdateWithoutGroupInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   entity?: Prisma.EntityUpdateOneWithoutUsersNestedInput
   groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupInput = {
@@ -1096,9 +1096,9 @@ export type UserUpdateWithoutEntityInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
   groupRole?: Prisma.GroupRoleUpdateOneWithoutUsersNestedInput
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutEntityInput = {
@@ -1166,9 +1166,9 @@ export type UserUpdateWithoutGroupRoleInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   systemRole?: Prisma.EnumsystemRoleFieldUpdateOperationsInput | $Enums.systemRole
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   entity?: Prisma.EntityUpdateOneWithoutUsersNestedInput
   group?: Prisma.GroupUpdateOneWithoutUsersNestedInput
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupRoleInput = {
@@ -1253,10 +1253,10 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   systemRole?: boolean
   groupId?: boolean
   entityId?: boolean
+  auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
   group?: boolean | Prisma.User$groupArgs<ExtArgs>
   groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1322,10 +1322,10 @@ export type UserSelectScalar = {
 
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "firstName" | "lastName" | "password" | "image" | "provider" | "providerId" | "emailVerified" | "createdAt" | "updatedAt" | "groupRoleId" | "systemRole" | "groupId" | "entityId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   entity?: boolean | Prisma.User$entityArgs<ExtArgs>
   group?: boolean | Prisma.User$groupArgs<ExtArgs>
   groupRole?: boolean | Prisma.User$groupRoleArgs<ExtArgs>
-  auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1342,10 +1342,10 @@ export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
   objects: {
+    auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
     entity: Prisma.$EntityPayload<ExtArgs> | null
     group: Prisma.$GroupPayload<ExtArgs> | null
     groupRole: Prisma.$GroupRolePayload<ExtArgs> | null
-    auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1757,10 +1757,10 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   entity<T extends Prisma.User$entityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$entityArgs<ExtArgs>>): Prisma.Prisma__EntityClient<runtime.Types.Result.GetResult<Prisma.$EntityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   group<T extends Prisma.User$groupArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   groupRole<T extends Prisma.User$groupRoleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupRoleArgs<ExtArgs>>): Prisma.Prisma__GroupRoleClient<runtime.Types.Result.GetResult<Prisma.$GroupRolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2201,6 +2201,30 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 /**
+ * User.auditLogs
+ */
+export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuditLog
+   */
+  select?: Prisma.AuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuditLog
+   */
+  omit?: Prisma.AuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuditLogInclude<ExtArgs> | null
+  where?: Prisma.AuditLogWhereInput
+  orderBy?: Prisma.AuditLogOrderByWithRelationInput | Prisma.AuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.AuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
  * User.entity
  */
 export type User$entityArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2255,30 +2279,6 @@ export type User$groupRoleArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   include?: Prisma.GroupRoleInclude<ExtArgs> | null
   where?: Prisma.GroupRoleWhereInput
-}
-
-/**
- * User.auditLogs
- */
-export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the AuditLog
-   */
-  select?: Prisma.AuditLogSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the AuditLog
-   */
-  omit?: Prisma.AuditLogOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AuditLogInclude<ExtArgs> | null
-  where?: Prisma.AuditLogWhereInput
-  orderBy?: Prisma.AuditLogOrderByWithRelationInput | Prisma.AuditLogOrderByWithRelationInput[]
-  cursor?: Prisma.AuditLogWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
 }
 
 /**

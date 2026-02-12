@@ -12,11 +12,11 @@ import { ItemsType } from 'prisma/generated/enums';
 export class CreateItemDto {
   @ApiProperty({ example: 'Office Chair', description: 'Item name' })
   @IsString()
-  name: string;
+  name: string = '';
 
   @ApiProperty({ example: 'Furniture', description: 'Item category' })
   @IsString()
-  category: string;
+  category: string = '';
 
   @ApiPropertyOptional({
     example: 'SKU-001',
@@ -24,7 +24,7 @@ export class CreateItemDto {
   })
   @IsOptional()
   @IsString()
-  sku?: string;
+  sku?: string = '';
 
   @ApiPropertyOptional({ example: 'pieces', description: 'Unit of measure' })
   @IsOptional()
@@ -36,7 +36,7 @@ export class CreateItemDto {
     description: 'Item description',
   })
   @IsString()
-  description: string;
+  description: string = '';
 
   @ApiPropertyOptional({
     example: 25000,
@@ -84,18 +84,34 @@ export class CreateItemDto {
   @IsOptional()
   @IsEnum(ItemsType)
   type?: ItemsType;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Is item sellable online',
+  })
+  @IsOptional()
+  @IsBoolean()
+  sellOnline?: boolean;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Track inventory for this item',
+  })
+  @IsOptional()
+  @IsBoolean()
+  trackInventory?: boolean;
 }
 
 export class ItemDto extends CreateItemDto {
   @ApiProperty({ example: 'item_uuid' })
-  id: string;
+  id: string = '';
 
   @ApiProperty({
     example: 'in_stock',
-    enum: ['in_stock', 'out_of_stock'],
+    enum: ['in_stock', 'low_stock', 'out_of_stock'],
     description: 'Stock status based on currentStock vs lowStock',
   })
-  status: 'in_stock' | 'out_of_stock';
+  status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'in_stock';
 
   @ApiPropertyOptional({
     example: 25000,

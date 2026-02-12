@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { GetItemsQueryDto } from './dto/get-items-query.dto';
@@ -81,8 +81,13 @@ export class ItemsService {
     const currentStock = item.currentStock ?? 0;
     const lowStock = item.lowStock ?? 0;
 
-    // Status: in_stock if currentStock > lowStock, else out_of_stock
-    const status = currentStock > lowStock ? 'in_stock' : 'out_of_stock';
+    // Status: in_stock if currentStock > lowStock, else out_of_stock. If currentStock is 0, then low_stock
+    const status =
+      currentStock === 0
+        ? 'out_of_stock'
+        : currentStock > 0 && currentStock > lowStock
+          ? 'in_stock'
+          : 'low_stock';
 
     return {
       ...item,

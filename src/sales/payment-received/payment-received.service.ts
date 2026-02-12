@@ -52,7 +52,8 @@ export class PaymentReceivedService {
       return this.enrichPaymentRecords([paymentReceived])[0];
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -80,7 +81,8 @@ export class PaymentReceivedService {
       return this.enrichPaymentRecords([payment])[0];
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -88,19 +90,46 @@ export class PaymentReceivedService {
     entityId: string,
     page: number = 1,
     limit: number = 10,
+    filters: {
+      search?: string;
+      status?: string;
+    } = {},
   ) {
     try {
       const skip = (page - 1) * limit;
 
+      const where: any = { entityId };
+      const { search, status } = filters || {};
+
+      if (status) where.status = status;
+
+      if (search) {
+        where.OR = [
+          { reference: { contains: search, mode: 'insensitive' } },
+          { paymentMethod: { contains: search, mode: 'insensitive' } },
+          { depositTo: { contains: search, mode: 'insensitive' } },
+          {
+            invoice: {
+              invoiceNumber: { contains: search, mode: 'insensitive' },
+            },
+          },
+          {
+            invoice: {
+              customer: { name: { contains: search, mode: 'insensitive' } },
+            },
+          },
+        ];
+      }
+
       const [payments, totalCount] = await Promise.all([
         this.prisma.paymentReceived.findMany({
-          where: { entityId },
+          where,
           include: { invoice: { include: { customer: true } } },
           skip,
           take: Number(limit),
           orderBy: { paidAt: 'desc' },
         }),
-        this.prisma.paymentReceived.count({ where: { entityId } }),
+        this.prisma.paymentReceived.count({ where }),
       ]);
 
       // Enrich payments with outstanding balance
@@ -124,7 +153,8 @@ export class PaymentReceivedService {
         },
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -161,7 +191,8 @@ export class PaymentReceivedService {
       return this.enrichPaymentRecords([updatedPayment])[0];
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -192,7 +223,8 @@ export class PaymentReceivedService {
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -200,21 +232,55 @@ export class PaymentReceivedService {
     entityId: string,
     page: number = 1,
     limit: number = 10,
+    filters: {
+      search?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+    } = {},
   ) {
     try {
       const skip = (page - 1) * limit;
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
+      const where: any = { entityId };
+      const { search, status, from, to } = filters || {};
+
+      if (status) where.status = status;
+      if (from || to) {
+        where.paidAt = {};
+        if (from) where.paidAt.gte = new Date(from);
+        if (to) where.paidAt.lte = new Date(to);
+      }
+
+      if (search) {
+        where.OR = [
+          { reference: { contains: search, mode: 'insensitive' } },
+          { paymentMethod: { contains: search, mode: 'insensitive' } },
+          { depositTo: { contains: search, mode: 'insensitive' } },
+          {
+            invoice: {
+              invoiceNumber: { contains: search, mode: 'insensitive' },
+            },
+          },
+          {
+            invoice: {
+              customer: { name: { contains: search, mode: 'insensitive' } },
+            },
+          },
+        ];
+      }
+
       const [payments, totalCount] = await Promise.all([
         this.prisma.paymentReceived.findMany({
-          where: { entityId },
+          where,
           include: { invoice: { include: { customer: true } } },
           skip,
           take: Number(limit),
           orderBy: { paidAt: 'desc' },
         }),
-        this.prisma.paymentReceived.count({ where: { entityId } }),
+        this.prisma.paymentReceived.count({ where }),
       ]);
 
       // Calculate total paid invoices (payments with Paid status)
@@ -280,7 +346,8 @@ export class PaymentReceivedService {
         },
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 }

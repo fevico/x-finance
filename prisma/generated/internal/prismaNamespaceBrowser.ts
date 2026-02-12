@@ -179,7 +179,6 @@ export const CustomerScalarFieldEnum = {
   email: 'email',
   phoneNumber: 'phoneNumber',
   companyName: 'companyName',
-  country: 'country',
   address: 'address',
   city: 'city',
   state: 'state',
@@ -189,6 +188,7 @@ export const CustomerScalarFieldEnum = {
   note: 'note',
   entityId: 'entityId',
   isActive: 'isActive',
+  country: 'country',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -329,8 +329,6 @@ export type PaymentRecordScalarFieldEnum = (typeof PaymentRecordScalarFieldEnum)
 
 export const ReceiptScalarFieldEnum = {
   id: 'id',
-  customerId: 'customerId',
-  receiptNumber: 'receiptNumber',
   date: 'date',
   entityId: 'entityId',
   paymentMethod: 'paymentMethod',
@@ -338,6 +336,8 @@ export const ReceiptScalarFieldEnum = {
   total: 'total',
   status: 'status',
   createdAt: 'createdAt',
+  customerId: 'customerId',
+  receiptNumber: 'receiptNumber',
   updatedAt: 'updatedAt'
 } as const
 
@@ -358,6 +358,8 @@ export const ItemsScalarFieldEnum = {
   currentStock: 'currentStock',
   lowStock: 'lowStock',
   type: 'type',
+  trackInventory: 'trackInventory',
+  sellOnline: 'sellOnline',
   entityId: 'entityId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -475,7 +477,6 @@ export const EmployeeScalarFieldEnum = {
   anualLeave: 'anualLeave',
   salary: 'salary',
   allowances: 'allowances',
-  status: 'status',
   perFrequency: 'perFrequency',
   currency: 'currency',
   bankName: 'bankName',
@@ -488,6 +489,7 @@ export const EmployeeScalarFieldEnum = {
   asdraft: 'asdraft',
   entityId: 'entityId',
   createdAt: 'createdAt',
+  status: 'status',
   updatedAt: 'updatedAt'
 } as const
 
@@ -508,7 +510,6 @@ export type AttendanceLogScalarFieldEnum = (typeof AttendanceLogScalarFieldEnum)
 export const AttendanceScalarFieldEnum = {
   id: 'id',
   employeeId: 'employeeId',
-  attendanceLogId: 'attendanceLogId',
   status: 'status',
   checkInTime: 'checkInTime',
   checkOutTime: 'checkOutTime',
@@ -516,7 +517,8 @@ export const AttendanceScalarFieldEnum = {
   asdraft: 'asdraft',
   entityId: 'entityId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  attendanceLogId: 'attendanceLogId'
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
