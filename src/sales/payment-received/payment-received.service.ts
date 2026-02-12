@@ -4,10 +4,14 @@ import {
   CreatePaymentReceivedDto,
   UpdatePaymentReceivedDto,
 } from './dto/payment-received.dto';
+import { InvoiceService } from '../invoice/invoice.service';
 
 @Injectable()
 export class PaymentReceivedService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private invoiceService: InvoiceService,
+  ) {}
 
   private enrichPaymentRecords(payments: any[]) {
     return payments.map((payment) => ({
@@ -21,6 +25,7 @@ export class PaymentReceivedService {
   async createPaymentReceived(
     body: CreatePaymentReceivedDto,
     entityId: string,
+    performedBy?: string,
   ) {
     try {
       // Fetch invoice to get total amount and validate it exists
@@ -48,6 +53,14 @@ export class PaymentReceivedService {
         },
         include: { invoice: { include: { customer: true } } },
       });
+
+      // Log payment received activity
+      await this.invoiceService.logPaymentReceived(
+        body.invoiceId,
+        paymentReceived.amount,
+        body.reference,
+        performedBy,
+      );
 
       return this.enrichPaymentRecords([paymentReceived])[0];
     } catch (error) {

@@ -57,6 +57,7 @@ export const ModelName = {
   GroupRole: 'GroupRole',
   Customer: 'Customer',
   Invoice: 'Invoice',
+  InvoiceActivity: 'InvoiceActivity',
   InvoiceItem: 'InvoiceItem',
   vendor: 'vendor',
   PaymentReceived: 'PaymentReceived',
@@ -128,8 +129,10 @@ export const EntityScalarFieldEnum = {
   currency: 'currency',
   email: 'email',
   legalName: 'legalName',
+  companyName: 'companyName',
   phoneNumber: 'phoneNumber',
   postalCode: 'postalCode',
+  logo: 'logo',
   state: 'state',
   taxId: 'taxId',
   website: 'website',
@@ -209,13 +212,25 @@ export const InvoiceScalarFieldEnum = {
   items: 'items',
   total: 'total',
   notes: 'notes',
-  activities: 'activities',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoiceActivityScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  activityType: 'activityType',
+  description: 'description',
+  performedBy: 'performedBy',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type InvoiceActivityScalarFieldEnum = (typeof InvoiceActivityScalarFieldEnum)[keyof typeof InvoiceActivityScalarFieldEnum]
 
 
 export const InvoiceItemScalarFieldEnum = {

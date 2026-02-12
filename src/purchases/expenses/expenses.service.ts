@@ -28,7 +28,7 @@ export class ExpensesService {
         );
       }
 
-      const reference = generateRandomInvoiceNumber();
+      const reference = generateRandomInvoiceNumber({prefix: 'EXP'});
 
       const expense = await this.prisma.expenses.create({
         data: {

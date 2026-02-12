@@ -8,5 +8,6 @@ import { AuthService } from '@/auth/auth.service';
   imports: [PrismaModule],
   providers: [InvoiceService, AuthService],
   controllers: [InvoiceController],
+  exports: [InvoiceService],
 })
 export class InvoiceModule {}

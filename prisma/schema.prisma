@@ -41,8 +41,10 @@ model Entity {
   currency        String?
   email           String?           @unique
   legalName       String?
+  companyName     String? 
   phoneNumber     String?
   postalCode      String?
+  logo            Json?
   state           String?
   taxId           String?
   website         String?
@@ -135,10 +137,10 @@ model Customer {
 }
 
 model Invoice {
-  id              String            @id @default(cuid())
+  id              String              @id @default(cuid())
   customerId      String
   entityId        String
-  invoiceNumber   String            @unique
+  invoiceNumber   String              @unique
   invoiceDate     DateTime
   dueDate         DateTime
   paymentTerms    String
@@ -146,16 +148,30 @@ model Invoice {
   items           String[]
   total           Int
   notes           String?
-  activities      Json?
-  status          InvoiceStatus     @default(Pending)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @default(now()) @updatedAt
-  customer        Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  entity          Entity            @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  status          InvoiceStatus       @default(Pending)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @default(now()) @updatedAt
+  customer        Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  entity          Entity              @relation(fields: [entityId], references: [id], onDelete: Cascade)
   paymentReceived PaymentReceived[]
   invoiceItem     InvoiceItem[]
+  activities      InvoiceActivity[]
 
   @@index([invoiceNumber, customerId, currency])
+}
+
+model InvoiceActivity {
+  id            String                @id @default(cuid())
+  invoiceId     String
+  invoice       Invoice               @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  activityType  InvoiceActivityType
+  description   String
+  performedBy   String?
+  metadata      Json?
+  createdAt     DateTime              @default(now())
+
+  @@index([invoiceId, createdAt])
+  @@index([invoiceId])
 }
 
 model InvoiceItem {
@@ -515,6 +531,7 @@ model Leave {
   @@index([employeeId, status])
 }
 
+
 model Permission {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -617,4 +634,14 @@ enum InvoiceStatus {
   Draft
   Sent
   Pending
+}
+
+enum InvoiceActivityType {
+  Created
+  Sent
+  Viewed
+  PaymentReceived
+  Overdue
+  Cancelled
+  Updated
 }

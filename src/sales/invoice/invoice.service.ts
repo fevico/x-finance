@@ -6,11 +6,37 @@ import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
 import { GetEntityInvoicesResponseDto } from './dto/get-entity-invoices-response.dto';
 import { GetPaidInvoicesResponseDto } from './dto/get-paid-invoices-response.dto';
 import { GetPaidInvoicesQueryDto } from './dto/get-paid-invoices-query.dto';
-import { InvoiceStatus } from 'prisma/generated/enums';
+import { InvoiceStatus, InvoiceActivityType } from 'prisma/generated/enums';
 
 @Injectable()
 export class InvoiceService {
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * Log an activity for an invoice
+   */
+  private async logActivity(
+    invoiceId: string,
+    activityType: InvoiceActivityType,
+    description: string,
+    performedBy?: string,
+    metadata?: any,
+  ) {
+    try {
+      await this.prisma.invoiceActivity.create({
+        data: {
+          invoiceId,
+          activityType,
+          description,
+          performedBy,
+          metadata,
+        },
+      });
+    } catch (error) {
+      console.error('Error logging invoice activity:', error instanceof Error ? error.message : String(error));
+      // Don't throw, as this shouldn't fail the main operation
+    }
+  }
 
   // async createInvoice(body: CreateInvoiceDto, entityId: string) {
   //   try {
@@ -28,54 +54,65 @@ export class InvoiceService {
   //   }
   // }
 
-  async createInvoice(body: CreateInvoiceDto, entityId: string) {
-  try {
-    const invoiceNumber = generateRandomInvoiceNumber();
-    
-    // Extract items from body
-    const { items, ...invoiceData } = body;
+  async createInvoice(body: CreateInvoiceDto, entityId: string, performedBy?: string) {
+    try {
+      const invoiceNumber = generateRandomInvoiceNumber({ prefix: 'INV' });
 
-    // Create invoice with invoice items in a transaction
-    const invoice = await this.prisma.invoice.create({
-      data: {
-        ...invoiceData,
-        invoiceNumber,
-        entityId,
-      },
-      include: { 
-        customer: { select: { name: true, id: true } },
-        invoiceItem: true 
-      },
-    });
+      // Extract items from body
+      const { items, ...invoiceData } = body;
 
-    // Create invoice items if provided
-    if (items && items.length > 0) {
-      const invoiceItems = await Promise.all(
-        items.map((item) =>
-          this.prisma.invoiceItem.create({
-            data: {
-              itemId: item.itemId,
-              rate: item.rate, 
-              quantity: item.quantity,
-              invoiceId: invoice.id, // Add this field to InvoiceItem model
-            },
-          })
-        )
+      // Create invoice with invoice items in a transaction
+      const invoice = await this.prisma.invoice.create({
+        data: {
+          ...invoiceData,
+          invoiceNumber,
+          entityId,
+        },
+        include: {
+          customer: { select: { name: true, id: true } },
+          invoiceItem: true,
+          activities: true,
+        },
+      });
+
+      // Log activity: Invoice Created
+      await this.logActivity(
+        invoice.id,
+        InvoiceActivityType.Created,
+        'Invoice created',
+        performedBy,
+        { invoiceNumber },
       );
 
-      return { ...invoice, invoiceItems };
-    }
+      // Create invoice items if provided
+      if (items && items.length > 0) {
+        const invoiceItems = await Promise.all(
+          items.map((item) =>
+            this.prisma.invoiceItem.create({
+              data: {
+                itemId: item.itemId,
+                rate: item.rate,
+                quantity: item.quantity,
+                invoiceId: invoice.id,
+              },
+              include: { item: true },
+            }),
+          ),
+        );
 
-    return invoice;
-  } catch (error) {
-    throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
+        return { ...invoice, invoiceItem: invoiceItems };
+      }
+
+      return invoice;
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
+    }
   }
-}
 
   async getEntityInvoice(
     entityId: string,
     query: GetInvoicesQueryDto,
-  ): Promise<GetEntityInvoicesResponseDto> {
+  ): Promise<any> {
     try {
       const page = query.page || 1;
       const limit = query.limit || 10;
@@ -95,10 +132,21 @@ export class InvoiceService {
         ];
       }
 
-      // Fetch paginated invoices with customer data
+      // Fetch paginated invoices with ALL related data
       const invoices = await this.prisma.invoice.findMany({
         where: whereClause,
-        include: { customer: { select: { name: true, id: true } } },
+        include: {
+          customer: { select: { name: true, id: true } },
+          invoiceItem: {
+            include: {
+              item: true,
+            },
+          },
+          // paymentReceived: true,
+          // activities: {
+          //   orderBy: { createdAt: 'desc' },
+          // },
+        },
         skip,
         take: Number(limit),
         orderBy: { invoiceDate: 'desc' },
@@ -119,22 +167,10 @@ export class InvoiceService {
           this.getStatusStats(entityId, 'Overdue'),
         ]);
 
-      // Transform invoices for response
-      const transformedInvoices = invoices.map((invoice) => ({
-        id: invoice.id,
-        invoiceNumber: invoice.invoiceNumber,
-        customerName: invoice.customer.name,
-        customerId: invoice.customer.id,
-        status: invoice.status,
-        total: invoice.total,
-        invoiceDate: invoice.invoiceDate.toISOString(),
-        dueDate: invoice.dueDate.toISOString(),
-      }));
-
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-        invoices: transformedInvoices,
+        invoices,
         stats: {
           pending: pendingStats,
           sent: sentStats,
@@ -187,7 +223,12 @@ export class InvoiceService {
       // Fetch paginated paid invoices
       const paidInvoices = await this.prisma.invoice.findMany({
         where: whereClause,
-        include: { customer: { select: { name: true, id: true } } },
+        include: { 
+          customer: { select: { name: true, id: true } },
+          invoiceItem: {
+            include: { item: true },
+          },
+        },
         skip,
         take: Number(limit),
         orderBy: { invoiceDate: 'desc' },
@@ -277,9 +318,18 @@ export class InvoiceService {
     try {
       const invoice = await this.prisma.invoice.findFirst({
         where: { OR: [{ id: invoiceId }, { invoiceNumber: invoiceId }] },
-        include: { customer: true },
+        include: {
+          customer: true,
+          invoiceItem: {
+            include: { item: true },
+          },
+          paymentReceived: true,
+          activities: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       });
- 
+
       if (!invoice) {
         throw new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
       }
@@ -302,10 +352,12 @@ export class InvoiceService {
     invoiceId: string,
     entityId: string,
     body: UpdateInvoiceDto,
+    performedBy?: string,
   ) {
     try {
       const invoice = await this.prisma.invoice.findUnique({
         where: { id: invoiceId },
+        include: { invoiceItem: true },
       });
 
       if (!invoice) {
@@ -319,11 +371,66 @@ export class InvoiceService {
         );
       }
 
+      // Extract items from body
+      const { items, removeItemIds, ...invoiceData } = body;
+
+      // Delete removed items if specified
+      if (removeItemIds && removeItemIds.length > 0) {
+        await this.prisma.invoiceItem.deleteMany({
+          where: {
+            id: { in: removeItemIds },
+            invoiceId: invoiceId,
+          },
+        });
+      }
+
+      // Handle items update/creation
+      if (items && items.length > 0) {
+        // Process new/updated items
+        for (const item of items) {
+          const hasId = (item as any).id && (item as any).id.trim().length > 0;
+
+          if (hasId) {
+            // Update existing item (has id)
+            await this.prisma.invoiceItem.update({
+              where: { id: (item as any).id },
+              data: {
+                itemId: item.itemId,
+                rate: item.rate,
+                quantity: item.quantity,
+              },
+            });
+          } else {
+            // Create new item (no id provided)
+            await this.prisma.invoiceItem.create({
+              data: {
+                itemId: item.itemId,
+                rate: item.rate,
+                quantity: item.quantity,
+                invoiceId: invoiceId,
+              },
+            });
+          }
+        }
+      }
+
+      // Update invoice data
       const updatedInvoice = await this.prisma.invoice.update({
         where: { id: invoiceId },
-        data: { ...body },
-        include: { customer: true },
+        data: invoiceData,
+        include: {
+          customer: true,
+          invoiceItem: {
+            include: { item: true },
+          },
+          activities: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       });
+
+      // Log activity: Invoice Updated
+      await this.logInvoiceUpdated(invoiceId, invoiceData, performedBy);
 
       return updatedInvoice;
     } catch (error) {
@@ -332,7 +439,7 @@ export class InvoiceService {
     }
   }
 
-  async deleteInvoice(invoiceId: string, entityId: string) {
+  async deleteInvoice(invoiceId: string, entityId: string, performedBy?: string) {
     try {
       const invoice = await this.prisma.invoice.findUnique({
         where: { id: invoiceId },
@@ -353,10 +460,105 @@ export class InvoiceService {
         where: { id: invoiceId },
       });
 
+      // Log activity: Invoice Cancelled
+      await this.logInvoiceCancelled(invoiceId, 'Invoice deleted', performedBy);
+
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  /**
+   * Log invoice sent activity
+   */
+  async logInvoiceSent(
+    invoiceId: string,
+    sentTo: string,
+    performedBy?: string,
+  ) {
+    return this.logActivity(
+      invoiceId,
+      InvoiceActivityType.Sent,
+      `Invoice sent to customer${sentTo ? ` (${sentTo})` : ''}`,
+      performedBy,
+      { sentTo },
+    );
+  }
+
+  /**
+   * Log payment received activity
+   */
+  async logPaymentReceived(
+    invoiceId: string,
+    amount: number,
+    reference: string,
+    performedBy?: string,
+  ) {
+    return this.logActivity(
+      invoiceId,
+      InvoiceActivityType.PaymentReceived,
+      `Payment received - ${amount}`,
+      performedBy,
+      { amount, reference },
+    );
+  }
+
+  /**
+   * Log invoice viewed activity
+   */
+  async logInvoiceViewed(invoiceId: string, viewedBy?: string) {
+    return this.logActivity(
+      invoiceId,
+      InvoiceActivityType.Viewed,
+      'Invoice viewed',
+      viewedBy,
+    );
+  }
+
+  /**
+   * Log invoice updated activity
+   */
+  async logInvoiceUpdated(
+    invoiceId: string,
+    changes: any,
+    performedBy?: string,
+  ) {
+    return this.logActivity(
+      invoiceId,
+      InvoiceActivityType.Updated,
+      'Invoice updated',
+      performedBy,
+      { changes },
+    );
+  }
+
+  /**
+   * Log invoice overdue activity
+   */
+  async logInvoiceOverdue(invoiceId: string) {
+    return this.logActivity(
+      invoiceId,
+      InvoiceActivityType.Overdue,
+      'Invoice marked as overdue',
+    );
+  }
+
+  /**
+   * Log invoice cancelled activity
+   */
+  async logInvoiceCancelled(
+    invoiceId: string,
+    reason?: string,
+    performedBy?: string,
+  ) {
+    return this.logActivity(
+      invoiceId,
+      InvoiceActivityType.Cancelled,
+      `Invoice cancelled${reason ? ` - ${reason}` : ''}`,
+      performedBy,
+      { reason },
+    );
   }
 }

@@ -40,7 +40,7 @@ export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post()
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard) 
   @Roles(systemRole.superadmin)
   @UseInterceptors(FileInterceptor('logo'))
   @ApiOperation({ summary: 'Create a new group with optional logo' })

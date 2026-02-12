@@ -44,9 +44,9 @@ export class InvoiceController {
   @ApiUnauthorizedResponse({ description: 'Access denied' })
   async createInvoice(@Body() body: CreateInvoiceDto, @Req() req) {
     const entityId = getEffectiveEntityId(req);
-    console.log('entityId', entityId);
+    const userId = req.user?.id;
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.invoiceService.createInvoice(body, entityId);
+    return this.invoiceService.createInvoice(body, entityId, userId);
   }
 
   @Get()
@@ -112,8 +112,9 @@ export class InvoiceController {
     @Body() body: UpdateInvoiceDto,
   ) {
     const entityId = getEffectiveEntityId(req);
+    const userId = req.user?.id;
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.invoiceService.updateInvoice(invoiceId, entityId, body);
+    return this.invoiceService.updateInvoice(invoiceId, entityId, body, userId);
   }
 
   @Delete(':invoiceId')
@@ -130,7 +131,8 @@ export class InvoiceController {
   })
   async deleteInvoice(@Req() req, @Param('invoiceId') invoiceId: string) {
     const entityId = getEffectiveEntityId(req);
+    const userId = req.user?.id;
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.invoiceService.deleteInvoice(invoiceId, entityId);
+    return this.invoiceService.deleteInvoice(invoiceId, entityId, userId);
   }
 }

@@ -11,6 +11,22 @@ import {
 import { Type } from 'class-transformer';
 import { InvoiceStatus } from 'prisma/generated/enums';
 
+// Invoice Item DTO (shared between Create and Update)
+export class InvoiceItemDto {
+  @IsOptional()
+  @IsString()
+  id?: string; // If provided, it's an update; if missing, it's a new item
+
+  @IsString()
+  itemId: string;
+
+  @IsNumber()
+  rate: number;
+
+  @IsNumber()
+  quantity: number;
+}
+
 // Create Invoice DTO (for creating a new invoice)
 export class CreateInvoiceDto {
   @IsString()
@@ -31,7 +47,9 @@ export class CreateInvoiceDto {
   currency: string;
 
   @IsArray()
-  items: InvoiceItems[];
+  @ValidateNested({ each: true })
+  @Type(() => InvoiceItemDto)
+  items: InvoiceItemDto[];
 
   @IsInt()
   total: number;
@@ -45,18 +63,7 @@ export class CreateInvoiceDto {
   status?: InvoiceStatus;
 }
 
-class InvoiceItems {
-  @IsString()
-  itemId: string
-
-  @IsNumber()
-  rate: number
-
-  @IsNumber()
-  quantity: number
-}
-
-// Update Invoice DTO (for partial updates)
+// Update Invoice DTO (for partial updates with item management)
 export class UpdateInvoiceDto {
   @IsOptional()
   @IsString()
@@ -82,8 +89,14 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => InvoiceItemDto)
+  items?: InvoiceItemDto[];
+
+  @IsOptional()
+  @IsArray()
   @IsString({ each: true })
-  items?: string[];
+  removeItemIds?: string[]; // IDs of invoice items to remove
 
   @IsOptional()
   @IsInt()

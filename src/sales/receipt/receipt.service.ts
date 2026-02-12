@@ -12,7 +12,7 @@ export class ReceiptService {
 
   async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
-      const receiptNumber = generateRandomInvoiceNumber();
+      const receiptNumber = generateRandomInvoiceNumber({ prefix: 'RCT' });
       const receipt = await this.prisma.receipt.create({
         data: {
           ...body,
