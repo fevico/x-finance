@@ -47,7 +47,7 @@ export class InvoiceWithCustomerDto {
   @ApiProperty({ example: 5000, description: 'Invoice total amount' })
   total: number;
 
-  @ApiProperty({ example: '2025-01-01T00:00:00Z' })
+  @ApiProperty({ example: '2025-01-01T00:00:00Z', description: 'Invoice date' })
   invoiceDate: string;
 
   @ApiProperty({ example: '2025-02-01T00:00:00Z' })

@@ -33,7 +33,10 @@ export class InvoiceService {
         },
       });
     } catch (error) {
-      console.error('Error logging invoice activity:', error instanceof Error ? error.message : String(error));
+      console.error(
+        'Error logging invoice activity:',
+        error instanceof Error ? error.message : String(error),
+      );
       // Don't throw, as this shouldn't fail the main operation
     }
   }
@@ -54,7 +57,11 @@ export class InvoiceService {
   //   }
   // }
 
-  async createInvoice(body: CreateInvoiceDto, entityId: string, performedBy?: string) {
+  async createInvoice(
+    body: CreateInvoiceDto,
+    entityId: string,
+    performedBy?: string,
+  ) {
     try {
       const invoiceNumber = generateRandomInvoiceNumber({ prefix: 'INV' });
 
@@ -223,7 +230,7 @@ export class InvoiceService {
       // Fetch paginated paid invoices
       const paidInvoices = await this.prisma.invoice.findMany({
         where: whereClause,
-        include: { 
+        include: {
           customer: { select: { name: true, id: true } },
           invoiceItem: {
             include: { item: true },
@@ -439,7 +446,11 @@ export class InvoiceService {
     }
   }
 
-  async deleteInvoice(invoiceId: string, entityId: string, performedBy?: string) {
+  async deleteInvoice(
+    invoiceId: string,
+    entityId: string,
+    performedBy?: string,
+  ) {
     try {
       const invoice = await this.prisma.invoice.findUnique({
         where: { id: invoiceId },

@@ -40,5 +40,6 @@ export default tseslint.config(
     'linebreak-style': 'off',
     
     },
+    'linebreak-style': 'off',
   },
 );
