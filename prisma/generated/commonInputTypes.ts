@@ -328,6 +328,23 @@ export type EnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumInvoiceStatusFilter<$PrismaModel>
 }
 
+export type EnumInvoiceActivityTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvoiceActivityType | Prisma.EnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvoiceActivityTypeFilter<$PrismaModel> | $Enums.InvoiceActivityType
+}
+
+export type EnumInvoiceActivityTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvoiceActivityType | Prisma.EnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvoiceActivityTypeWithAggregatesFilter<$PrismaModel> | $Enums.InvoiceActivityType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvoiceActivityTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvoiceActivityTypeFilter<$PrismaModel>
+}
+
 export type EnumvendorStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.vendorStatus | Prisma.EnumvendorStatusFieldRefInput<$PrismaModel>
   in?: $Enums.vendorStatus[] | Prisma.ListEnumvendorStatusFieldRefInput<$PrismaModel>
@@ -796,6 +813,23 @@ export type NestedEnumInvoiceStatusWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumInvoiceStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumInvoiceStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumInvoiceActivityTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvoiceActivityType | Prisma.EnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvoiceActivityTypeFilter<$PrismaModel> | $Enums.InvoiceActivityType
+}
+
+export type NestedEnumInvoiceActivityTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InvoiceActivityType | Prisma.EnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InvoiceActivityType[] | Prisma.ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInvoiceActivityTypeWithAggregatesFilter<$PrismaModel> | $Enums.InvoiceActivityType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInvoiceActivityTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInvoiceActivityTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumvendorStatusFilter<$PrismaModel = never> = {

@@ -125,3 +125,16 @@ export const InvoiceStatus = {
 } as const
 
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+
+export const InvoiceActivityType = {
+  Created: 'Created',
+  Sent: 'Sent',
+  Viewed: 'Viewed',
+  PaymentReceived: 'PaymentReceived',
+  Overdue: 'Overdue',
+  Cancelled: 'Cancelled',
+  Updated: 'Updated'
+} as const
+
+export type InvoiceActivityType = (typeof InvoiceActivityType)[keyof typeof InvoiceActivityType]

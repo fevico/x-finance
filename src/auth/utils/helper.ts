@@ -1,17 +1,24 @@
 /**
  * Generates a random alphanumeric invoice number.
- * Example output: "A1B2C3D4" or "X9Y8Z7W6"
+ * Example output: "INV-A1B2C3D4" or "INV-X9Y8Z7W6"
  *
  * @param length - Optional length of the alphanumeric part (default: 8)
- * @returns A random uppercase alphanumeric string
+ * @param prefix - Optional prefix for the invoice number (default: "INV")
+ * @returns A random uppercase alphanumeric string with prefix
  */
-export function generateRandomInvoiceNumber(length: number = 8): string {
+export function generateRandomInvoiceNumber({
+  length = 8,
+  prefix = 'INV',
+}: {
+  length?: number;
+  prefix?: string;
+} = {}): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return result;
+  return `${prefix}${result}`;
 }
 
 export function generateJournalReference(prefix: string = 'JRNL'): string {

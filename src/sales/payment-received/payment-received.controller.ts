@@ -55,8 +55,13 @@ export class PaymentReceivedController {
     @Req() req,
   ) {
     const entityId = getEffectiveEntityId(req);
+    const userId = req.user?.id;
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.paymentReceivedService.createPaymentReceived(body, entityId);
+    return this.paymentReceivedService.createPaymentReceived(
+      body,
+      entityId,
+      userId,
+    );
   }
 
   @Get()

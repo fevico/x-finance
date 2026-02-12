@@ -390,6 +390,7 @@ export const ModelName = {
   GroupRole: 'GroupRole',
   Customer: 'Customer',
   Invoice: 'Invoice',
+  InvoiceActivity: 'InvoiceActivity',
   InvoiceItem: 'InvoiceItem',
   vendor: 'vendor',
   PaymentReceived: 'PaymentReceived',
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "group" | "entity" | "user" | "groupRole" | "customer" | "invoice" | "invoiceItem" | "vendor" | "paymentReceived" | "expenses" | "bills" | "paymentRecord" | "receipt" | "items" | "collection" | "asset" | "account" | "journal" | "budget" | "employee" | "attendanceLog" | "attendance" | "leave" | "permission" | "auditLog"
+    modelProps: "group" | "entity" | "user" | "groupRole" | "customer" | "invoice" | "invoiceActivity" | "invoiceItem" | "vendor" | "paymentReceived" | "expenses" | "bills" | "paymentRecord" | "receipt" | "items" | "collection" | "asset" | "account" | "journal" | "budget" | "employee" | "attendanceLog" | "attendance" | "leave" | "permission" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -869,6 +870,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InvoiceCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InvoiceCountAggregateOutputType> | number
+        }
+      }
+    }
+    InvoiceActivity: {
+      payload: Prisma.$InvoiceActivityPayload<ExtArgs>
+      fields: Prisma.InvoiceActivityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvoiceActivityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvoiceActivityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>
+        }
+        findFirst: {
+          args: Prisma.InvoiceActivityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvoiceActivityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>
+        }
+        findMany: {
+          args: Prisma.InvoiceActivityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>[]
+        }
+        create: {
+          args: Prisma.InvoiceActivityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>
+        }
+        createMany: {
+          args: Prisma.InvoiceActivityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvoiceActivityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>[]
+        }
+        delete: {
+          args: Prisma.InvoiceActivityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>
+        }
+        update: {
+          args: Prisma.InvoiceActivityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>
+        }
+        deleteMany: {
+          args: Prisma.InvoiceActivityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvoiceActivityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvoiceActivityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>[]
+        }
+        upsert: {
+          args: Prisma.InvoiceActivityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceActivityPayload>
+        }
+        aggregate: {
+          args: Prisma.InvoiceActivityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvoiceActivity>
+        }
+        groupBy: {
+          args: Prisma.InvoiceActivityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceActivityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvoiceActivityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceActivityCountAggregateOutputType> | number
         }
       }
     }
@@ -2432,13 +2507,25 @@ export const InvoiceScalarFieldEnum = {
   items: 'items',
   total: 'total',
   notes: 'notes',
-  activities: 'activities',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoiceActivityScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  activityType: 'activityType',
+  description: 'description',
+  performedBy: 'performedBy',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type InvoiceActivityScalarFieldEnum = (typeof InvoiceActivityScalarFieldEnum)[keyof typeof InvoiceActivityScalarFieldEnum]
 
 
 export const InvoiceItemScalarFieldEnum = {
@@ -2966,6 +3053,20 @@ export type ListEnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'InvoiceActivityType'
+ */
+export type EnumInvoiceActivityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceActivityType'>
+    
+
+
+/**
+ * Reference to a field of type 'InvoiceActivityType[]'
+ */
+export type ListEnumInvoiceActivityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceActivityType[]'>
+    
+
+
+/**
  * Reference to a field of type 'vendorStatus'
  */
 export type EnumvendorStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'vendorStatus'>
@@ -3219,6 +3320,7 @@ export type GlobalOmitConfig = {
   groupRole?: Prisma.GroupRoleOmit
   customer?: Prisma.CustomerOmit
   invoice?: Prisma.InvoiceOmit
+  invoiceActivity?: Prisma.InvoiceActivityOmit
   invoiceItem?: Prisma.InvoiceItemOmit
   vendor?: Prisma.vendorOmit
   paymentReceived?: Prisma.PaymentReceivedOmit
