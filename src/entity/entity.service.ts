@@ -10,11 +10,13 @@ import { CreateEntityDto } from './dto/create-entity.dto';
 import { UpdateEntityDto } from './dto/update-entity.dto';
 import { GetEntitiesQueryDto } from './dto/get-entities-query.dto';
 import { BullmqService } from '@/bullmq/bullmq.service';
+import { FileuploadService } from '@/fileupload/fileupload.service';
 
 @Injectable()
 export class EntityService {
   constructor(
     private prisma: PrismaService,
+    private fileuploadService: FileuploadService,
     private bullmqService: BullmqService,
   ) {}
 
@@ -24,12 +26,36 @@ export class EntityService {
   //   });
   // }
 
-  async create(createEntityDto: CreateEntityDto, effectiveGroupId: string) {
+  async create(
+    createEntityDto: CreateEntityDto,
+    effectiveGroupId: string,
+    file?: Express.Multer.File,
+  ) {
     try {
+      let logo: any = undefined;
+
+      // Upload logo to Cloudinary if provided
+      if (file) {
+        logo = await this.fileuploadService.uploadFile(file, 'groups');
+      }
+
+      // Always set logo with publicId and secureUrl, defaulting to empty string if not provided
+      const logoData = {
+        publicId: logo?.publicId || '',
+        secureUrl: logo?.secureUrl || '',
+      };
+
+      // console.log(
+      //   'Creating entity with data:',
+      //   createEntityDto,
+      //   'and effectiveGroupId:',
+      //   effectiveGroupId,
+      // );
       const entity = await this.prisma.entity.create({
         data: {
           ...createEntityDto,
           groupId: effectiveGroupId,
+          logo: logoData,
         },
       });
 
