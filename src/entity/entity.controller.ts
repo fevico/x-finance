@@ -10,6 +10,8 @@ import {
   Req,
   Query,
   ForbiddenException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { EntityService } from './entity.service';
 import { CreateEntityDto } from './dto/create-entity.dto';
@@ -22,6 +24,7 @@ import { systemRole } from 'prisma/generated/enums';
 import { Request } from 'express';
 import { getEffectiveGroupId } from '../auth/utils/context.util';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Entities')
 @UseGuards(AuthGuard)
@@ -32,14 +35,16 @@ export class EntityController {
   constructor(private readonly entityService: EntityService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('logo'))
   @ApiOperation({ summary: 'Create an entity' })
   @ApiResponse({ status: 201, description: 'Entity created' })
-  create(@Body() createEntityDto: CreateEntityDto, @Req() req: Request) {
+  create(@Body() createEntityDto: CreateEntityDto,     @UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+    console.log('Received request to create entity with data:', createEntityDto);
     const effectiveGroupId = getEffectiveGroupId(req);
     if (!effectiveGroupId) {
       throw new ForbiddenException('No effective group ID found.');
     }
-    return this.entityService.create(createEntityDto, effectiveGroupId);
+    return this.entityService.create(createEntityDto, effectiveGroupId, file);
   }
 
   @Get()

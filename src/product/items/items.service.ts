@@ -23,8 +23,9 @@ export class ItemsService {
     entityId: string,
     query: GetItemsQueryDto,
   ): Promise<GetItemsResponseDto> {
-    const { page = 1, limit = 10, category, search } = query;
+    const { page = 1, limit = 10, category, search, type } = query;
     const skip = (page - 1) * limit;
+
 
     const where: any = {
       entityId,
@@ -35,6 +36,10 @@ export class ItemsService {
         contains: category,
         mode: 'insensitive',
       };
+    }
+
+    if (type) {
+      where.type = type;
     }
 
     if (search) {

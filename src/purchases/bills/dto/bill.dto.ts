@@ -1,6 +1,32 @@
-import { IsString, IsOptional, IsArray, IsInt, IsDate } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  IsInt,
+  IsDate,
+  ValidateNested,
+  IsNumber,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class BillItemDto {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiProperty({ example: 'item_123', description: 'Item ID' })
+  @IsString()
+  itemId: string;
+
+  @ApiProperty({ example: 1000, description: 'Rate per unit' })
+  @IsNumber()
+  rate: number;
+
+  @ApiProperty({ example: 2, description: 'Quantity' })
+  @IsNumber()
+  quantity: number;
+}
 
 export class CreateBillDto {
   @ApiProperty({ example: '2025-12-24T00:00:00Z', description: 'Bill date' })
@@ -34,11 +60,21 @@ export class CreateBillDto {
   @IsString()
   paymentTerms: string;
 
-  @ApiProperty({ example: ['item 1', 'item 2'], description: 'Bill items' })
-  @IsOptional()
+  @ApiProperty({ type: [BillItemDto], description: 'Bill items' })
   @IsArray()
-  @IsString({ each: true })
-  items: string[];
+  @ValidateNested({ each: true })
+  @Type(() => BillItemDto)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return value;
+      }
+    }
+    return value;
+  })
+  items: BillItemDto[];
 
   @ApiProperty({ example: 50000, description: 'Total amount' })
   @Type(() => Number)
@@ -52,6 +88,117 @@ export class CreateBillDto {
   @IsOptional()
   @IsString()
   notes?: string;
+  @ApiPropertyOptional({ example: '10000', description: 'Discount' })
+  @IsOptional()
+  @IsString()
+  discount?: string;
+  @ApiPropertyOptional({ example: '10000', description: 'Tax' })
+  @IsOptional()
+  @IsString()
+  tax?: string;
+}
+
+export class UpdateBillDto {
+  @ApiPropertyOptional({
+    example: '2025-12-24T00:00:00Z',
+    description: 'Bill date',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  billDate?: Date;
+
+  @ApiPropertyOptional({ example: 'BILL-001', description: 'Bill number' })
+  @IsOptional()
+  @IsString()
+  billNumber?: string;
+
+  @ApiPropertyOptional({ example: 'vendor_uuid', description: 'Vendor ID' })
+  @IsOptional()
+  @IsString()
+  vendorId?: string;
+
+  @ApiPropertyOptional({
+    example: '2025-01-24T00:00:00Z',
+    description: 'Due date',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  dueDate?: Date;
+
+  @ApiPropertyOptional({
+    example: 'PO-123',
+    description: 'Purchase order number',
+  })
+  @IsOptional()
+  @IsString()
+  poNumber?: string;
+
+  @ApiPropertyOptional({ example: 'Net 30', description: 'Payment terms' })
+  @IsOptional()
+  @IsString()
+  paymentTerms?: string;
+
+  @ApiPropertyOptional({ type: [BillItemDto], description: 'Bill items' })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BillItemDto)
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return value;
+      }
+    }
+    return value;
+  })
+  items?: BillItemDto[];
+
+  @ApiPropertyOptional({
+    example: ['item_1'],
+    description: 'IDs of items to remove',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return value;
+      }
+    }
+    return value;
+  })
+  removeItemIds?: string[];
+
+  @ApiPropertyOptional({ example: 50000, description: 'Total amount' })
+  @IsOptional()
+  @Type(() => Number)
+  total?: number;
+
+  @ApiPropertyOptional({ example: 'Office Supplies', description: 'Category' })
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @ApiPropertyOptional({ example: 'Payment terms noted', description: 'Notes' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
+  @ApiPropertyOptional({ example: '10000', description: 'Discount' })
+  @IsOptional()
+  @IsString()
+  discount?: string;
+  @ApiPropertyOptional({ example: '10000', description: 'Tax' })
+  @IsOptional()
+  @IsString()
+  tax?: string;
 }
 
 export class BillDto extends CreateBillDto {

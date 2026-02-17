@@ -49,6 +49,19 @@ export class InvoiceController {
     return this.invoiceService.createInvoice(body, entityId, userId);
   }
 
+   @Get('analytics')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get invoice analytics (Aging & Revenue)' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Invoice analytics data' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async getInvoiceAnalytics(@Req() req) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.invoiceService.getInvoiceAnalytics(entityId);
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   @ApiOperation({
@@ -60,6 +73,7 @@ export class InvoiceController {
   async getInvoices(@Req() req, @Query() query: GetInvoicesQueryDto) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
+    console.log('hheh')
     return this.invoiceService.getEntityInvoice(entityId, query);
   }
 
@@ -74,6 +88,8 @@ export class InvoiceController {
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.getPaidInvoices(entityId, query);
   }
+
+  
 
   @Get(':invoiceId')
   @UseGuards(AuthGuard)
@@ -135,4 +151,6 @@ export class InvoiceController {
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.deleteInvoice(invoiceId, entityId, userId);
   }
+
+ 
 }

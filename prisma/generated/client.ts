@@ -98,6 +98,11 @@ export type Expenses = Prisma.ExpensesModel
  */
 export type Bills = Prisma.BillsModel
 /**
+ * Model BillItem
+ * 
+ */
+export type BillItem = Prisma.BillItemModel
+/**
  * Model PaymentRecord
  * 
  */
@@ -108,6 +113,11 @@ export type PaymentRecord = Prisma.PaymentRecordModel
  */
 export type Receipt = Prisma.ReceiptModel
 /**
+ * Model ReceiptItem
+ * 
+ */
+export type ReceiptItem = Prisma.ReceiptItemModel
+/**
  * Model Items
  * 
  */
@@ -117,6 +127,11 @@ export type Items = Prisma.ItemsModel
  * 
  */
 export type Collection = Prisma.CollectionModel
+/**
+ * Model CollectionItem
+ * 
+ */
+export type CollectionItem = Prisma.CollectionItemModel
 /**
  * Model Asset
  * 

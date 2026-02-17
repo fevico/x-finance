@@ -8,6 +8,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -21,7 +23,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { BillsService } from './bills.service';
-import { CreateBillDto } from './dto/bill.dto';
+import { CreateBillDto, UpdateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
 import { CreatePaymentDto, PaymentDto } from './dto/payment.dto';
@@ -64,8 +66,14 @@ export class BillsController {
         paymentTerms: { type: 'string', example: 'Net 30' },
         items: {
           type: 'array',
-          items: { type: 'string' },
-          example: ['Item 1', 'Item 2'],
+          items: {
+            type: 'object',
+            properties: {
+              itemId: { type: 'string' },
+              rate: { type: 'number' },
+              quantity: { type: 'number' },
+            },
+          },
         },
         total: { type: 'number', example: 5000 },
         category: { type: 'string', example: 'Office Supplies' },
@@ -96,7 +104,17 @@ export class BillsController {
         dueDate: { type: 'string', format: 'date-time' },
         poNumber: { type: 'string' },
         paymentTerms: { type: 'string' },
-        items: { type: 'array', items: { type: 'string' } },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              itemId: { type: 'string' },
+              rate: { type: 'number' },
+              quantity: { type: 'number' },
+            },
+          },
+        },
         total: { type: 'number' },
         category: { type: 'string' },
         notes: { type: 'string' },
@@ -117,7 +135,7 @@ export class BillsController {
     }
 
     return this.billsService.createBill(
-      { ...body, total: body.total ? Number(body.total) : 0 },
+      body,
       entityId,
       file,
     );
@@ -204,5 +222,67 @@ export class BillsController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     return this.billsService.getPayments(entityId, Number(page), Number(limit));
+  }
+
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('attachment'))
+  @ApiOperation({ summary: 'Update a bill' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        billDate: { type: 'string', format: 'date-time' },
+        billNumber: { type: 'string' },
+        vendorId: { type: 'string' },
+        dueDate: { type: 'string', format: 'date-time' },
+        poNumber: { type: 'string' },
+        paymentTerms: { type: 'string' },
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              itemId: { type: 'string' },
+              rate: { type: 'number' },
+              quantity: { type: 'number' },
+            },
+          },
+        },
+        removeItemIds: { type: 'array', items: { type: 'string' } },
+        total: { type: 'number' },
+        category: { type: 'string' },
+        notes: { type: 'string' },
+        attachment: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Bill updated successfully' })
+  async updateBill(
+    @Param('id') id: string,
+    @Body() body: UpdateBillDto,
+    @Req() req: Request,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+
+    return this.billsService.updateBill(
+      id,
+      entityId,
+      body,
+      file,
+    );
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a bill' })
+  @ApiResponse({ status: 200, description: 'Bill deleted successfully' })
+  async deleteBill(@Param('id') id: string, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+
+    return this.billsService.deleteBill(id, entityId);
   }
 }

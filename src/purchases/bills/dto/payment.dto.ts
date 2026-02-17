@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentMethod } from 'prisma/generated/enums';
 
@@ -19,6 +19,10 @@ export class CreatePaymentDto {
   @ApiProperty({ example: 'Bank Account #', description: 'Account used' })
   @IsString()
   account: string;
+
+  @ApiProperty({ example: 5000, description: 'Amount paid' })
+  @IsNumber()
+  amount: number;
 
   @ApiPropertyOptional({
     example: 'Partial payment',

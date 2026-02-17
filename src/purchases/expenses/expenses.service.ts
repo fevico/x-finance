@@ -35,6 +35,7 @@ export class ExpensesService {
           ...body,
           reference,
           entityId,
+          vendorId: body.vendorId,
           attachment: attachment
             ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
             : undefined,
@@ -68,6 +69,11 @@ export class ExpensesService {
           skip,
           take: Number(limit),
           orderBy: { date: 'desc' },
+          include: {
+            vendor: {
+              select: { id: true, name: true },
+            },
+          },
         }),
         this.prisma.expenses.count({ where }),
       ]);
@@ -88,6 +94,142 @@ export class ExpensesService {
         limit,
       };
     } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async approveExpense(expenseId: string, entityId: string) {
+    try {
+      const expense = await this.prisma.expenses.findUnique({
+        where: { id: expenseId },
+      });
+
+      if (!expense) {
+        throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (expense.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to approve this expense',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      if (expense.status !== 'pending') {
+        throw new HttpException(
+          `Cannot approve expense with status: ${expense.status}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const updatedExpense = await this.prisma.expenses.update({
+        where: { id: expenseId },
+        data: { status: 'approved' },
+        include: {
+          vendor: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+
+      return updatedExpense;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateExpense(
+    expenseId: string,
+    entityId: string,
+    body: any,
+    file?: Express.Multer.File,
+  ) {
+    try {
+      const expense = await this.prisma.expenses.findUnique({
+        where: { id: expenseId },
+      });
+
+      if (!expense) {
+        throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (expense.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to update this expense',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      let attachment = expense.attachment as any;
+
+      // Upload new file if provided
+      if (file) {
+        // Delete old attachment if exists
+        if (attachment?.publicId) {
+          await this.fileuploadService.deleteFile(attachment.publicId);
+        }
+
+        const uploadedFile = await this.fileuploadService.uploadFile(
+          file,
+          `expenses/${entityId}`,
+        );
+        attachment = {
+          publicId: uploadedFile.publicId,
+          secureUrl: uploadedFile.secureUrl,
+        };
+      }
+
+      const updatedExpense = await this.prisma.expenses.update({
+        where: { id: expenseId },
+        data: {
+          ...body,
+          ...(file && { attachment }),
+        },
+        include: {
+          vendor: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+
+      return updatedExpense;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async deleteExpense(expenseId: string, entityId: string) {
+    try {
+      const expense = await this.prisma.expenses.findUnique({
+        where: { id: expenseId },
+      });
+
+      if (!expense) {
+        throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (expense.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to delete this expense',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      // Delete attachment from Cloudinary if exists
+      const attachment = expense.attachment as any;
+      if (attachment?.publicId) {
+        await this.fileuploadService.deleteFile(attachment.publicId);
+      }
+
+      await this.prisma.expenses.delete({
+        where: { id: expenseId },
+      });
+
+      return { message: 'Expense deleted successfully' };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }

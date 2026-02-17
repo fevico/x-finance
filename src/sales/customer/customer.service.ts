@@ -25,7 +25,8 @@ export class CustomerService {
         },
       });
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -41,13 +42,7 @@ export class CustomerService {
       ]);
 
       const customers = customersRaw.map((c) => ({
-        id: c.id,
-        name: c.name,
-        email: c.email,
-        phoneNumber: c.phoneNumber,
-        companyName: c.companyName,
-        isActive: c.isActive,
-        createdAt: c.createdAt,
+        ...c,
         invoiceCount: c._count?.invoice ?? 0,
       }));
 
@@ -56,29 +51,31 @@ export class CustomerService {
         total,
         active,
         averageBalance: 0,
-        outstandinReceivables: 0,
+        outstandingReceivables: 0,
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async updateCustomer(body: UpdateCustomerDto, entityId: string) {
+  async updateCustomer(body: UpdateCustomerDto, customerId: string, entityId: string) {
     try {
       const customer = await this.prisma.customer.findFirst({
-        where: { id: body.customerId, entityId },
+        where: { id: customerId, entityId },
       });
       if (!customer)
         throw new UnauthorizedException(
           'Customer not found or does not belong to this entity!',
         );
       const updateEntityCustomer = await this.prisma.customer.update({
-        where: { id: body.customerId, entityId },
+        where: { id: customerId, entityId },
         data: { ...body },
       });
       return updateEntityCustomer;
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -103,7 +100,8 @@ export class CustomerService {
       return customer;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -131,7 +129,8 @@ export class CustomerService {
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
 }

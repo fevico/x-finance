@@ -41,7 +41,7 @@ model Entity {
   currency        String?
   email           String?           @unique
   legalName       String?
-  companyName     String? 
+  companyName     String?
   phoneNumber     String?
   postalCode      String?
   logo            Json?
@@ -137,22 +137,23 @@ model Customer {
 }
 
 model Invoice {
-  id              String              @id @default(cuid())
+  id              String            @id @default(cuid())
   customerId      String
   entityId        String
-  invoiceNumber   String              @unique
+  invoiceNumber   String            @unique
   invoiceDate     DateTime
   dueDate         DateTime
   paymentTerms    String
   currency        String
-  items           String[]
+  subtotal        Int
+  tax             Int
   total           Int
   notes           String?
-  status          InvoiceStatus       @default(Pending)
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @default(now()) @updatedAt
-  customer        Customer            @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  entity          Entity              @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  status          InvoiceStatus     @default(Pending)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  customer        Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  entity          Entity            @relation(fields: [entityId], references: [id], onDelete: Cascade)
   paymentReceived PaymentReceived[]
   invoiceItem     InvoiceItem[]
   activities      InvoiceActivity[]
@@ -161,29 +162,31 @@ model Invoice {
 }
 
 model InvoiceActivity {
-  id            String                @id @default(cuid())
-  invoiceId     String
-  invoice       Invoice               @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  activityType  InvoiceActivityType
-  description   String
-  performedBy   String?
-  metadata      Json?
-  createdAt     DateTime              @default(now())
+  id           String              @id @default(cuid())
+  invoiceId    String
+  invoice      Invoice             @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  activityType InvoiceActivityType
+  description  String
+  performedBy  String?
+  metadata     Json?
+  createdAt    DateTime            @default(now())
 
   @@index([invoiceId, createdAt])
   @@index([invoiceId])
 }
 
 model InvoiceItem {
-  id               String @id @default(cuid())
-  itemId           String 
-  item             Items @relation(fields: [itemId], references: [id])
-  rate             Int 
-  quantity         Int
-  invoiceId        String
-  invoice          Invoice @relation(fields: [invoiceId], references: [id])
-  createdAt        DateTime @default(now())
-  updateAt         DateTime?
+  id        String    @id @default(cuid())
+  itemId    String
+  item      Items     @relation(fields: [itemId], references: [id])
+  rate      Int
+  quantity  Int
+  total     Int
+  invoiceId String
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id])
+  createdAt DateTime  @default(now())
+  updateAt  DateTime?
+
   @@index([itemId])
 }
 
@@ -217,6 +220,7 @@ model vendor {
   updatedAt      DateTime     @default(now()) @updatedAt
   bills          Bills[]
   entity         Entity       @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  expenses       Expenses[]
 
   @@unique([email, phone])
   @@index([email, entityId])
@@ -247,13 +251,15 @@ model Expenses {
   id            String        @id @default(cuid())
   date          DateTime
   reference     String
-  supplier      String
+  vendorId      String?
+  vendor        vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
   category      String
   paymentMethod PaymentMethod
   account       String
   amount        Int
   tax           String
   description   String?
+  status        ExpenseStatus @default(pending)
   tags          String[]
   attachment    Json?
   entityId      String
@@ -272,7 +278,9 @@ model Bills {
   dueDate       DateTime
   poNumber      String?
   paymentTerms  String
-  items         String[]
+  subtotal      Int
+  tax           Int
+  discount      Int
   total         Int
   category      String
   notes         String?
@@ -284,8 +292,25 @@ model Bills {
   entity        Entity          @relation(fields: [entityId], references: [id], onDelete: Cascade)
   vendor        vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   paymentRecord PaymentRecord[]
+  billItem      BillItem[]
 
   @@index([billDate, category])
+}
+
+model BillItem {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Items    @relation(fields: [itemId], references: [id])
+  quantity  Int
+  rate      Int
+  total     Int
+  billId    String
+  bill      Bills    @relation(fields: [billId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([billId])
+  @@index([itemId])
 }
 
 model PaymentRecord {
@@ -295,6 +320,7 @@ model PaymentRecord {
   paymentMethod PaymentMethod
   reference     String
   account       String
+  amount        Int
   note          String?
   status        paymentRecordStatus @default(cleared)
   createdAt     DateTime            @default(now())
@@ -309,7 +335,8 @@ model Receipt {
   date          DateTime
   entityId      String
   paymentMethod PaymentMethod
-  items         String[]
+  subtotal      Int
+  tax           Int
   total         Int
   status        ReceiptStatus @default(Void)
   createdAt     DateTime      @default(now())
@@ -319,48 +346,86 @@ model Receipt {
   customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   entity        Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
+  receiptItem ReceiptItem[]
+
   @@index([date])
 }
 
+model ReceiptItem {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Items    @relation(fields: [itemId], references: [id])
+  quantity  Int
+  rate      Int
+  total     Int
+  receiptId String
+  receipt   Receipt  @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([receiptId])
+  @@index([itemId])
+}
+
 model Items {
-  id           String    @id @default(cuid())
-  name         String
-  category     String
-  sku          String?
-  unit         String?
-  description  String
-  sellingPrice Int?
-  costPrice    Int?
-  rate         Int?
-  taxable      Boolean   @default(false)
-  currentStock Int?
-  lowStock     Int?
-  type         ItemsType @default(product)
-  trackInventory Boolean   @default(false)
-  sellOnline    Boolean   @default(false)
-  entityId     String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
-  entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  invoiceItem  InvoiceItem[]
+  id             String             @id @default(cuid())
+  name           String
+  category       String
+  sku            String?
+  unit           String?
+  description    String
+  sellingPrice   Int?
+  costPrice      Int?
+  rate           Int?
+  taxable        Boolean            @default(false)
+  currentStock   Int?
+  lowStock       Int?
+  type           ItemsType          @default(product)
+  trackInventory Boolean            @default(false)
+  sellOnline     Boolean            @default(false)
+  entityId       String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @default(now()) @updatedAt
+  entity         Entity             @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  invoiceItem    InvoiceItem[]
+  receiptItems   ReceiptItem[]
+  billItems      BillItem[]
+  collections    CollectionItem[]
 
   @@index([entityId, type])
 }
 
 model Collection {
-  id          String   @id @default(cuid())
+  id          String             @id @default(cuid())
   name        String
   slug        String
   image       Json?
   description String
-  visibility  Boolean  @default(false)
-  featured    Boolean  @default(false)
+  visibility  Boolean            @default(false)
+  featured    Boolean            @default(false)
   entityId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  entity      Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @default(now()) @updatedAt
+  entity      Entity             @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
 
+  @@unique([slug, entityId])
   @@index([entityId])
+}
+
+model CollectionItem {
+  id           String     @id @default(cuid())
+  collectionId String
+  itemId       String
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  item         Items      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, itemId])
+  @@index([collectionId])
+  @@index([itemId])
 }
 
 model Asset {
@@ -531,7 +596,6 @@ model Leave {
   @@index([employeeId, status])
 }
 
-
 model Permission {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -604,11 +668,20 @@ enum ItemsType {
 enum BillStatus {
   paid
   unpaid
+  partial
+  pending
 }
 
 enum vendorStatus {
   Active
   Inactive
+}
+
+enum ExpenseStatus {
+  pending
+  draft
+  approved
+  rejected
 }
 
 enum PaymentMethod {
@@ -634,6 +707,7 @@ enum InvoiceStatus {
   Draft
   Sent
   Pending
+  Partial
 }
 
 enum InvoiceActivityType {

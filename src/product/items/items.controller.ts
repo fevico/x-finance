@@ -62,6 +62,7 @@ export class ItemsController {
     @Query() query: GetItemsQueryDto,
     @Req() req: Request,
   ): Promise<GetItemsResponseDto> {
+
     const entityId = getEffectiveEntityId(req);
     if (!entityId) {
       throw new BadRequestException('Entity ID is required');

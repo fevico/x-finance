@@ -13,14 +13,55 @@ export class ReceiptService {
   async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
       const receiptNumber = generateRandomInvoiceNumber({ prefix: 'RCT' });
-      const receipt = await this.prisma.receipt.create({
-        data: {
-          ...body,
-          entityId,
-          receiptNumber,
-        },
+      const { items, ...receiptData } = body;
+
+      // Calculate item totals and receipt totals
+      let subtotal = 0;
+      const receiptItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
       });
-      return receipt;
+      const tax = 0; // Add tax logic if needed
+      const total = subtotal + tax;
+
+      // Create receipt and items in a transaction
+      const result = await this.prisma.$transaction(async (tx) => {
+        const receipt = await tx.receipt.create({
+          data: {
+            ...receiptData,
+            entityId,
+            receiptNumber,
+            subtotal,
+            tax,
+            total,
+          },
+          include: {
+            receiptItem: { include: { item: true } },
+          },
+        });
+
+        // Create receipt items
+        const receiptItems = await Promise.all(
+          receiptItemsData.map((item) =>
+            tx.receiptItem.create({
+              data: {
+                ...item,
+                receiptId: receipt.id,
+              },
+              include: { item: true },
+            })
+          )
+        );
+
+        return { ...receipt, receiptItem: receiptItems };
+      });
+      return result;
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.BAD_GATEWAY);
     }
@@ -29,7 +70,7 @@ export class ReceiptService {
   async getEntityReceipts(
     entityId: string,
     query: GetReceiptsQueryDto,
-  ): Promise<GetReceiptsResponseDto> {
+  ): Promise<any> {
     try {
       const page = query.page || 1;
       const limit = query.limit || 10;
@@ -39,9 +80,11 @@ export class ReceiptService {
       if (query.status) whereClause.status = query.status;
       if (query.paymentMethod) whereClause.paymentMethod = query.paymentMethod;
       if (query.search) {
-        whereClause.customerName = {
-          contains: query.search,
-          mode: 'insensitive',
+        whereClause.customer = {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
         };
       }
 
@@ -49,6 +92,10 @@ export class ReceiptService {
       const [receipts, totalCount] = await Promise.all([
         this.prisma.receipt.findMany({
           where: whereClause,
+          include: {
+            customer: true,
+            receiptItem: { include: { item: true } },
+          },
           skip,
           take: Number(limit),
           orderBy: { date: 'desc' },
@@ -66,7 +113,7 @@ export class ReceiptService {
       const totalSales = aggregate._sum.total ?? 0;
       const totalReceipts = aggregate._count._all ?? 0;
 
-      // Today's sales (for entity, and matching filters where applicable)
+      // Today's sales
       const now = new Date();
       const startOfDay = new Date(
         now.getFullYear(),
@@ -99,13 +146,12 @@ export class ReceiptService {
         totalReceipts > 0 ? Math.round(totalSales / totalReceipts) : 0;
 
       const transformed = receipts.map((r) => ({
+        ...r,
         id: r.id,
         customerId: r.customerId,
+        customerName: r.customer?.name,
         date: r.date.toISOString(),
-        paymentMethod: r.paymentMethod,
-        items: r.items,
-        total: r.total,
-        status: r.status,
+        items: r.receiptItem, // Return structured items
         createdAt: r.createdAt.toISOString(),
       }));
 
@@ -114,7 +160,7 @@ export class ReceiptService {
       return {
         receipts: transformed,
         stats: {
-          totalReceipts: totalReceipts,
+          totalReceipts,
           totalSales,
           todaysSales,
           averageReceiptValue,
@@ -135,6 +181,7 @@ export class ReceiptService {
         where: { id: receiptId },
         include: {
           customer: true,
+          receiptItem: { include: { item: true } },
         },
       });
 
@@ -177,16 +224,57 @@ export class ReceiptService {
         );
       }
 
-      const updatedReceipt = await this.prisma.receipt.update({
-        where: { id: receiptId },
-        data: {
-          ...body,
-        },
-        include: {
-          customer: true,
-        },
-      });
+      const { items, ...receiptData } = body;
 
+      // Calculate new receipt items and totals
+      let subtotal = 0;
+      const receiptItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
+      });
+      const tax = 0;
+      const total = subtotal + tax;
+
+      // Replace all receipt items and update receipt in a transaction
+      const updatedReceipt = await this.prisma.$transaction(async (tx) => {
+        // Delete all existing items for this receipt
+        await tx.receiptItem.deleteMany({ where: { receiptId } });
+
+        // Create new items
+        await Promise.all(
+          receiptItemsData.map((item) =>
+            tx.receiptItem.create({
+              data: {
+                ...item,
+                receiptId,
+              },
+            })
+          )
+        );
+
+        // Update receipt
+        const updated = await tx.receipt.update({
+          where: { id: receiptId },
+          data: {
+            ...receiptData,
+            subtotal,
+            tax,
+            total,
+          },
+          include: {
+            customer: true,
+            receiptItem: { include: { item: true } },
+          },
+        });
+
+        return updated;
+      });
       return updatedReceipt;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -220,7 +308,10 @@ export class ReceiptService {
       const updatedReceipt = await this.prisma.receipt.update({
         where: { id: receiptId },
         data: { status: newStatus },
-        include: { customer: true },
+        include: {
+          customer: true,
+          receiptItem: { include: { item: true } },
+        },
       });
 
       return updatedReceipt;

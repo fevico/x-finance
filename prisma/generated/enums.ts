@@ -79,7 +79,9 @@ export type ItemsType = (typeof ItemsType)[keyof typeof ItemsType]
 
 export const BillStatus = {
   paid: 'paid',
-  unpaid: 'unpaid'
+  unpaid: 'unpaid',
+  partial: 'partial',
+  pending: 'pending'
 } as const
 
 export type BillStatus = (typeof BillStatus)[keyof typeof BillStatus]
@@ -91,6 +93,16 @@ export const vendorStatus = {
 } as const
 
 export type vendorStatus = (typeof vendorStatus)[keyof typeof vendorStatus]
+
+
+export const ExpenseStatus = {
+  pending: 'pending',
+  draft: 'draft',
+  approved: 'approved',
+  rejected: 'rejected'
+} as const
+
+export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus]
 
 
 export const PaymentMethod = {
@@ -121,7 +133,8 @@ export const InvoiceStatus = {
   Paid: 'Paid',
   Draft: 'Draft',
   Sent: 'Sent',
-  Pending: 'Pending'
+  Pending: 'Pending',
+  Partial: 'Partial'
 } as const
 
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]

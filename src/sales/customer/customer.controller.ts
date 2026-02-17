@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { AuthGuard } from '@/auth/guards/auth.guard';
-import { CreateCustomerDto } from './dto/customer.dto';
+import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 import {
   ApiTags,
@@ -52,7 +53,7 @@ export class CustomerController {
   @ApiCookieAuth('cookieAuth')
   @ApiOkResponse({ description: 'Customers list with totals' })
   @ApiUnauthorizedResponse({ description: 'Access denied' })
-  async getCustersByEntity(@Req() req) {
+  async getCustomersByEntity(@Req() req) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.customerService.getAllCustomer(entityId);
@@ -74,6 +75,29 @@ export class CustomerController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.customerService.getCustomerById(customerId, entityId);
+  }
+
+  @Patch(':customerId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Update a customer' })
+  @ApiParam({ name: 'customerId', description: 'Customer ID', type: 'string' })
+  @ApiBody({ type: UpdateCustomerDto })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Customer updated successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Customer not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to update this customer',
+  })
+  async updateCustomer(
+    @Req() req,
+    @Param('customerId') customerId: string,
+    @Body() body: UpdateCustomerDto,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.customerService.updateCustomer(body, customerId, entityId);
   }
 
   @Delete(':customerId')

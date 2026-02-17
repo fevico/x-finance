@@ -17,9 +17,9 @@ export class CreateExpenseDto {
   @Type(() => Date)
   date: Date;
 
-  @ApiProperty({ example: 'Acme Supplies', description: 'Supplier name' })
+  @ApiProperty({ example: 'Acme Supplies', description: 'Vendor name' })
   @IsString()
-  supplier: string;
+  vendorId: string;
 
   @ApiProperty({ example: 'Office Supplies', description: 'Expense category' })
   @IsString()
@@ -62,6 +62,66 @@ export class CreateExpenseDto {
   @IsArray()
   @IsString({ each: true })
   tags: string[];
+}
+
+export class UpdateExpenseDto {
+  @ApiPropertyOptional({ example: '2025-12-18T00:00:00Z', description: 'Expense date' })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  date?: Date;
+
+  @ApiPropertyOptional({ example: 'vendor_123', description: 'Vendor ID' })
+  @IsOptional()
+  @IsString()
+  vendorId?: string;
+
+  @ApiPropertyOptional({ example: 'Office Supplies', description: 'Expense category' })
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @ApiPropertyOptional({
+    example: PaymentMethod.Cash,
+    enum: PaymentMethod,
+    description: 'Payment method',
+  })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
+
+  @ApiPropertyOptional({ example: 'Cash Register', description: 'Account used' })
+  @IsOptional()
+  @IsString()
+  account?: string;
+
+  @ApiPropertyOptional({
+    example: 5000,
+    description: 'Amount in smallest currency unit',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  amount?: number;
+
+  @ApiPropertyOptional({ example: '500', description: 'Tax amount' })
+  @IsOptional()
+  @IsString()
+  tax?: string;
+
+  @ApiPropertyOptional({
+    example: 'Office supplies purchase',
+    description: 'Description',
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({ example: ['office', 'supplies'], description: 'Tags' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
 
 export class ExpenseDto extends CreateExpenseDto {

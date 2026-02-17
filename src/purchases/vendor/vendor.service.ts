@@ -52,6 +52,7 @@ export class VendorService {
           skip,
           take: Number(limit),
           orderBy: { createdAt: 'desc' },
+          include: { bills: true },
         }),
         this.prisma.vendor.count({ where }),
       ]);
@@ -60,6 +61,7 @@ export class VendorService {
 
       const transformed = vendors.map((v) => ({
         ...v,
+        billsCount: v.bills.length,
         createdAt: v.createdAt.toISOString(),
       }));
 

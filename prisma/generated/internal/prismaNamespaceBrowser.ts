@@ -63,10 +63,13 @@ export const ModelName = {
   PaymentReceived: 'PaymentReceived',
   Expenses: 'Expenses',
   Bills: 'Bills',
+  BillItem: 'BillItem',
   PaymentRecord: 'PaymentRecord',
   Receipt: 'Receipt',
+  ReceiptItem: 'ReceiptItem',
   Items: 'Items',
   Collection: 'Collection',
+  CollectionItem: 'CollectionItem',
   Asset: 'Asset',
   Account: 'Account',
   Journal: 'Journal',
@@ -209,7 +212,8 @@ export const InvoiceScalarFieldEnum = {
   dueDate: 'dueDate',
   paymentTerms: 'paymentTerms',
   currency: 'currency',
-  items: 'items',
+  subtotal: 'subtotal',
+  tax: 'tax',
   total: 'total',
   notes: 'notes',
   status: 'status',
@@ -238,6 +242,7 @@ export const InvoiceItemScalarFieldEnum = {
   itemId: 'itemId',
   rate: 'rate',
   quantity: 'quantity',
+  total: 'total',
   invoiceId: 'invoiceId',
   createdAt: 'createdAt',
   updateAt: 'updateAt'
@@ -302,13 +307,14 @@ export const ExpensesScalarFieldEnum = {
   id: 'id',
   date: 'date',
   reference: 'reference',
-  supplier: 'supplier',
+  vendorId: 'vendorId',
   category: 'category',
   paymentMethod: 'paymentMethod',
   account: 'account',
   amount: 'amount',
   tax: 'tax',
   description: 'description',
+  status: 'status',
   tags: 'tags',
   attachment: 'attachment',
   entityId: 'entityId',
@@ -327,7 +333,9 @@ export const BillsScalarFieldEnum = {
   dueDate: 'dueDate',
   poNumber: 'poNumber',
   paymentTerms: 'paymentTerms',
-  items: 'items',
+  subtotal: 'subtotal',
+  tax: 'tax',
+  discount: 'discount',
   total: 'total',
   category: 'category',
   notes: 'notes',
@@ -341,6 +349,20 @@ export const BillsScalarFieldEnum = {
 export type BillsScalarFieldEnum = (typeof BillsScalarFieldEnum)[keyof typeof BillsScalarFieldEnum]
 
 
+export const BillItemScalarFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  quantity: 'quantity',
+  rate: 'rate',
+  total: 'total',
+  billId: 'billId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillItemScalarFieldEnum = (typeof BillItemScalarFieldEnum)[keyof typeof BillItemScalarFieldEnum]
+
+
 export const PaymentRecordScalarFieldEnum = {
   id: 'id',
   billId: 'billId',
@@ -348,6 +370,7 @@ export const PaymentRecordScalarFieldEnum = {
   paymentMethod: 'paymentMethod',
   reference: 'reference',
   account: 'account',
+  amount: 'amount',
   note: 'note',
   status: 'status',
   createdAt: 'createdAt',
@@ -362,7 +385,8 @@ export const ReceiptScalarFieldEnum = {
   date: 'date',
   entityId: 'entityId',
   paymentMethod: 'paymentMethod',
-  items: 'items',
+  subtotal: 'subtotal',
+  tax: 'tax',
   total: 'total',
   status: 'status',
   createdAt: 'createdAt',
@@ -372,6 +396,20 @@ export const ReceiptScalarFieldEnum = {
 } as const
 
 export type ReceiptScalarFieldEnum = (typeof ReceiptScalarFieldEnum)[keyof typeof ReceiptScalarFieldEnum]
+
+
+export const ReceiptItemScalarFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  quantity: 'quantity',
+  rate: 'rate',
+  total: 'total',
+  receiptId: 'receiptId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReceiptItemScalarFieldEnum = (typeof ReceiptItemScalarFieldEnum)[keyof typeof ReceiptItemScalarFieldEnum]
 
 
 export const ItemsScalarFieldEnum = {
@@ -412,6 +450,18 @@ export const CollectionScalarFieldEnum = {
 } as const
 
 export type CollectionScalarFieldEnum = (typeof CollectionScalarFieldEnum)[keyof typeof CollectionScalarFieldEnum]
+
+
+export const CollectionItemScalarFieldEnum = {
+  id: 'id',
+  collectionId: 'collectionId',
+  itemId: 'itemId',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CollectionItemScalarFieldEnum = (typeof CollectionItemScalarFieldEnum)[keyof typeof CollectionItemScalarFieldEnum]
 
 
 export const AssetScalarFieldEnum = {

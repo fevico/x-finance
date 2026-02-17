@@ -32,4 +32,12 @@ export class GetItemsQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({
+    example: 'product',
+    description: 'Filter by item type (e.g., product, service)',
+  })
+  @IsOptional()
+  @IsString()
+  type?: string;
 }

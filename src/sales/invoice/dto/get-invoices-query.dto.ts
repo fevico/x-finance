@@ -37,4 +37,8 @@ export class GetInvoicesQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @IsOptional()
+  @IsString()
+  customerId?: string;
 }

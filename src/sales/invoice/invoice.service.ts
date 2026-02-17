@@ -68,49 +68,67 @@ export class InvoiceService {
       // Extract items from body
       const { items, ...invoiceData } = body;
 
-      // Create invoice with invoice items in a transaction
-      const invoice = await this.prisma.invoice.create({
-        data: {
-          ...invoiceData,
-          invoiceNumber,
-          entityId,
-        },
-        include: {
-          customer: { select: { name: true, id: true } },
-          invoiceItem: true,
-          activities: true,
-        },
+      // Calculate item totals and invoice totals
+      let subtotal = 0;
+      const invoiceItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
       });
+      // For now, tax is 0. You can add tax calculation logic here.
+      const tax = 0.1 * subtotal; // Example: 10% tax
+      const total = subtotal + tax;
 
-      // Log activity: Invoice Created
-      await this.logActivity(
-        invoice.id,
-        InvoiceActivityType.Created,
-        'Invoice created',
-        performedBy,
-        { invoiceNumber },
-      );
+      // Create invoice and items in a transaction
+      const result = await this.prisma.$transaction(async (tx) => {
+        const invoice = await tx.invoice.create({
+          data: {
+            ...invoiceData,
+            invoiceNumber,
+            entityId,
+            subtotal,
+            tax,
+            total,
+          },
+          include: {
+            customer: { select: { name: true, id: true } },
+            invoiceItem: true,
+            activities: true,
+          },
+        });
 
-      // Create invoice items if provided
-      if (items && items.length > 0) {
+        // Log activity: Invoice Created
+        await tx.invoiceActivity.create({
+          data: {
+            invoiceId: invoice.id,
+            activityType: InvoiceActivityType.Created,
+            description: 'Invoice created',
+            performedBy,
+            metadata: { invoiceNumber },
+          },
+        });
+
+        // Create invoice items
         const invoiceItems = await Promise.all(
-          items.map((item) =>
-            this.prisma.invoiceItem.create({
+          invoiceItemsData.map((item) =>
+            tx.invoiceItem.create({
               data: {
-                itemId: item.itemId,
-                rate: item.rate,
-                quantity: item.quantity,
+                ...item,
                 invoiceId: invoice.id,
               },
               include: { item: true },
-            }),
-          ),
+            })
+          )
         );
 
         return { ...invoice, invoiceItem: invoiceItems };
-      }
-
-      return invoice;
+      });
+      return result;
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
     }
@@ -129,6 +147,10 @@ export class InvoiceService {
       const whereClause: any = { entityId };
       if (query.status) {
         whereClause.status = query.status;
+      }
+
+      if (query.customerId) {
+        whereClause.customerId = query.customerId;
       }
       if (query.search) {
         whereClause.OR = [
@@ -218,6 +240,8 @@ export class InvoiceService {
 
       // Build where clause for filtering
       const whereClause: any = { entityId, status: 'Paid' };
+
+      
       if (query.search) {
         whereClause.OR = [
           { invoiceNumber: { contains: query.search, mode: 'insensitive' } },
@@ -379,66 +403,69 @@ export class InvoiceService {
       }
 
       // Extract items from body
-      const { items, removeItemIds, ...invoiceData } = body;
+      const { items, ...invoiceData } = body;
 
-      // Delete removed items if specified
-      if (removeItemIds && removeItemIds.length > 0) {
-        await this.prisma.invoiceItem.deleteMany({
-          where: {
-            id: { in: removeItemIds },
-            invoiceId: invoiceId,
+      // Calculate new invoice items and totals
+      let subtotal = 0;
+      const invoiceItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
+      });
+      const tax = 0;
+      const total = subtotal + tax;
+
+      // Replace all invoice items and update invoice in a transaction
+      const updatedInvoice = await this.prisma.$transaction(async (tx) => {
+        // Delete all existing items for this invoice
+        await tx.invoiceItem.deleteMany({ where: { invoiceId } });
+
+        // Create new items
+        await Promise.all(
+          invoiceItemsData.map((item) =>
+            tx.invoiceItem.create({
+              data: {
+                ...item,
+                invoiceId,
+              },
+            })
+          )
+        );
+
+        // Update invoice
+        const updated = await tx.invoice.update({
+          where: { id: invoiceId },
+          data: {
+            ...invoiceData,
+            subtotal,
+            tax,
+            total,
+          },
+          include: {
+            customer: true,
+            invoiceItem: { include: { item: true } },
+            activities: { orderBy: { createdAt: 'desc' } },
           },
         });
-      }
 
-      // Handle items update/creation
-      if (items && items.length > 0) {
-        // Process new/updated items
-        for (const item of items) {
-          const hasId = (item as any).id && (item as any).id.trim().length > 0;
-
-          if (hasId) {
-            // Update existing item (has id)
-            await this.prisma.invoiceItem.update({
-              where: { id: (item as any).id },
-              data: {
-                itemId: item.itemId,
-                rate: item.rate,
-                quantity: item.quantity,
-              },
-            });
-          } else {
-            // Create new item (no id provided)
-            await this.prisma.invoiceItem.create({
-              data: {
-                itemId: item.itemId,
-                rate: item.rate,
-                quantity: item.quantity,
-                invoiceId: invoiceId,
-              },
-            });
-          }
-        }
-      }
-
-      // Update invoice data
-      const updatedInvoice = await this.prisma.invoice.update({
-        where: { id: invoiceId },
-        data: invoiceData,
-        include: {
-          customer: true,
-          invoiceItem: {
-            include: { item: true },
+        // Log activity: Invoice Updated
+        await tx.invoiceActivity.create({
+          data: {
+            invoiceId,
+            activityType: InvoiceActivityType.Updated,
+            description: 'Invoice updated',
+            performedBy,
+            metadata: invoiceData,
           },
-          activities: {
-            orderBy: { createdAt: 'desc' },
-          },
-        },
+        });
+
+        return updated;
       });
-
-      // Log activity: Invoice Updated
-      await this.logInvoiceUpdated(invoiceId, invoiceData, performedBy);
-
       return updatedInvoice;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -571,5 +598,114 @@ export class InvoiceService {
       performedBy,
       { reason },
     );
+  }
+
+  /**
+   * Get invoice analytics (Aging & Revenue)
+   */
+  async getInvoiceAnalytics(entityId: string) {
+    try {
+      
+      const now = new Date();
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(now.getMonth() - 6);
+      sixMonthsAgo.setDate(1); // Start of the month 6 months ago
+
+      // 1. Calculate Accounts Receivable Aging
+      // Fetch all unpaid invoices (Pending, Sent, Overdue)
+      const unpaidInvoices = await this.prisma.invoice.findMany({
+        where: {
+          entityId,
+          status: { in: ['Pending', 'Sent', 'Overdue'] },
+        },
+        select: {
+          total: true,
+          invoiceDate: true,
+          status: true,
+        },
+      });
+
+      const aging = {
+        '0-30': 0,
+        '31-60': 0,
+        '61-90': 0,
+        '90+': 0,
+      };
+
+      unpaidInvoices.forEach((invoice) => {
+        const ageInMs = now.getTime() - new Date(invoice.invoiceDate).getTime();
+        const ageInDays = Math.floor(ageInMs / (1000 * 60 * 60 * 24));
+
+        if (ageInDays <= 30) {
+          aging['0-30'] += invoice.total;
+        } else if (ageInDays <= 60) {
+          aging['31-60'] += invoice.total;
+        } else if (ageInDays <= 90) {
+          aging['61-90'] += invoice.total;
+        } else {
+          aging['90+'] += invoice.total;
+        }
+      });
+
+      // 2. Calculate Monthly Invoice Revenue
+      // Fetch paid invoices from the last 6 months
+      const paidInvoices = await this.prisma.invoice.findMany({
+        where: {
+          entityId,
+          status: 'Paid',
+          invoiceDate: { gte: sixMonthsAgo },
+        },
+        select: {
+          total: true,
+          invoiceDate: true,
+        },
+        orderBy: {
+          invoiceDate: 'asc',
+        },
+      });
+
+      const revenueByMonth: Record<string, number> = {};
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+
+      paidInvoices.forEach((invoice) => {
+        const month = monthNames[new Date(invoice.invoiceDate).getMonth()];
+        if (!revenueByMonth[month]) {
+          revenueByMonth[month] = 0;
+        }
+        revenueByMonth[month] += invoice.total;
+      });
+
+      // Format revenue for frontend graph (Array of { month, amount })
+      // We want strictly the last 6 months in chronological order
+      const monthlyRevenue = [] as any;
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = monthNames[d.getMonth()];
+        monthlyRevenue.push({
+          month: monthName,
+          revenue: revenueByMonth[monthName] || 0,
+        });
+      }
+
+      return {
+        aging: aging || {},
+        monthlyRevenue: monthlyRevenue || [],
+      };
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
   }
 }
