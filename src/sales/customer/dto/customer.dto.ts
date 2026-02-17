@@ -13,64 +13,64 @@ export class CreateCustomerDto {
   @IsNotEmpty()
   @MinLength(1)
   @MaxLength(100) // Adjust as needed
-  type: string;
+  type: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MinLength(1)
   @MaxLength(255)
-  name: string;
+  name: string = '';
 
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MinLength(10) // e.g., for phone format
   @MaxLength(20)
-  phoneNumber: string;
+  phoneNumber: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  companyName: string;
+  companyName: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(500)
-  address: string;
+  address: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  city: string;
+  city: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  state: string;
+  state: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(10)
-  postalCode: string;
+  postalCode: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  paymentTerms: string;
+  paymentTerms: string = '';
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  creditLimit: string;
+  creditLimit: string = '';
 
   @IsOptional()
   @IsString()
   @MaxLength(1000)
-  note?: string;
+  note?: string = '';
 }
 
 export class UpdateCustomerDto {
@@ -78,65 +78,63 @@ export class UpdateCustomerDto {
   @IsOptional()
   @MinLength(1)
   @MaxLength(100) // Adjust as needed
-  type: string;
+  type: string = '';
 
   @IsString()
   @IsOptional()
   @MinLength(1)
   @MaxLength(255)
-  name: string;
+  name: string = '';
 
-  @IsString()
-  customerId: string;
 
   @IsEmail()
   @IsOptional()
-  email: string;
+  email: string = '';
 
   @IsString()
   @IsOptional()
   @MinLength(10) // e.g., for phone format
   @MaxLength(20)
-  phoneNumber: string;
+  phoneNumber: string = '';
 
   @IsString()
   @IsOptional()
   @MaxLength(255)
-  companyName: string;
+  companyName: string = '';
 
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  address: string;
+  address: string = '';
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  city: string;
+  city: string = '';
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  state: string;
+  state: string = '';
 
   @IsString()
   @IsOptional()
   @MinLength(5)
   @MaxLength(10)
-  postalCode: string;
+  postalCode: string = '';
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  paymentTerms: string;
+  paymentTerms: string = '';
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  creditLimit: string;
+  creditLimit: string = '';
 
   @IsOptional()
   @IsString()
   @MaxLength(1000)
-  note?: string;
+  note?: string = '';
 }

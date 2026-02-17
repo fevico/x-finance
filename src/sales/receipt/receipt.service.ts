@@ -13,11 +13,23 @@ export class ReceiptService {
   async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
       const receiptNumber = generateRandomInvoiceNumber({ prefix: 'RCT' });
+      const { items, ...receiptData } = body;
+
       const receipt = await this.prisma.receipt.create({
         data: {
-          ...body,
+          ...receiptData,
           entityId,
           receiptNumber,
+          receiptItem: {
+            create: items.map((item) => ({
+              itemId: item.itemId,
+              rate: item.rate,
+              quantity: item.quantity,
+            })),
+          },
+        },
+        include: {
+          receiptItem: { include: { item: true } },
         },
       });
       return receipt;
@@ -29,7 +41,7 @@ export class ReceiptService {
   async getEntityReceipts(
     entityId: string,
     query: GetReceiptsQueryDto,
-  ): Promise<GetReceiptsResponseDto> {
+  ): Promise<any> {
     try {
       const page = query.page || 1;
       const limit = query.limit || 10;
@@ -39,9 +51,11 @@ export class ReceiptService {
       if (query.status) whereClause.status = query.status;
       if (query.paymentMethod) whereClause.paymentMethod = query.paymentMethod;
       if (query.search) {
-        whereClause.customerName = {
-          contains: query.search,
-          mode: 'insensitive',
+        whereClause.customer = {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
         };
       }
 
@@ -49,6 +63,10 @@ export class ReceiptService {
       const [receipts, totalCount] = await Promise.all([
         this.prisma.receipt.findMany({
           where: whereClause,
+          include: {
+            customer: true,
+            receiptItem: { include: { item: true } },
+          },
           skip,
           take: Number(limit),
           orderBy: { date: 'desc' },
@@ -66,7 +84,7 @@ export class ReceiptService {
       const totalSales = aggregate._sum.total ?? 0;
       const totalReceipts = aggregate._count._all ?? 0;
 
-      // Today's sales (for entity, and matching filters where applicable)
+      // Today's sales
       const now = new Date();
       const startOfDay = new Date(
         now.getFullYear(),
@@ -101,9 +119,10 @@ export class ReceiptService {
       const transformed = receipts.map((r) => ({
         id: r.id,
         customerId: r.customerId,
+        customerName: r.customer?.name,
         date: r.date.toISOString(),
         paymentMethod: r.paymentMethod,
-        items: r.items,
+        items: r.receiptItem, // Return structured items
         total: r.total,
         status: r.status,
         createdAt: r.createdAt.toISOString(),
@@ -114,7 +133,7 @@ export class ReceiptService {
       return {
         receipts: transformed,
         stats: {
-          totalReceipts: totalReceipts,
+          totalReceipts,
           totalSales,
           todaysSales,
           averageReceiptValue,
@@ -135,6 +154,7 @@ export class ReceiptService {
         where: { id: receiptId },
         include: {
           customer: true,
+          receiptItem: { include: { item: true } },
         },
       });
 
@@ -177,13 +197,51 @@ export class ReceiptService {
         );
       }
 
+      const { items, removeItemIds, ...receiptData } = body;
+
+      // Delete removed items
+      if (removeItemIds && removeItemIds.length > 0) {
+        await this.prisma.receiptItem.deleteMany({
+          where: {
+            id: { in: removeItemIds },
+            receiptId: receiptId,
+          },
+        });
+      }
+
+      // Handle items create/update
+      if (items && items.length > 0) {
+        for (const item of items) {
+          if (item.id) {
+            // Update existing
+            await this.prisma.receiptItem.update({
+              where: { id: item.id },
+              data: {
+                itemId: item.itemId,
+                rate: item.rate,
+                quantity: item.quantity,
+              },
+            });
+          } else {
+            // Create new
+            await this.prisma.receiptItem.create({
+              data: {
+                itemId: item.itemId,
+                rate: item.rate,
+                quantity: item.quantity,
+                receiptId: receiptId,
+              },
+            });
+          }
+        }
+      }
+
       const updatedReceipt = await this.prisma.receipt.update({
         where: { id: receiptId },
-        data: {
-          ...body,
-        },
+        data: receiptData,
         include: {
           customer: true,
+          receiptItem: { include: { item: true } },
         },
       });
 
@@ -220,7 +278,10 @@ export class ReceiptService {
       const updatedReceipt = await this.prisma.receipt.update({
         where: { id: receiptId },
         data: { status: newStatus },
-        include: { customer: true },
+        include: {
+          customer: true,
+          receiptItem: { include: { item: true } },
+        },
       });
 
       return updatedReceipt;

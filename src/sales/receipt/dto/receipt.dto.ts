@@ -5,13 +5,33 @@ import {
   IsInt,
   IsOptional,
   IsEnum,
+  ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentMethod } from 'prisma/generated/enums';
+import { PaymentMethod, ReceiptStatus } from 'prisma/generated/enums';
+
+export class ReceiptItemDto {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiProperty({ example: 'item_123', description: 'Item ID' })
+  @IsString()
+  itemId: string;
+
+  @ApiProperty({ example: 1000, description: 'Rate per unit' })
+  @IsNumber()
+  rate: number;
+
+  @ApiProperty({ example: 2, description: 'Quantity' })
+  @IsNumber()
+  quantity: number;
+}
 
 export class CreateReceiptDto {
-  @ApiProperty({ example: '1234567890', description: 'Customer ID' })
+  @ApiProperty({ example: 'cust_123', description: 'Customer ID' })
   @IsString()
   customerId: string;
 
@@ -28,10 +48,11 @@ export class CreateReceiptDto {
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
 
-  @ApiProperty({ example: ['item 1', 'item 2'], description: 'List of items' })
+  @ApiProperty({ type: [ReceiptItemDto], description: 'List of items' })
   @IsArray()
-  @IsString({ each: true })
-  items: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ReceiptItemDto)
+  items: ReceiptItemDto[];
 
   @ApiProperty({
     example: 5000,
@@ -42,7 +63,7 @@ export class CreateReceiptDto {
 }
 
 export class UpdateReceiptDto {
-  @ApiPropertyOptional({ example: 'Jane Doe', description: 'Customer name' })
+  @ApiPropertyOptional({ example: 'cust_123', description: 'Customer ID' })
   @IsOptional()
   @IsString()
   customerId?: string;
@@ -65,11 +86,18 @@ export class UpdateReceiptDto {
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
 
-  @ApiPropertyOptional({ example: ['item 1'], description: 'List of items' })
+  @ApiPropertyOptional({ type: [ReceiptItemDto], description: 'List of items' })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReceiptItemDto)
+  items?: ReceiptItemDto[];
+
+  @ApiPropertyOptional({ example: ['item_1'], description: 'IDs of items to remove' })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  items?: string[];
+  removeItemIds?: string[];
 
   @ApiPropertyOptional({
     example: 5000,

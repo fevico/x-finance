@@ -130,6 +130,10 @@ export class InvoiceService {
       if (query.status) {
         whereClause.status = query.status;
       }
+
+      if (query.customerId) {
+        whereClause.customerId = query.customerId;
+      }
       if (query.search) {
         whereClause.OR = [
           { invoiceNumber: { contains: query.search, mode: 'insensitive' } },
@@ -218,6 +222,8 @@ export class InvoiceService {
 
       // Build where clause for filtering
       const whereClause: any = { entityId, status: 'Paid' };
+
+      
       if (query.search) {
         whereClause.OR = [
           { invoiceNumber: { contains: query.search, mode: 'insensitive' } },
@@ -571,5 +577,114 @@ export class InvoiceService {
       performedBy,
       { reason },
     );
+  }
+
+  /**
+   * Get invoice analytics (Aging & Revenue)
+   */
+  async getInvoiceAnalytics(entityId: string) {
+    try {
+      
+      const now = new Date();
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(now.getMonth() - 6);
+      sixMonthsAgo.setDate(1); // Start of the month 6 months ago
+
+      // 1. Calculate Accounts Receivable Aging
+      // Fetch all unpaid invoices (Pending, Sent, Overdue)
+      const unpaidInvoices = await this.prisma.invoice.findMany({
+        where: {
+          entityId,
+          status: { in: ['Pending', 'Sent', 'Overdue'] },
+        },
+        select: {
+          total: true,
+          invoiceDate: true,
+          status: true,
+        },
+      });
+
+      const aging = {
+        '0-30': 0,
+        '31-60': 0,
+        '61-90': 0,
+        '90+': 0,
+      };
+
+      unpaidInvoices.forEach((invoice) => {
+        const ageInMs = now.getTime() - new Date(invoice.invoiceDate).getTime();
+        const ageInDays = Math.floor(ageInMs / (1000 * 60 * 60 * 24));
+
+        if (ageInDays <= 30) {
+          aging['0-30'] += invoice.total;
+        } else if (ageInDays <= 60) {
+          aging['31-60'] += invoice.total;
+        } else if (ageInDays <= 90) {
+          aging['61-90'] += invoice.total;
+        } else {
+          aging['90+'] += invoice.total;
+        }
+      });
+
+      // 2. Calculate Monthly Invoice Revenue
+      // Fetch paid invoices from the last 6 months
+      const paidInvoices = await this.prisma.invoice.findMany({
+        where: {
+          entityId,
+          status: 'Paid',
+          invoiceDate: { gte: sixMonthsAgo },
+        },
+        select: {
+          total: true,
+          invoiceDate: true,
+        },
+        orderBy: {
+          invoiceDate: 'asc',
+        },
+      });
+
+      const revenueByMonth: Record<string, number> = {};
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+
+      paidInvoices.forEach((invoice) => {
+        const month = monthNames[new Date(invoice.invoiceDate).getMonth()];
+        if (!revenueByMonth[month]) {
+          revenueByMonth[month] = 0;
+        }
+        revenueByMonth[month] += invoice.total;
+      });
+
+      // Format revenue for frontend graph (Array of { month, amount })
+      // We want strictly the last 6 months in chronological order
+      const monthlyRevenue = [] as any;
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = monthNames[d.getMonth()];
+        monthlyRevenue.push({
+          month: monthName,
+          revenue: revenueByMonth[monthName] || 0,
+        });
+      }
+
+      return {
+        aging: aging || {},
+        monthlyRevenue: monthlyRevenue || [],
+      };
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
   }
 }

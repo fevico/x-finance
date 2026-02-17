@@ -145,6 +145,62 @@ export class PaymentReceivedService {
         this.prisma.paymentReceived.count({ where }),
       ]);
 
+      // Calculate total paid this current month (across all payments)
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+      );
+
+      const currentMonthPayments = await this.prisma.paymentReceived.findMany({
+        where: {
+          entityId,
+          paidAt: {
+            gte: currentMonthStart,
+            lte: currentMonthEnd,
+          },
+        },
+        select: { amount: true },
+      });
+
+      const currentMonthPaidTotal = currentMonthPayments.reduce(
+        (sum, p) => sum + p.amount,
+        0,
+      );
+
+      // Calculate total partially paid invoices count
+      // We look for invoices that are NOT Paid but have some payments, OR explicitly check for Partial status if we added it.
+      // Since we are about to add 'Partial' status to InvoiceStatus, we can rely on that OR check payment status.
+      // However, the prompt asked to "introduce the partial status for payment so we can use paid partial or pending for pament recieved".
+      // Wait, "introduce the partial status for payment" - PaymentReceivedStatus already has Partial (seen in schema).
+      // "so we can use paid partial or pending for pament recieved" - it seems user wants to ensure we support it.
+      // But for *Invoice* stats "totalPartiallyPaidInvoices", we need to check Invoices.
+      // If we update InvoiceStatus to include Partial, we can query it directly.
+      // For now, let's assume we will update the schema in the next step, so we can use the 'Partial' status in the query.
+      // BUT, since the schema update hasn't been applied/generated yet, this code might fail type checking if I use 'Partial' enum on InvoiceStatus right now if I rely on generated types.
+      // Safe bet: Query invoices where distinct payment records exist but status is not Paid?
+      // Actually, if I update schema FIRST, then types are generated, then I update code.
+      // The user wants me to go on.
+      // I will implement the Logic using the raw string 'Partial' cast if needed or just count based on logic if schema update isn't instant.
+      // Actually, standard partial payment logic: Invoice status is Pending/Sent/Partial (if added).
+      // Let's implement looking for 'Partial' status on Invoice, assuming I will add it.
+      // But wait, valid InvoiceStatus are Overdue, Paid, Draft, Sent, Pending.
+      // I will count invoices that have payments but are not Paid.
+      // OR, I can count invoices with status 'Partial' (which I am about to add).
+      // Let's use the 'Partial' status string for the query value, casting as any to avoid TS error before generation.
+
+      const partiallyPaidInvoicesCount = await this.prisma.invoice.count({
+        where: {
+          entityId,
+          status: 'Partial' as any, // Expecting schema update
+        },
+      });
+
       // Enrich payments with outstanding balance
       const enrichedPayments = this.enrichPaymentRecords(payments);
       const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -157,6 +213,8 @@ export class PaymentReceivedService {
           totalAmount,
           averageAmount:
             totalCount > 0 ? Math.round(totalAmount / totalCount) : 0,
+          currentMonthPaidTotal,
+          totalPartiallyPaidInvoices: partiallyPaidInvoicesCount,
         },
         pagination: {
           totalCount,
