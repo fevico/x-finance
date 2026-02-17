@@ -60,6 +60,15 @@ export class CreateReceiptDto {
   })
   @IsInt()
   total: number;
+
+   @ApiPropertyOptional({
+    example: ReceiptStatus.Completed,
+    enum: ReceiptStatus,
+    description: 'Receipt status',
+  })
+  @IsOptional()
+  @IsEnum(ReceiptStatus)
+  status?: ReceiptStatus;
 }
 
 export class UpdateReceiptDto {
@@ -93,7 +102,10 @@ export class UpdateReceiptDto {
   @Type(() => ReceiptItemDto)
   items?: ReceiptItemDto[];
 
-  @ApiPropertyOptional({ example: ['item_1'], description: 'IDs of items to remove' })
+  @ApiPropertyOptional({
+    example: ['item_1'],
+    description: 'IDs of items to remove',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -106,6 +118,15 @@ export class UpdateReceiptDto {
   @IsOptional()
   @IsInt()
   total?: number;
+
+  @ApiPropertyOptional({
+    example: ReceiptStatus.Completed,
+    enum: ReceiptStatus,
+    description: 'Receipt status',
+  })
+  @IsOptional()
+  @IsEnum(ReceiptStatus)
+  status?: ReceiptStatus;
 }
 
 export class ReceiptDto extends CreateReceiptDto {

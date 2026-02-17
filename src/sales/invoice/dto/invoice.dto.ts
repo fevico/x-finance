@@ -15,48 +15,48 @@ import { InvoiceStatus } from 'prisma/generated/enums';
 export class InvoiceItemDto {
   @IsOptional()
   @IsString()
-  id?: string; // If provided, it's an update; if missing, it's a new item
+  id?: string = ''; // If provided, it's an update; if missing, it's a new item
 
   @IsString()
-  itemId: string;
+  itemId: string = '';
 
   @IsNumber()
-  rate: number;
+  rate: number = 0;
 
   @IsNumber()
-  quantity: number;
+  quantity: number = 0;
 }
 
 // Create Invoice DTO (for creating a new invoice)
 export class CreateInvoiceDto {
   @IsString()
-  customerId: string;
+  customerId: string = ''; // Default to empty string if not provided
 
   @IsDate()
   @Type(() => Date)
-  invoiceDate: Date;
+  invoiceDate: Date = new Date(); // Default to current date
 
   @IsDate()
   @Type(() => Date)
-  dueDate: Date;
+  dueDate: Date = new Date(new Date().setDate(new Date().getDate() + 30)); // Default to 30 days from now
 
   @IsString()
-  paymentTerms: string;
+  paymentTerms: string = 'Net 30'; // Default payment terms
 
   @IsString()
-  currency: string;
+  currency: string = ''; // Default currency
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => InvoiceItemDto)
-  items: InvoiceItemDto[];
+  items?: InvoiceItemDto[];
 
   @IsInt()
-  total: number;
+  total?: number = 0;
 
   @IsOptional()
   @IsString()
-  notes?: string;
+  notes?: string = '';
 
   @IsOptional()
   @IsEnum(InvoiceStatus)
@@ -67,7 +67,7 @@ export class CreateInvoiceDto {
 export class UpdateInvoiceDto {
   @IsOptional()
   @IsString()
-  customerId?: string;
+  customerId?: string = '';
 
   @IsOptional()
   @IsDate()
@@ -81,11 +81,11 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsString()
-  paymentTerms?: string;
+  paymentTerms?: string = '';
 
   @IsOptional()
   @IsString()
-  currency?: string;
+  currency?: string = '';
 
   @IsOptional()
   @IsArray()
@@ -100,11 +100,11 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsInt()
-  total?: number;
+  total?: number = 0;
 
   @IsOptional()
   @IsString()
-  notes?: string;
+  notes?: string = '';
 
   @IsOptional()
   @IsEnum(InvoiceStatus)
@@ -114,13 +114,13 @@ export class UpdateInvoiceDto {
 // Response DTO (for returning invoice data, includes id)
 export class InvoiceDto extends CreateInvoiceDto {
   @IsString()
-  id: string;
+  id: string = '';
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: Date = new Date();
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: Date = new Date();
 }

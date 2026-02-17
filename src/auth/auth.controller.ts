@@ -32,6 +32,7 @@ import {
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
@@ -116,6 +117,21 @@ export class AuthController {
     // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
     res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
 
+    return res.send({ success: true });
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout user' })
+  @ApiResponse({ status: 200, description: 'User logged out' })
+  logout(@Res() res: Response) {
+    // Use domain override for robust deletion in prod, omit in dev
+    const domain =
+      process.env.NODE_ENV === 'production'
+        ? process.env.COOKIE_DOMAIN
+        : undefined;
+    res.setHeader('Set-Cookie', deleteCookie('xf', domain));
+    res.setHeader('Set-Cookie', deleteCookie('xf_group', domain));
+    res.setHeader('Set-Cookie', deleteCookie('xf_entity', domain));
     return res.send({ success: true });
   }
 }

@@ -20,13 +20,21 @@ export function createCookie(
   return parts.join('; ');
 }
 
-export function deleteCookie(name: string) {
+/**
+ * Deletes a cookie. Optionally specify domain to match how it was set.
+ * If domain is not provided, omits Domain attribute (useful for localhost/dev).
+ */
+export function deleteCookie(name: string, domain?: string) {
   const parts = [`${name}=`, 'HttpOnly', 'Path=/', 'Max-Age=0'];
 
   if (isProduction) {
-    parts.push('SameSite=None', 'Secure', `Domain=${DOMAIN}`);
+    parts.push('SameSite=None', 'Secure');
+    if (domain || DOMAIN) {
+      parts.push(`Domain=${domain || DOMAIN}`);
+    }
   } else {
     parts.push('SameSite=Lax');
+    // Do not set Domain in dev/local
   }
 
   return parts.join('; ');

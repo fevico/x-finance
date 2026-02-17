@@ -36,25 +36,70 @@ export class BillsService {
       }
     }
 
-    const bill = await this.prisma.bills.create({
-      data: {
-        ...body,
-        entityId,
-        attachment: attachment
-          ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
-          : undefined,
-      },
-      include: {
-        vendor: {
-          select: {
-            id: true,
-            displayName: true,
-            email: true,
-            phone: true,
-          },
-        },
-      },
+    const { items, ...billData } = body;
+
+    // Calculate item totals and bill totals
+    let subtotal = 0;
+    const billItemsData = (JSON.parse(items as any) || []).map((item) => {
+      const total = item.rate * item.quantity;
+      subtotal += total;
+      return {
+        itemId: item.itemId,
+        rate: item.rate,
+        quantity: item.quantity,
+        total,
+      };
     });
+    // Calculate tax and discount (default 0 if not provided)
+    const tax = billData.tax ?? 0;
+    const discount = billData.discount ?? 0;
+    const total = subtotal + Number(tax) - Number(discount);
+
+    // Create bill and items in a transaction
+    const bill = await this.prisma.$transaction(async (tx) => {
+      const createdBill = await tx.bills.create({
+        data: {
+          ...billData,
+          entityId,
+          subtotal,
+          tax: Number(tax),
+          discount: Number(discount),
+          total,
+          attachment: attachment
+            ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
+            : undefined,
+        },
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+              phone: true,
+            },
+          },
+          billItem: true,
+        },
+      });
+
+      // Create bill items
+      const billItems = await Promise.all(
+        billItemsData.map((item) =>
+          tx.billItem.create({
+            data: {
+              ...item,
+              billId: createdBill.id,
+            },
+            include: { item: true },
+          })
+        )
+      );
+
+      return { ...createdBill, billItem: billItems };
+    });
+
+    // Update bill status automatically
+    await this.updateBillStatus(bill.id);
 
     return bill;
   }
@@ -62,7 +107,7 @@ export class BillsService {
   async getBills(
     entityId: string,
     query: GetBillsQueryDto,
-  ): Promise<GetBillsResponseDto> {
+  ): Promise<GetBillsResponseDto & any> {
     const { page = 1, limit = 10, category, search } = query;
     const skip = (page - 1) * limit;
 
@@ -114,6 +159,7 @@ export class BillsService {
               phone: true,
             },
           },
+          billItem: { include: { item: true } },
         },
         orderBy: {
           billDate: 'desc',
@@ -136,6 +182,7 @@ export class BillsService {
         b.attachment === null
           ? undefined
           : (b.attachment as Record<string, any>),
+      items: b.billItem, // Map billItem to items
       createdAt:
         b.createdAt instanceof Date ? b.createdAt.toISOString() : b.createdAt,
     }));
@@ -157,6 +204,7 @@ export class BillsService {
           select: { id: true, displayName: true, email: true, phone: true },
         },
         paymentRecord: true,
+        billItem: { include: { item: true } },
       },
     });
 
@@ -171,6 +219,7 @@ export class BillsService {
         bill.attachment === null
           ? undefined
           : (bill.attachment as Record<string, any>),
+      items: bill.billItem, // Map billItem to items
       createdAt:
         bill.createdAt instanceof Date
           ? bill.createdAt.toISOString()
@@ -183,6 +232,29 @@ export class BillsService {
           p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
       })),
     };
+  }
+
+  private async updateBillStatus(billId: string) {
+    const bill = await this.prisma.bills.findUnique({
+      where: { id: billId },
+      include: { paymentRecord: true },
+    });
+
+    if (!bill) return;
+
+    const totalPaid = bill.paymentRecord.reduce((sum, p) => sum + p.amount, 0);
+
+    let status: any = 'unpaid';
+    if (totalPaid >= bill.total) {
+      status = 'paid';
+    } else if (totalPaid > 0) {
+      status = 'partial';
+    }
+
+    await this.prisma.bills.update({
+      where: { id: billId },
+      data: { status },
+    });
   }
 
   async createPayment(
@@ -203,15 +275,13 @@ export class BillsService {
         paymentMethod: body.paymentMethod,
         reference: body.reference,
         account: body.account,
+        amount: body.amount,
         note: body.note ?? undefined,
       },
     });
 
-    // Optionally update bill status to paid
-    await this.prisma.bills.update({
-      where: { id: billId },
-      data: { status: 'paid' },
-    });
+    // Update bill status automatically
+    await this.updateBillStatus(billId);
 
     return {
       ...payment,
@@ -259,5 +329,133 @@ export class BillsService {
       pageSize: limit,
       totalPages,
     };
+  }
+
+  async updateBill(
+    billId: string,
+    entityId: string,
+    body: any,
+    file?: Express.Multer.File,
+  ) {
+    try {
+      const bill = await this.prisma.bills.findUnique({
+        where: { id: billId },
+      });
+
+      if (!bill || bill.entityId !== entityId) {
+        throw new BadRequestException('Bill not found for this entity');
+      }
+
+      let attachment = bill.attachment as any;
+
+      // Upload new file if provided
+      if (file) {
+        // Delete old attachment if exists
+        if (attachment?.publicId) {
+          await this.fileuploadService.deleteFile(attachment.publicId);
+        }
+
+        const uploadedFile = await this.fileuploadService.uploadFile(
+          file,
+          `bills/${entityId}`,
+        );
+        attachment = {
+          publicId: uploadedFile.publicId,
+          secureUrl: uploadedFile.secureUrl,
+        };
+      }
+
+      const { items, ...billData } = body;
+
+      // Calculate new bill items and totals
+      let subtotal = 0;
+      const billItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
+      });
+      const tax = billData.tax ?? 0;
+      const discount = billData.discount ?? 0;
+      const total = subtotal + tax - discount;
+
+      // Replace all bill items and update bill in a transaction
+      const updatedBill = await this.prisma.$transaction(async (tx) => {
+        // Delete all existing items for this bill
+        await tx.billItem.deleteMany({ where: { billId } });
+
+        // Create new items
+        await Promise.all(
+          billItemsData.map((item) =>
+            tx.billItem.create({
+              data: {
+                ...item,
+                billId,
+              },
+            })
+          )
+        );
+
+        // Update bill
+        const updated = await tx.bills.update({
+          where: { id: billId },
+          data: {
+            ...billData,
+            subtotal,
+            tax,
+            discount,
+            total,
+            ...(file && { attachment }),
+          },
+          include: {
+            vendor: {
+              select: { id: true, displayName: true, email: true, phone: true },
+            },
+            billItem: { include: { item: true } },
+          },
+        });
+
+        return updated;
+      });
+
+      // Re-calculate status in case total or payments changed
+      await this.updateBillStatus(billId);
+
+      return this.getBillById(entityId, billId);
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(`Update failed: ${error.message}`);
+    }
+  }
+
+  async deleteBill(billId: string, entityId: string) {
+    try {
+      const bill = await this.prisma.bills.findUnique({
+        where: { id: billId },
+      });
+
+      if (!bill || bill.entityId !== entityId) {
+        throw new BadRequestException('Bill not found for this entity');
+      }
+
+      // Delete attachment from Cloudinary if exists
+      const attachment = bill.attachment as any;
+      if (attachment?.publicId) {
+        await this.fileuploadService.deleteFile(attachment.publicId);
+      }
+
+      await this.prisma.bills.delete({
+        where: { id: billId },
+      });
+
+      return { message: 'Bill deleted successfully' };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(`Delete failed: ${error.message}`);
+    }
   }
 }

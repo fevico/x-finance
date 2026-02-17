@@ -9,6 +9,9 @@ import {
   UploadedFile,
   Get,
   Query,
+  Patch,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ExpensesService } from './expenses.service';
@@ -46,7 +49,7 @@ export class ExpensesController {
       properties: {
         date: { type: 'string', format: 'date-time' },
         reference: { type: 'string' },
-        supplier: { type: 'string' },
+        vendorId: { type: 'string' },
         category: { type: 'string' },
         paymentMethod: {
           type: 'string',
@@ -62,7 +65,7 @@ export class ExpensesController {
       required: [
         'date',
         'reference',
-        'supplier',
+        'vendorId',
         'category',
         'paymentMethod',
         'account',
@@ -106,5 +109,64 @@ export class ExpensesController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.expensesService.getExpenses(entityId, query);
+  }
+
+  @Patch(':expenseId/approve')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Approve a pending expense' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Expense approved successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async approveExpense(@Req() req, @Param('expenseId') expenseId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.expensesService.approveExpense(expenseId, entityId);
+  }
+
+  @Patch(':expenseId')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('attachment'))
+  @ApiOperation({ summary: 'Update an expense' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiConsumes('multipart/form-data')
+  @ApiOkResponse({ description: 'Expense updated successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async updateExpense(
+    @Req() req,
+    @Param('expenseId') expenseId: string,
+    @Body() body: any,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.expensesService.updateExpense(
+      expenseId,
+      entityId,
+      {
+        ...body,
+        amount: body.amount ? Number(body.amount) : undefined,
+        tags: body.tags
+          ? Array.isArray(body.tags)
+            ? body.tags
+            : [body.tags]
+          : undefined,
+      },
+      file,
+    );
+  }
+
+  @Delete(':expenseId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Delete an expense' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Expense deleted successfully' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async deleteExpense(@Req() req, @Param('expenseId') expenseId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.expensesService.deleteExpense(expenseId, entityId);
   }
 }

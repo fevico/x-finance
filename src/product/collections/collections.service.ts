@@ -1,9 +1,11 @@
 import { PrismaService } from '@/prisma/prisma.service';
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { CreateCollectionDto } from './dto/create-collection.dto';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { CreateCollectionDto, UpdateCollectionDto, CollectionDto, CollectionItemDto } from './dto/create-collection.dto';
 import { GetCollectionsQueryDto } from './dto/get-collections-query.dto';
 import { GetCollectionsResponseDto } from './dto/get-collections-response.dto';
+import { CollectionStatsDto, CollectionsWithStatsDto } from './dto/collection-stats.dto';
 import { FileuploadService } from '@/fileupload/fileupload.service';
+import { generateSlug } from './utils/slug.util';
 
 @Injectable()
 export class CollectionsService {
@@ -12,59 +14,183 @@ export class CollectionsService {
     private readonly fileuploadService: FileuploadService,
   ) {}
 
+  /**
+   * Create a new collection
+   */
   async createCollection(
     entityId: string,
     body: CreateCollectionDto,
     file?: Express.Multer.File,
-  ) {
-    let image: { publicId: any; secureUrl: any } | undefined = undefined;
+  ): Promise<CollectionDto> {
+    try {
+      // Generate slug from name if not provided
+      const slug = body.slug ? body.slug : generateSlug(body.name);
 
-    if (file) {
-      try {
-        const uploadResult = await this.fileuploadService.uploadFile(
-          file,
-          `collections/${entityId}`,
+      // Check if slug is unique for this entity
+      const existingCollection = await this.prisma.collection.findFirst({
+        where: { slug, entityId },
+      });
+
+      if (existingCollection) {
+        throw new BadRequestException(
+          `Collection with slug "${slug}" already exists for this entity`,
         );
-        image = {
-          publicId: uploadResult.publicId,
-          secureUrl: uploadResult.secureUrl,
-        };
-      } catch (error) {
-        throw new BadRequestException(`Image upload failed: ${error.message}`);
       }
+
+      let image: { publicId: string; secureUrl: string } | undefined = undefined;
+
+      if (file) {
+        try {
+          const uploadResult = await this.fileuploadService.uploadFile(
+            file,
+            `collections/${entityId}`,
+          );
+          image = {
+            publicId: uploadResult.publicId,
+            secureUrl: uploadResult.secureUrl,
+          };
+        } catch (error: any) {
+          throw new BadRequestException(`Image upload failed: ${error.message}`);
+        }
+      }
+
+      const collection = await this.prisma.collection.create({
+        data: {
+          name: body.name,
+          slug,
+          description: body.description,
+          visibility: body.visibility === 'true' ? true : false,
+          featured: body.featured === 'true' ? true : false,
+          entityId,
+          image,
+        },
+        include: {
+          items: {
+            include: {
+              item: true,
+            },
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
+        },
+      });
+
+      // console.log(body.itemIds, 'item ids', body);
+
+      // Add items to collection if provided
+      if (body.itemIds && body.itemIds.length > 0) {
+        await Promise.all(
+          JSON.parse(body.itemIds).map((itemId, index) =>
+            this.prisma.collectionItem.create({
+              data: {
+                collectionId: collection.id,
+                itemId,
+                sortOrder: index,
+              },
+            }),
+          ),
+        );
+
+        // Refetch to get updated items
+        const updatedCollection = await this.prisma.collection.findUnique({
+          where: { id: collection.id },
+          include: {
+            items: {
+              include: {
+                item: true,
+              },
+              orderBy: {
+                sortOrder: 'asc',
+              },
+            },
+          },
+        });
+
+        return this.formatCollection(updatedCollection);
+      }
+
+      return this.formatCollection(collection);
+    } catch (error: any) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(error.message);
     }
-
-    const collection = await this.prisma.collection.create({
-      data: {
-        name: body.name,
-        slug: body.slug,
-        description: body.description,
-        visibility: body.visibility ?? false,
-        featured: body.featured ?? false,
-        entityId,
-        image: image
-          ? { publicId: image.publicId, secureUrl: image.secureUrl }
-          : undefined,
-      },
-    });
-
-    return {
-      ...collection,
-      image:
-        collection.image === null
-          ? undefined
-          : (collection.image as Record<string, any>),
-      createdAt:
-        collection.createdAt instanceof Date
-          ? collection.createdAt.toISOString()
-          : collection.createdAt,
-    };
   }
 
+  /**
+   * Get collection statistics
+   */
+  private async getCollectionStats(
+    entityId: string,
+  ): Promise<CollectionStatsDto> {
+    try {
+      // Get total collections count
+      const totalCollections = await this.prisma.collection.count({
+        where: { entityId },
+      });
+
+      // Get active collections count (visible on online store)
+      const activeCollections = await this.prisma.collection.count({
+        where: { entityId, visibility: true },
+      });
+
+      // Get total items across all collections
+      const collectionItems = await this.prisma.collectionItem.findMany({
+        where: {
+          collection: {
+            entityId,
+          },
+        },
+      });
+      const totalItems = collectionItems.length;
+
+      // Find most popular collection (with most items)
+      const allCollectionsWithItems = await this.prisma.collection.findMany({
+        where: { entityId },
+        include: {
+          items: true,
+        },
+      });
+
+      let mostPopularCollection = 'N/A';
+      let mostPopularItemCount = 0;
+
+      if (allCollectionsWithItems.length > 0) {
+        const populars = allCollectionsWithItems.sort(
+          (a, b) => b.items.length - a.items.length,
+        );
+        mostPopularCollection = populars[0].name;
+        mostPopularItemCount = populars[0].items.length;
+      }
+
+      return {
+        totalCollections,
+        activeCollections,
+        totalItems,
+        totalValue: '245000', // Placeholder value
+        mostPopularCollection,
+        mostPopularItemCount,
+      };
+    } catch (error: any) {
+      // Return default stats if calculation fails
+      return {
+        totalCollections: 0,
+        activeCollections: 0,
+        totalItems: 0,
+        totalValue: '0',
+        mostPopularCollection: 'Best Sellers',
+        mostPopularItemCount: 0,
+      };
+    }
+  }
+
+  /**
+   * Get all collections with pagination
+   */
   async getCollections(
     entityId: string,
     query: GetCollectionsQueryDto,
-  ): Promise<GetCollectionsResponseDto> {
+  ): Promise<CollectionsWithStatsDto> {
     const { page = 1, limit = 10, search } = query;
     const skip = (page - 1) * limit;
 
@@ -73,12 +199,23 @@ export class CollectionsService {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { slug: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
       ];
     }
 
     const [collections, total] = await Promise.all([
       this.prisma.collection.findMany({
         where,
+        include: {
+          items: {
+            include: {
+              item: true,
+            },
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
+        },
         orderBy: { name: 'asc' },
         skip,
         take: Number(limit),
@@ -86,16 +223,12 @@ export class CollectionsService {
       this.prisma.collection.count({ where }),
     ]);
 
-    const transformed = collections.map((c) => ({
-      ...c,
-      image: c.image === null ? undefined : (c.image as Record<string, any>),
-      createdAt:
-        c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
-    }));
-
+    const transformed = collections.map(c => this.formatCollection(c));
     const totalPages = Math.ceil(total / limit);
+    const stats = await this.getCollectionStats(entityId);
 
     return {
+      stats,
       collections: transformed,
       total,
       currentPage: page,
@@ -103,4 +236,378 @@ export class CollectionsService {
       totalPages,
     };
   }
+
+  /**
+   * Get a single collection by ID
+   */
+  async getCollectionById(
+    collectionId: string,
+    entityId: string,
+  ): Promise<CollectionDto> {
+    const collection = await this.prisma.collection.findFirst({
+      where: { id: collectionId, entityId },
+      include: {
+        items: {
+          include: {
+            item: true,
+          },
+          orderBy: {
+            sortOrder: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!collection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    return this.formatCollection(collection);
+  }
+
+  /**
+   * Get a single collection by slug
+   */
+  async getCollectionBySlug(
+    slug: string,
+    entityId: string,
+  ): Promise<CollectionDto> {
+    const collection = await this.prisma.collection.findFirst({
+      where: { slug, entityId },
+      include: {
+        items: {
+          include: {
+            item: true,
+          },
+          orderBy: {
+            sortOrder: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!collection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    return this.formatCollection(collection);
+  }
+
+  /**
+   * Update a collection
+   */
+  async updateCollection(
+    collectionId: string,
+    entityId: string,
+    body: UpdateCollectionDto,
+    file?: Express.Multer.File,
+  ): Promise<CollectionDto> {
+    try {
+      const collection = await this.prisma.collection.findFirst({
+        where: { id: collectionId, entityId },
+      });
+
+      if (!collection) {
+        throw new NotFoundException('Collection not found');
+      }
+
+      const dataToUpdate: any = {};
+
+      if (body.name) {
+        dataToUpdate.name = body.name;
+      }
+
+      if (body.slug) {
+        // Check if new slug is unique for this entity
+        const existingCollection = await this.prisma.collection.findFirst({
+          where: {
+            slug: body.slug,
+            entityId,
+            id: { not: collectionId },
+          },
+        });
+
+        if (existingCollection) {
+          throw new BadRequestException(
+            `Collection with slug "${body.slug}" already exists for this entity`,
+          );
+        }
+        dataToUpdate.slug = body.slug;
+      }
+
+      if (body.description !== undefined) {
+        dataToUpdate.description = body.description;
+      }
+
+      if (body.visibility !== undefined) {
+        dataToUpdate.visibility = body.visibility === 'true' ? true : false;
+      }
+
+      if (body.featured !== undefined) {
+        dataToUpdate.featured = body.featured === 'true' ? true : false;
+      }
+
+      if (file) {
+        try {
+          const uploadResult = await this.fileuploadService.uploadFile(
+            file,
+            `collections/${entityId}`,
+          );
+          dataToUpdate.image = {
+            publicId: uploadResult.publicId,
+            secureUrl: uploadResult.secureUrl,
+          };
+        } catch (error: any) {
+          throw new BadRequestException(`Image upload failed: ${error.message}`);
+        }
+      }
+
+      const updatedCollection = await this.prisma.collection.update({
+        where: { id: collectionId },
+        data: dataToUpdate,
+        include: {
+          items: {
+            include: {
+              item: true,
+            },
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
+        },
+      });
+
+      // Update items if provided
+      if (body.itemIds !== undefined) {
+        // Delete existing items
+        await this.prisma.collectionItem.deleteMany({
+          where: { collectionId },
+        });
+
+        // Add new items
+        if (body.itemIds.length > 0) {
+          await Promise.all(
+            JSON.parse(body.itemIds).map((itemId, index) =>
+              this.prisma.collectionItem.create({
+                data: {
+                  collectionId,
+                  itemId,
+                  sortOrder: index,
+                },
+              }),
+            ),
+          );
+        }
+
+        // Refetch to get updated items
+        const refreshedCollection = await this.prisma.collection.findUnique({
+          where: { id: collectionId },
+          include: {
+            items: {
+              include: {
+                item: true,
+              },
+              orderBy: {
+                sortOrder: 'asc',
+              },
+            },
+          },
+        });
+
+        return this.formatCollection(refreshedCollection);
+      }
+
+      return this.formatCollection(updatedCollection);
+    } catch (error: any) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
+   * Delete a collection
+   */
+  async deleteCollection(
+    collectionId: string,
+    entityId: string,
+  ): Promise<{ message: string }> {
+    try {
+      const collection = await this.prisma.collection.findFirst({
+        where: { id: collectionId, entityId },
+      });
+
+      if (!collection) {
+        throw new NotFoundException('Collection not found');
+      }
+
+      // Delete collection (cascade will delete collection items)
+      await this.prisma.collection.delete({
+        where: { id: collectionId },
+      });
+
+      return { message: 'Collection deleted successfully' };
+    } catch (error: any) {
+      if (error instanceof NotFoundException) throw error;
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
+   * Add items to a collection
+   */
+  async addItemsToCollection(
+    collectionId: string,
+    entityId: string,
+    itemIds: string[],
+  ): Promise<CollectionDto> {
+    try {
+      const collection = await this.prisma.collection.findFirst({
+        where: { id: collectionId, entityId },
+      });
+
+      if (!collection) {
+        throw new NotFoundException('Collection not found');
+      }
+
+      // Get current items count for sort order
+      const currentItems = await this.prisma.collectionItem.findMany({
+        where: { collectionId },
+        orderBy: { sortOrder: 'desc' },
+        take: 1,
+      });
+
+      let sortOrder = currentItems.length > 0 ? currentItems[0].sortOrder + 1 : 0;
+
+      // Add items
+      await Promise.all(
+        itemIds.map((itemId) =>
+          this.prisma.collectionItem.create({
+            data: {
+              collectionId,
+              itemId,
+              sortOrder: sortOrder++,
+            },
+          }),
+        ),
+      );
+
+      // Refetch collection
+      const updatedCollection = await this.prisma.collection.findUnique({
+        where: { id: collectionId },
+        include: {
+          items: {
+            include: {
+              item: true,
+            },
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
+        },
+      });
+
+      return this.formatCollection(updatedCollection);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) throw error;
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
+   * Remove items from a collection
+   */
+  async removeItemsFromCollection(
+    collectionId: string,
+    entityId: string,
+    itemIds: string[],
+  ): Promise<CollectionDto> {
+    try {
+      const collection = await this.prisma.collection.findFirst({
+        where: { id: collectionId, entityId },
+      });
+
+      if (!collection) {
+        throw new NotFoundException('Collection not found');
+      }
+
+      // Remove items
+      await this.prisma.collectionItem.deleteMany({
+        where: {
+          collectionId,
+          itemId: { in: itemIds },
+        },
+      });
+
+      // Refetch collection
+      const updatedCollection = await this.prisma.collection.findUnique({
+        where: { id: collectionId },
+        include: {
+          items: {
+            include: {
+              item: true,
+            },
+            orderBy: {
+              sortOrder: 'asc',
+            },
+          },
+        },
+      });
+
+      return this.formatCollection(updatedCollection);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) throw error;
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
+   * Format collection data for response
+   */
+  private formatCollection(collection: any): CollectionDto & { totalValue: number; totalItems: number } {
+    const items = collection.items.map((ci: any) => this.formatCollectionItem(ci));
+    const totalValue = items.reduce((sum, item) => sum + (item.sellingPrice || 0), 0);
+    const totalItems = items.length;
+    return {
+      id: collection.id,
+      name: collection.name,
+      slug: collection.slug,
+      description: collection.description,
+      image: collection.image
+        ? (collection.image as Record<string, any>)
+        : undefined,
+      visibility: collection.visibility,
+      featured: collection.featured,
+      items,
+      totalValue,
+      totalItems,
+      createdAt:
+        collection.createdAt instanceof Date
+          ? collection.createdAt.toISOString()
+          : collection.createdAt,
+      updatedAt:
+        collection.updatedAt instanceof Date
+          ? collection.updatedAt.toISOString()
+          : collection.updatedAt,
+    };
+  }
+
+  /**
+   * Format collection item for response
+   */
+  private formatCollectionItem(collectionItem: any): CollectionItemDto {
+    return {
+      id: collectionItem.item.id,
+      name: collectionItem.item.name,
+      category: collectionItem.item.category,
+      sellingPrice: collectionItem.item.sellingPrice,
+      sortOrder: collectionItem.sortOrder,
+      createdAt:
+        collectionItem.item.createdAt instanceof Date
+          ? collectionItem.item.createdAt.toISOString()
+          : collectionItem.item.createdAt,
+    };
+  }
 }
+

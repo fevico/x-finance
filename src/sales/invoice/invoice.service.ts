@@ -68,49 +68,67 @@ export class InvoiceService {
       // Extract items from body
       const { items, ...invoiceData } = body;
 
-      // Create invoice with invoice items in a transaction
-      const invoice = await this.prisma.invoice.create({
-        data: {
-          ...invoiceData,
-          invoiceNumber,
-          entityId,
-        },
-        include: {
-          customer: { select: { name: true, id: true } },
-          invoiceItem: true,
-          activities: true,
-        },
+      // Calculate item totals and invoice totals
+      let subtotal = 0;
+      const invoiceItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
       });
+      // For now, tax is 0. You can add tax calculation logic here.
+      const tax = 0.1 * subtotal; // Example: 10% tax
+      const total = subtotal + tax;
 
-      // Log activity: Invoice Created
-      await this.logActivity(
-        invoice.id,
-        InvoiceActivityType.Created,
-        'Invoice created',
-        performedBy,
-        { invoiceNumber },
-      );
+      // Create invoice and items in a transaction
+      const result = await this.prisma.$transaction(async (tx) => {
+        const invoice = await tx.invoice.create({
+          data: {
+            ...invoiceData,
+            invoiceNumber,
+            entityId,
+            subtotal,
+            tax,
+            total,
+          },
+          include: {
+            customer: { select: { name: true, id: true } },
+            invoiceItem: true,
+            activities: true,
+          },
+        });
 
-      // Create invoice items if provided
-      if (items && items.length > 0) {
+        // Log activity: Invoice Created
+        await tx.invoiceActivity.create({
+          data: {
+            invoiceId: invoice.id,
+            activityType: InvoiceActivityType.Created,
+            description: 'Invoice created',
+            performedBy,
+            metadata: { invoiceNumber },
+          },
+        });
+
+        // Create invoice items
         const invoiceItems = await Promise.all(
-          items.map((item) =>
-            this.prisma.invoiceItem.create({
+          invoiceItemsData.map((item) =>
+            tx.invoiceItem.create({
               data: {
-                itemId: item.itemId,
-                rate: item.rate,
-                quantity: item.quantity,
+                ...item,
                 invoiceId: invoice.id,
               },
               include: { item: true },
-            }),
-          ),
+            })
+          )
         );
 
         return { ...invoice, invoiceItem: invoiceItems };
-      }
-
-      return invoice;
+      });
+      return result;
     } catch (error) {
       throw new HttpException(`${error.message}`, HttpStatus.CONFLICT);
     }
@@ -385,66 +403,69 @@ export class InvoiceService {
       }
 
       // Extract items from body
-      const { items, removeItemIds, ...invoiceData } = body;
+      const { items, ...invoiceData } = body;
 
-      // Delete removed items if specified
-      if (removeItemIds && removeItemIds.length > 0) {
-        await this.prisma.invoiceItem.deleteMany({
-          where: {
-            id: { in: removeItemIds },
-            invoiceId: invoiceId,
+      // Calculate new invoice items and totals
+      let subtotal = 0;
+      const invoiceItemsData = (items || []).map((item) => {
+        const total = item.rate * item.quantity;
+        subtotal += total;
+        return {
+          itemId: item.itemId,
+          rate: item.rate,
+          quantity: item.quantity,
+          total,
+        };
+      });
+      const tax = 0;
+      const total = subtotal + tax;
+
+      // Replace all invoice items and update invoice in a transaction
+      const updatedInvoice = await this.prisma.$transaction(async (tx) => {
+        // Delete all existing items for this invoice
+        await tx.invoiceItem.deleteMany({ where: { invoiceId } });
+
+        // Create new items
+        await Promise.all(
+          invoiceItemsData.map((item) =>
+            tx.invoiceItem.create({
+              data: {
+                ...item,
+                invoiceId,
+              },
+            })
+          )
+        );
+
+        // Update invoice
+        const updated = await tx.invoice.update({
+          where: { id: invoiceId },
+          data: {
+            ...invoiceData,
+            subtotal,
+            tax,
+            total,
+          },
+          include: {
+            customer: true,
+            invoiceItem: { include: { item: true } },
+            activities: { orderBy: { createdAt: 'desc' } },
           },
         });
-      }
 
-      // Handle items update/creation
-      if (items && items.length > 0) {
-        // Process new/updated items
-        for (const item of items) {
-          const hasId = (item as any).id && (item as any).id.trim().length > 0;
-
-          if (hasId) {
-            // Update existing item (has id)
-            await this.prisma.invoiceItem.update({
-              where: { id: (item as any).id },
-              data: {
-                itemId: item.itemId,
-                rate: item.rate,
-                quantity: item.quantity,
-              },
-            });
-          } else {
-            // Create new item (no id provided)
-            await this.prisma.invoiceItem.create({
-              data: {
-                itemId: item.itemId,
-                rate: item.rate,
-                quantity: item.quantity,
-                invoiceId: invoiceId,
-              },
-            });
-          }
-        }
-      }
-
-      // Update invoice data
-      const updatedInvoice = await this.prisma.invoice.update({
-        where: { id: invoiceId },
-        data: invoiceData,
-        include: {
-          customer: true,
-          invoiceItem: {
-            include: { item: true },
+        // Log activity: Invoice Updated
+        await tx.invoiceActivity.create({
+          data: {
+            invoiceId,
+            activityType: InvoiceActivityType.Updated,
+            description: 'Invoice updated',
+            performedBy,
+            metadata: invoiceData,
           },
-          activities: {
-            orderBy: { createdAt: 'desc' },
-          },
-        },
+        });
+
+        return updated;
       });
-
-      // Log activity: Invoice Updated
-      await this.logInvoiceUpdated(invoiceId, invoiceData, performedBy);
-
       return updatedInvoice;
     } catch (error) {
       if (error instanceof HttpException) throw error;
