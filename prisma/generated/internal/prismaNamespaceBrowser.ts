@@ -71,6 +71,9 @@ export const ModelName = {
   Collection: 'Collection',
   CollectionItem: 'CollectionItem',
   Asset: 'Asset',
+  AccountType: 'AccountType',
+  AccountCategory: 'AccountCategory',
+  AccountSubCategory: 'AccountSubCategory',
   Account: 'Account',
   Journal: 'Journal',
   Budget: 'Budget',
@@ -489,19 +492,53 @@ export const AssetScalarFieldEnum = {
 export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
 
 
+export const AccountTypeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountTypeScalarFieldEnum = (typeof AccountTypeScalarFieldEnum)[keyof typeof AccountTypeScalarFieldEnum]
+
+
+export const AccountCategoryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  groupId: 'groupId',
+  typeId: 'typeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountCategoryScalarFieldEnum = (typeof AccountCategoryScalarFieldEnum)[keyof typeof AccountCategoryScalarFieldEnum]
+
+
+export const AccountSubCategoryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  categoryId: 'categoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountSubCategoryScalarFieldEnum = (typeof AccountSubCategoryScalarFieldEnum)[keyof typeof AccountSubCategoryScalarFieldEnum]
+
+
 export const AccountScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
-  category: 'category',
-  subCategory: 'subCategory',
   description: 'description',
-  type: 'type',
-  balance: 'balance',
-  credit: 'credit',
-  debit: 'debit',
-  date: 'date',
   entityId: 'entityId',
+  subCategoryId: 'subCategoryId',
+  balance: 'balance',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

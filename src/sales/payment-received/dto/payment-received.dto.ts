@@ -29,8 +29,8 @@ export class CreatePaymentReceivedDto {
   paymentMethod: string;
 
   @ApiProperty({
-    example: 'Bank Account - Main',
-    description: 'Deposit account/location',
+    example: 'acc_abc123',
+    description: 'Account ID to deposit payment to',
   })
   @IsString()
   depositTo: string;
@@ -82,8 +82,8 @@ export class UpdatePaymentReceivedDto {
   paymentMethod?: string;
 
   @ApiPropertyOptional({
-    example: 'Cash Drawer',
-    description: 'Deposit account/location',
+    example: 'acc_abc123',
+    description: 'Account ID to deposit payment to',
   })
   @IsOptional()
   @IsString()

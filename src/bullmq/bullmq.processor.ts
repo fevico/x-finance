@@ -6,6 +6,8 @@ import * as bcrypt from 'bcrypt';
 import { systemRole } from 'prisma/generated/enums';
 import { EmailService } from '@/email/email.service';
 import * as path from 'path';
+import { seedDefaultChartOfAccounts } from '../../seeders/seed-account-chart';
+import { seedDefaultEntityAccounts } from '../../seeders/seed-entity-accounts';
 
 @Processor('default')
 @Injectable()
@@ -63,6 +65,19 @@ export class BullmqProcessor extends WorkerHost {
       this.logger.debug(
         `[Job ${job.id}] Created group role with id: ${role.id}`,
       );
+
+      // 2.5 Seed default chart of accounts for the group
+      try {
+        await seedDefaultChartOfAccounts(groupId);
+        this.logger.debug(
+          `[Job ${job.id}] Seeded default chart of accounts for group`,
+        );
+      } catch (err) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to seed chart of accounts: ${err}`,
+        );
+        // Don't throw - continue with other setup steps
+      }
 
       // 3. Create owner user and attach to the new role
       const password = 'Password123';
@@ -184,6 +199,19 @@ export class BullmqProcessor extends WorkerHost {
       this.logger.debug(
         `[Job ${job.id}] Created entity user with email: ${email}`,
       );
+
+      // 3.5 Seed default accounts for the entity
+      try {
+        await seedDefaultEntityAccounts(entityId, groupId);
+        this.logger.debug(
+          `[Job ${job.id}] Seeded default accounts for entity`,
+        );
+      } catch (err) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to seed entity accounts: ${err}`,
+        );
+        // Don't throw - continue with other setup steps
+      }
 
       // Send welcome email to entity user
 try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(process.cwd(), 'src/email/templates/entity-user-welcome.html'), { firstName: entityName ? entityName.split(' ')[0] : 'Entity', entityName: entityName || legalName || 'Entity', email, password: plainPassword,

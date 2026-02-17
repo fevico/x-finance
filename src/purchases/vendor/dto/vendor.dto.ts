@@ -87,11 +87,12 @@ export class CreateVendorDto {
   creditLimit: string;
 
   @ApiPropertyOptional({
-    example: 'Expenses:Supplies',
-    description: 'Expense account',
+    example: 'acc_abc123',
+    description: 'Expense account ID for this vendor',
   })
+  @IsOptional()
   @IsString()
-  expenseAccount: string;
+  expenseAccountId?: string;
 
   @ApiPropertyOptional({ example: 'First Bank', description: 'Bank name' })
   @IsString()
@@ -120,4 +121,14 @@ export class VendorDto extends CreateVendorDto {
 
   @ApiProperty({ example: '2025-12-18T00:00:00Z', description: 'Created at' })
   createdAt: string;
+
+  @ApiPropertyOptional({
+    example: { id: 'acc_abc123', name: 'Supplies Expense', code: '5200' },
+    description: 'Expense account details',
+  })
+  expenseAccount?: {
+    id: string;
+    name: string;
+    code: string;
+  };
 }
