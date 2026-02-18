@@ -45,6 +45,8 @@ export class AuthController {
     );
     // Encrypt minimal payload (userId, groupId, entityId, systemRole) to keep token size small
     const token = await encryptSession(tokenPayload);
+    res.setHeader('Set-Cookie', deleteCookie('xf_group'));
+    res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
     res.setHeader('Set-Cookie', createCookie('xf', token, 60 * 60 * 24 * 7));
     // Send full user data to client
     return res.send(user);
@@ -124,14 +126,18 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user' })
   @ApiResponse({ status: 200, description: 'User logged out' })
   logout(@Res() res: Response) {
-    // Use domain override for robust deletion in prod, omit in dev
     const domain =
       process.env.NODE_ENV === 'production'
         ? process.env.COOKIE_DOMAIN
         : undefined;
-    res.setHeader('Set-Cookie', deleteCookie('xf', domain));
-    res.setHeader('Set-Cookie', deleteCookie('xf_group', domain));
-    res.setHeader('Set-Cookie', deleteCookie('xf_entity', domain));
+
+    res.setHeader('Set-Cookie', [
+      deleteCookie('xf', domain),
+      deleteCookie('xf_group', domain),
+      deleteCookie('xf_entity', domain),
+    ]);
+
     return res.send({ success: true });
   }
+
 }
