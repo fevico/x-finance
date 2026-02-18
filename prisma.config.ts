@@ -12,7 +12,11 @@ export default defineConfig({
   },
   datasource: {
     url:
-      env('DATABASE_URL') ??
+      process.env.DATABASE_URL ??
       'postgresql://postgres:postgres@localhost:5432/xfinance?schema=public',
+
+    // url:
+    //   env('DATABASE_URL') ??
+    //   'postgresql://postgres:postgres@localhost:5432/xfinance?schema=public',
   },
 });
