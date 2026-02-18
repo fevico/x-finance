@@ -65,7 +65,7 @@ export class EntityService {
         groupId: effectiveGroupId,
         email: createEntityDto.email,
         entityName: createEntityDto.name,
-        legalName: createEntityDto.legalName,
+        legalName: createEntityDto.legalName,  
       });
 
       return entity;
