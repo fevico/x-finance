@@ -44,6 +44,22 @@ export class PaymentReceivedService {
         );
       }
 
+      // Validate account exists and belongs to the same entity
+      const account = await this.prisma.account.findUnique({
+        where: { id: body.depositTo },
+      });
+
+      if (!account) {
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (account.entityId !== entityId) {
+        throw new HttpException(
+          'Account does not belong to this entity',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
       // Create payment record with invoice total
       const paymentReceived = await this.prisma.paymentReceived.create({
         data: {
@@ -51,7 +67,10 @@ export class PaymentReceivedService {
           total: invoice.total,
           entityId,
         },
-        include: { invoice: { include: { customer: true } } },
+        include: {
+          invoice: { include: { customer: true } },
+          account: true,
+        },
       });
 
       // Log payment received activity
@@ -74,7 +93,10 @@ export class PaymentReceivedService {
     try {
       const payment = await this.prisma.paymentReceived.findUnique({
         where: { id: paymentId },
-        include: { invoice: { include: { customer: true } } },
+        include: {
+          invoice: { include: { customer: true } },
+          account: true,
+        },
       });
 
       if (!payment) {
@@ -120,7 +142,16 @@ export class PaymentReceivedService {
         where.OR = [
           { reference: { contains: search, mode: 'insensitive' } },
           { paymentMethod: { contains: search, mode: 'insensitive' } },
-          { depositTo: { contains: search, mode: 'insensitive' } },
+          {
+            account: {
+              name: { contains: search, mode: 'insensitive' },
+            },
+          },
+          {
+            account: {
+              code: { contains: search, mode: 'insensitive' },
+            },
+          },
           {
             invoice: {
               invoiceNumber: { contains: search, mode: 'insensitive' },
@@ -137,7 +168,10 @@ export class PaymentReceivedService {
       const [payments, totalCount] = await Promise.all([
         this.prisma.paymentReceived.findMany({
           where,
-          include: { invoice: { include: { customer: true } } },
+          include: {
+            invoice: { include: { customer: true } },
+            account: true,
+          },
           skip,
           take: Number(limit),
           orderBy: { paidAt: 'desc' },
@@ -253,10 +287,31 @@ export class PaymentReceivedService {
         );
       }
 
+      // Validate new account if depositTo is being changed
+      if (body.depositTo && body.depositTo !== payment.depositTo) {
+        const account = await this.prisma.account.findUnique({
+          where: { id: body.depositTo },
+        });
+
+        if (!account) {
+          throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+        }
+
+        if (account.entityId !== entityId) {
+          throw new HttpException(
+            'Account does not belong to this entity',
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      }
+
       const updatedPayment = await this.prisma.paymentReceived.update({
         where: { id: paymentId },
         data: { ...body },
-        include: { invoice: { include: { customer: true } } },
+        include: {
+          invoice: { include: { customer: true } },
+          account: true,
+        },
       });
 
       return this.enrichPaymentRecords([updatedPayment])[0];
@@ -329,7 +384,16 @@ export class PaymentReceivedService {
         where.OR = [
           { reference: { contains: search, mode: 'insensitive' } },
           { paymentMethod: { contains: search, mode: 'insensitive' } },
-          { depositTo: { contains: search, mode: 'insensitive' } },
+          {
+            account: {
+              name: { contains: search, mode: 'insensitive' },
+            },
+          },
+          {
+            account: {
+              code: { contains: search, mode: 'insensitive' },
+            },
+          },
           {
             invoice: {
               invoiceNumber: { contains: search, mode: 'insensitive' },
@@ -346,7 +410,10 @@ export class PaymentReceivedService {
       const [payments, totalCount] = await Promise.all([
         this.prisma.paymentReceived.findMany({
           where,
-          include: { invoice: { include: { customer: true } } },
+          include: {
+            invoice: { include: { customer: true } },
+            account: true,
+          },
           skip,
           take: Number(limit),
           orderBy: { paidAt: 'desc' },

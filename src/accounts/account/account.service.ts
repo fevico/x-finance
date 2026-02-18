@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
@@ -16,14 +17,87 @@ import {
 export class AccountService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Generate next account code based on subcategory code
+   * Can be overridden by providing code in dto
+   */
+  private async generateNextCode(
+    subCategoryId: string,
+    entityId: string,
+  ): Promise<string> {
+    try {
+      const subCategory = await this.prisma.accountSubCategory.findUnique({
+        where: { id: subCategoryId },
+      });
+
+      if (!subCategory) {
+        throw new BadRequestException('Account subcategory not found');
+      }
+
+      // E.g., SubCategory 1110 -> accounts: 1110-01, 1110-02, etc.
+      const baseCode = subCategory.code;
+      const maxAccount = await this.prisma.account.findFirst({
+        where: {
+          subCategoryId,
+          entityId,
+          code: {
+            startsWith: baseCode,
+          },
+        },
+        orderBy: { code: 'desc' },
+      });
+
+      if (!maxAccount) {
+        return `${baseCode}-01`;
+      }
+
+      // Extract number from existing code and increment
+      const match = maxAccount.code.match(/-(\d+)$/);
+      if (match) {
+        const nextNum = parseInt(match[1]) + 1;
+        return `${baseCode}-${String(nextNum).padStart(2, '0')}`;
+      }
+
+      return `${baseCode}-01`;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to generate account code: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async create(accounts: CreateAccountDto, entityId: string) {
     try {
       const entity = await this.prisma.entity.findUnique({
         where: { id: entityId },
       });
       if (!entity) throw new UnauthorizedException('Access denied!');
+
+      // Validate subcategory exists
+      const subCategory = await this.prisma.accountSubCategory.findUnique({
+        where: { id: accounts.subCategoryId },
+      });
+      if (!subCategory) {
+        throw new BadRequestException('Account subcategory not found');
+      }
+
+      // Generate code if not provided
+      // let code = accounts.code;
+      let code = '';
+      if (!code) {
+        code = await this.generateNextCode(accounts.subCategoryId, entityId);
+      }
+
       const account = await this.prisma.account.create({
-        data: { ...accounts, entityId },
+        data: {
+          name: accounts.name,
+          code,
+          description: accounts.description,
+          subCategoryId: accounts.subCategoryId,
+          balance: accounts.balance || 0,
+          entityId,
+        },
       });
       return account;
     } catch (error) {
@@ -34,9 +108,59 @@ export class AccountService {
     }
   }
 
-  async findAll(entityId: string): Promise<AccountResponseDto[]> {
+  async findAll(entityId: string, subCategory?: string): Promise<AccountResponseDto[]> {
     try {
-      return this.prisma.account.findMany({ where: { entityId } });
+      const where: any = { entityId };
+      
+      // Filter by subCategory name if provided
+      if (subCategory) {
+        // Get entity to find its group
+        const entity = await this.prisma.entity.findUnique({
+          where: { id: entityId },
+        });
+        
+        if (entity) {
+          // Find subcategory by name within the entity's group
+          const subCategoryRecord = await this.prisma.accountSubCategory.findFirst({
+            where: {
+              name: subCategory,
+              category: {
+                groupId: entity.groupId,
+              },
+            },
+          });
+
+          if (subCategoryRecord) {
+            where.subCategoryId = subCategoryRecord.id;
+          } else {
+            // Return empty array if subcategory not found
+            return [];
+          }
+        }
+      }
+
+      const accounts = await this.prisma.account.findMany({
+        where,
+        include: {
+          subCategory: {
+            include: {
+              category: {
+                include: {
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Map accounts to include type, category, and subcategory names
+      return accounts.map((account) => ({
+        ...account,
+        typeName: account.subCategory?.category?.type?.name,
+        categoryName: account.subCategory?.category?.name,
+        subCategoryName: account.subCategory?.name,
+      }));
     } catch (error) {
       throw new HttpException(
         `${error.message}`,
@@ -47,49 +171,179 @@ export class AccountService {
 
   async setOpeningBalances(entityId: string, dto: OpeningBalanceDto) {
     try {
-      // Process each line independently as a separate record update for its account
+      // Validate all accounts belong to this entity
+      const accountIds = dto.lines.map((line) => line.accountId);
+      const accounts = await this.prisma.account.findMany({
+        where: {
+          id: { in: accountIds },
+          entityId,
+        },
+      });
+
+      if (accounts.length !== accountIds.length) {
+        throw new UnauthorizedException(
+          'One or more accounts do not exist or do not belong to this entity',
+        );
+      }
+
+      // Update each account with its balance
       for (const line of dto.lines) {
         const { accountId, debit = 0, credit = 0 } = line;
-
-        // Validate and fetch the account
-        const account = await this.prisma.account.findFirst({
-          where: { id: accountId, entityId },
-        });
-        if (!account) {
-          throw new UnauthorizedException(
-            `Access denied for account ${accountId}!`,
-          );
-        }
-
-        // Calculate the balance for this specific record (per account)
-        // Assuming balance = credit - debit for opening balance; adjust based on account type if needed
-        // e.g., if (account.type === 'asset') balance = debit - credit; else balance = credit - debit;
         const balance = credit - debit;
 
-        // Update this account's record with its own debit, credit, and calculated balance
-        // This assumes setting/replacing the opening values; if additive (e.g., adjustments), use account.debit + debit, etc.
         await this.prisma.account.update({
           where: { id: accountId },
-          data: {
-            debit,
-            credit,
-            balance,
-            date: new Date(), // Optional: Timestamp the update
-          },
+          data: { balance },
         });
       }
 
-      // Return a success message
       return {
         message: 'Opening balances set successfully for all provided accounts.',
       };
     } catch (error) {
-      // Handle errors (log or rethrow as needed)
       throw error;
     }
   }
 
-  async update(id: string, account: UpdateAccountDto) {}
+  async findOne(id: string, entityId?: string) {
+    try {
+      const account = await this.prisma.account.findUnique({
+        where: { id },
+        include: {
+          subCategory: {
+            include: {
+              category: {
+                include: {
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-  async findOne(id: string) {}
+      if (!account) {
+        throw new HttpException(
+          'Account not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Verify ownership if entityId provided
+      if (entityId && account.entityId !== entityId) {
+        throw new UnauthorizedException(
+          'Access denied to this account',
+        );
+      }
+
+      // Add type, category, and subcategory names to response
+      return {
+        ...account,
+        typeName: account.subCategory?.category?.type?.name,
+        categoryName: account.subCategory?.category?.name,
+        subCategoryName: account.subCategory?.name,
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new HttpException(
+            `${error.message}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+    }
+  }
+
+  async update(id: string, account: UpdateAccountDto, entityId: string) {
+    try {
+      // Verify account belongs to entity
+      const existing = await this.findOne(id, entityId);
+
+      // Validate new subcategory if provided
+      if (account.subCategoryId && account.subCategoryId !== existing.subCategoryId) {
+        const newSubCategory = await this.prisma.accountSubCategory.findUnique({
+          where: { id: account.subCategoryId },
+        });
+        if (!newSubCategory) {
+          throw new BadRequestException('Account subcategory not found');
+        }
+      }
+
+      const updateData: any = {};
+      if (account.name !== undefined) updateData.name = account.name;
+      if (account.description !== undefined) updateData.description = account.description;
+      if (account.subCategoryId !== undefined) updateData.subCategoryId = account.subCategoryId;
+      if (account.balance !== undefined) updateData.balance = account.balance;
+      if (account.code !== undefined) updateData.code = account.code;
+
+      const updated = await this.prisma.account.update({
+        where: { id },
+        data: updateData,
+        include: {
+          subCategory: {
+            include: {
+              category: {
+                include: {
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Add type, category, and subcategory names to response
+      return {
+        ...updated,
+        typeName: updated.subCategory?.category?.type?.name,
+        categoryName: updated.subCategory?.category?.name,
+        subCategoryName: updated.subCategory?.name,
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new HttpException(
+            `${error.message}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+    }
+  }
+
+  async delete(id: string, entityId: string) {
+    try {
+      // Verify account belongs to entity
+      await this.findOne(id, entityId);
+
+      const deleted = await this.prisma.account.delete({
+        where: { id },
+        include: {
+          subCategory: {
+            include: {
+              category: {
+                include: {
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return {
+        message: 'Account deleted successfully',
+        deletedAccount: {
+          ...deleted,
+          typeName: deleted.subCategory?.category?.type?.name,
+          categoryName: deleted.subCategory?.category?.name,
+          subCategoryName: deleted.subCategory?.name,
+        },
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new HttpException(
+            `${error.message}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+    }
+  }
 }

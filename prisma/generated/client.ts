@@ -138,6 +138,21 @@ export type CollectionItem = Prisma.CollectionItemModel
  */
 export type Asset = Prisma.AssetModel
 /**
+ * Model AccountType
+ * 
+ */
+export type AccountType = Prisma.AccountTypeModel
+/**
+ * Model AccountCategory
+ * 
+ */
+export type AccountCategory = Prisma.AccountCategoryModel
+/**
+ * Model AccountSubCategory
+ * 
+ */
+export type AccountSubCategory = Prisma.AccountSubCategoryModel
+/**
  * Model Account
  * 
  */

@@ -33,9 +33,13 @@ export class CreateExpenseDto {
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
 
-  @ApiProperty({ example: 'Cash Register', description: 'Account used' })
+  @ApiPropertyOptional({
+    example: 'acc_abc123',
+    description: 'Expense account ID (defaults from vendor if omitted)',
+  })
+  @IsOptional()
   @IsString()
-  account: string;
+  accountId?: string;
 
   @ApiProperty({
     example: 5000,
@@ -90,10 +94,10 @@ export class UpdateExpenseDto {
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
 
-  @ApiPropertyOptional({ example: 'Cash Register', description: 'Account used' })
+  @ApiPropertyOptional({ example: 'acc_abc123', description: 'Expense account ID' })
   @IsOptional()
   @IsString()
-  account?: string;
+  accountId?: string;
 
   @ApiPropertyOptional({
     example: 5000,
@@ -127,6 +131,16 @@ export class UpdateExpenseDto {
 export class ExpenseDto extends CreateExpenseDto {
   @ApiProperty({ example: 'exp_cuid', description: 'Expense id' })
   id: string;
+
+  @ApiPropertyOptional({
+    example: { id: 'acc_abc123', name: 'Office Supplies', code: '5200' },
+    description: 'Expense account details',
+  })
+  account?: {
+    id: string;
+    name: string;
+    code: string;
+  };
 
   @ApiPropertyOptional({
     example: { publicId: 'exp/file', secureUrl: 'https://...' },

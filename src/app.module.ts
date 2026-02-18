@@ -17,6 +17,9 @@ import { CollectionsModule } from './product/collections/collections.module';
 import { InventoryModule } from './product/inventory/inventory.module';
 import { AssetModule } from './asset/asset.module';
 import { AccountModule } from './accounts/account/account.module';
+import { AccountTypeModule } from './accounts/account-type/account-type.module';
+import { AccountCategoryModule } from './accounts/account-category/account-category.module';
+import { AccountSubCategoryModule } from './accounts/account-subcategory/account-subcategory.module';
 import { JournalModule } from './accounts/journal/journal.module';
 import { LogModule } from './log/log.module';
 import { BudgetModule } from './accounts/budget/budget.module';
@@ -45,6 +48,9 @@ import { OrganizationModule } from './settings/organization/organization.module'
     InventoryModule,
     AssetModule,
     AccountModule,
+    AccountTypeModule,
+    AccountCategoryModule,
+    AccountSubCategoryModule,
     JournalModule,
     LogModule,
     BudgetModule,

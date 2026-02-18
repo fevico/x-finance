@@ -404,6 +404,9 @@ export const ModelName = {
   Collection: 'Collection',
   CollectionItem: 'CollectionItem',
   Asset: 'Asset',
+  AccountType: 'AccountType',
+  AccountCategory: 'AccountCategory',
+  AccountSubCategory: 'AccountSubCategory',
   Account: 'Account',
   Journal: 'Journal',
   Budget: 'Budget',
@@ -428,7 +431,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "group" | "entity" | "user" | "groupRole" | "customer" | "invoice" | "invoiceActivity" | "invoiceItem" | "vendor" | "paymentReceived" | "expenses" | "bills" | "billItem" | "paymentRecord" | "receipt" | "receiptItem" | "items" | "collection" | "collectionItem" | "asset" | "account" | "journal" | "budget" | "employee" | "attendanceLog" | "attendance" | "leave" | "permission" | "auditLog"
+    modelProps: "group" | "entity" | "user" | "groupRole" | "customer" | "invoice" | "invoiceActivity" | "invoiceItem" | "vendor" | "paymentReceived" | "expenses" | "bills" | "billItem" | "paymentRecord" | "receipt" | "receiptItem" | "items" | "collection" | "collectionItem" | "asset" | "accountType" | "accountCategory" | "accountSubCategory" | "account" | "journal" | "budget" | "employee" | "attendanceLog" | "attendance" | "leave" | "permission" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1912,6 +1915,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AccountType: {
+      payload: Prisma.$AccountTypePayload<ExtArgs>
+      fields: Prisma.AccountTypeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccountTypeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccountTypeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>
+        }
+        findFirst: {
+          args: Prisma.AccountTypeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccountTypeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>
+        }
+        findMany: {
+          args: Prisma.AccountTypeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>[]
+        }
+        create: {
+          args: Prisma.AccountTypeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>
+        }
+        createMany: {
+          args: Prisma.AccountTypeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccountTypeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>[]
+        }
+        delete: {
+          args: Prisma.AccountTypeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>
+        }
+        update: {
+          args: Prisma.AccountTypeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>
+        }
+        deleteMany: {
+          args: Prisma.AccountTypeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccountTypeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccountTypeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>[]
+        }
+        upsert: {
+          args: Prisma.AccountTypeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountTypePayload>
+        }
+        aggregate: {
+          args: Prisma.AccountTypeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccountType>
+        }
+        groupBy: {
+          args: Prisma.AccountTypeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountTypeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccountTypeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountTypeCountAggregateOutputType> | number
+        }
+      }
+    }
+    AccountCategory: {
+      payload: Prisma.$AccountCategoryPayload<ExtArgs>
+      fields: Prisma.AccountCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccountCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccountCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.AccountCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccountCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.AccountCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.AccountCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.AccountCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccountCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.AccountCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>
+        }
+        update: {
+          args: Prisma.AccountCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.AccountCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccountCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccountCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.AccountCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.AccountCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccountCategory>
+        }
+        groupBy: {
+          args: Prisma.AccountCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccountCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
+    AccountSubCategory: {
+      payload: Prisma.$AccountSubCategoryPayload<ExtArgs>
+      fields: Prisma.AccountSubCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccountSubCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccountSubCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.AccountSubCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccountSubCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.AccountSubCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.AccountSubCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.AccountSubCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccountSubCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.AccountSubCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>
+        }
+        update: {
+          args: Prisma.AccountSubCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.AccountSubCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccountSubCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccountSubCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.AccountSubCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountSubCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.AccountSubCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccountSubCategory>
+        }
+        groupBy: {
+          args: Prisma.AccountSubCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountSubCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccountSubCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountSubCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
     Account: {
       payload: Prisma.$AccountPayload<ExtArgs>
       fields: Prisma.AccountFieldRefs
@@ -3008,19 +3233,53 @@ export const AssetScalarFieldEnum = {
 export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
 
 
+export const AccountTypeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountTypeScalarFieldEnum = (typeof AccountTypeScalarFieldEnum)[keyof typeof AccountTypeScalarFieldEnum]
+
+
+export const AccountCategoryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  groupId: 'groupId',
+  typeId: 'typeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountCategoryScalarFieldEnum = (typeof AccountCategoryScalarFieldEnum)[keyof typeof AccountCategoryScalarFieldEnum]
+
+
+export const AccountSubCategoryScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  categoryId: 'categoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountSubCategoryScalarFieldEnum = (typeof AccountSubCategoryScalarFieldEnum)[keyof typeof AccountSubCategoryScalarFieldEnum]
+
+
 export const AccountScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
-  category: 'category',
-  subCategory: 'subCategory',
   description: 'description',
-  type: 'type',
-  balance: 'balance',
-  credit: 'credit',
-  debit: 'debit',
-  date: 'date',
   entityId: 'entityId',
+  subCategoryId: 'subCategoryId',
+  balance: 'balance',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3622,6 +3881,9 @@ export type GlobalOmitConfig = {
   collection?: Prisma.CollectionOmit
   collectionItem?: Prisma.CollectionItemOmit
   asset?: Prisma.AssetOmit
+  accountType?: Prisma.AccountTypeOmit
+  accountCategory?: Prisma.AccountCategoryOmit
+  accountSubCategory?: Prisma.AccountSubCategoryOmit
   account?: Prisma.AccountOmit
   journal?: Prisma.JournalOmit
   budget?: Prisma.BudgetOmit

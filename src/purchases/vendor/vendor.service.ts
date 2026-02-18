@@ -17,14 +17,42 @@ export class VendorService {
         where: { email_phone: { email: body.email, phone: body.phone } },
       });
       if (vendorExist) throw new UnauthorizedException('Vendor already exist!');
+
+      // Validate expense account if provided
+      if (body.expenseAccountId) {
+        const account = await this.prisma.account.findUnique({
+          where: { id: body.expenseAccountId },
+        });
+
+        if (!account) {
+          throw new HttpException(
+            'Expense account not found',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        if (account.entityId !== entityId) {
+          throw new HttpException(
+            'Expense account does not belong to this entity',
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      }
+
       const vendor = await this.prisma.vendor.create({
         data: {
           ...body,
           entityId,
         },
+        include: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+        },
       });
       return vendor;
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
@@ -52,7 +80,12 @@ export class VendorService {
           skip,
           take: Number(limit),
           orderBy: { createdAt: 'desc' },
-          include: { bills: true },
+          include: {
+            bills: true,
+            expenseAccount: {
+              select: { id: true, name: true, code: true },
+            },
+          },
         }),
         this.prisma.vendor.count({ where }),
       ]);

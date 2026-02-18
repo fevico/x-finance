@@ -20,6 +20,45 @@ export class ExpensesService {
     try {
       let attachment: any = undefined;
 
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { id: body.vendorId },
+      });
+
+      if (!vendor) {
+        throw new HttpException('Vendor not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (vendor.entityId !== entityId) {
+        throw new HttpException(
+          'Vendor does not belong to this entity',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const resolvedAccountId = body.accountId ?? vendor.expenseAccountId;
+      if (!resolvedAccountId) {
+        throw new HttpException(
+          'Expense account is required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Validate account exists and belongs to the same entity
+      const account = await this.prisma.account.findUnique({
+        where: { id: resolvedAccountId },
+      });
+
+      if (!account) {
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (account.entityId !== entityId) {
+        throw new HttpException(
+          'Account does not belong to this entity',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
       // Upload file to Cloudinary if provided
       if (file) {
         attachment = await this.fileuploadService.uploadFile(
@@ -33,6 +72,7 @@ export class ExpensesService {
       const expense = await this.prisma.expenses.create({
         data: {
           ...body,
+          accountId: resolvedAccountId,
           reference,
           entityId,
           vendorId: body.vendorId,
@@ -40,9 +80,18 @@ export class ExpensesService {
             ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
             : undefined,
         },
+        include: {
+          account: {
+            select: { id: true, name: true, code: true },
+          },
+          vendor: {
+            select: { id: true, name: true },
+          },
+        },
       });
       return expense;
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }
@@ -70,6 +119,9 @@ export class ExpensesService {
           take: Number(limit),
           orderBy: { date: 'desc' },
           include: {
+            account: {
+              select: { id: true, name: true, code: true },
+            },
             vendor: {
               select: { id: true, name: true },
             },
@@ -126,6 +178,9 @@ export class ExpensesService {
         where: { id: expenseId },
         data: { status: 'approved' },
         include: {
+          account: {
+            select: { id: true, name: true, code: true },
+          },
           vendor: {
             select: { id: true, name: true },
           },
@@ -161,6 +216,54 @@ export class ExpensesService {
         );
       }
 
+      let resolvedAccountId = body.accountId ?? expense.accountId;
+
+      if (body.vendorId) {
+        const vendor = await this.prisma.vendor.findUnique({
+          where: { id: body.vendorId },
+        });
+
+        if (!vendor) {
+          throw new HttpException('Vendor not found', HttpStatus.NOT_FOUND);
+        }
+
+        if (vendor.entityId !== entityId) {
+          throw new HttpException(
+            'Vendor does not belong to this entity',
+            HttpStatus.FORBIDDEN,
+          );
+        }
+
+        if (!body.accountId) {
+          resolvedAccountId = vendor.expenseAccountId ?? resolvedAccountId;
+        }
+      }
+
+      if (!resolvedAccountId) {
+        throw new HttpException(
+          'Expense account is required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Validate account if changed or resolved from vendor
+      if (resolvedAccountId !== expense.accountId || body.accountId) {
+        const account = await this.prisma.account.findUnique({
+          where: { id: resolvedAccountId },
+        });
+
+        if (!account) {
+          throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+        }
+
+        if (account.entityId !== entityId) {
+          throw new HttpException(
+            'Account does not belong to this entity',
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      }
+
       let attachment = expense.attachment as any;
 
       // Upload new file if provided
@@ -184,9 +287,13 @@ export class ExpensesService {
         where: { id: expenseId },
         data: {
           ...body,
+          accountId: resolvedAccountId,
           ...(file && { attachment }),
         },
         include: {
+          account: {
+            select: { id: true, name: true, code: true },
+          },
           vendor: {
             select: { id: true, name: true },
           },

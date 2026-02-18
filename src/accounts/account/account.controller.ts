@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -54,10 +56,11 @@ export class AccountController {
     isArray: true,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async findAll(@Req() req: Request): Promise<AccountResponseDto[]> {
+  
+  async findAll(@Req() req: Request, @Query('subCategory') subCategory?: string): Promise<AccountResponseDto[]> {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.accountService.findAll(entityId);
+    return this.accountService.findAll(entityId, subCategory);
   }
 
   @Post(':entityId/opening-balances')
@@ -103,13 +106,42 @@ export class AccountController {
     return this.accountService.setOpeningBalances(entityId, dto);
   }
 
-  //   @Patch(':id')
-  //   async update(@Param('id') id: string, @Body() account: UpdateAccountDto) {
-  //     return this.accountsService.update(id, account);
-  //   }
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a single account by ID' })
+  @ApiResponse({ status: 200, description: 'Account retrieved' })
+  @ApiResponse({ status: 404, description: 'Account not found' })
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<AccountResponseDto> {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.accountService.findOne(id, entityId);
+  }
 
-  //   @Get(':id')
-  //   async findOne(@Param('id') id: string): Promise<AccountResponseDto> {
-  //       return this.accountsService.findOne(id);
-  //   }
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update an account' })
+  @ApiBody({ type: UpdateAccountDto })
+  @ApiResponse({ status: 200, description: 'Account updated' })
+  @ApiResponse({ status: 404, description: 'Account not found' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async update(
+    @Param('id') id: string,
+    @Body() account: UpdateAccountDto,
+    @Req() req: Request,
+  ): Promise<AccountResponseDto> {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.accountService.update(id, account, entityId);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete an account' })
+  @ApiResponse({ status: 200, description: 'Account deleted' })
+  @ApiResponse({ status: 404, description: 'Account not found' })
+  async delete(@Param('id') id: string, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.accountService.delete(id, entityId);
+  }
 }
