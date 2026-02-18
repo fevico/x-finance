@@ -108,7 +108,7 @@ async function main() {
   });
 
   console.log(`Seeding finished. ${result.count} permissions were created.`);
-
+ 
   // Export the permissions to a JSON file
   const outputPath = path.join(__dirname, 'generated-permissions.json');
   const permissionNames = permissionsToCreate.map((p) => p.name);
