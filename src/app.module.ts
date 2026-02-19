@@ -29,6 +29,7 @@ import { BullmqModule } from './bullmq/bullmq.module';
 import { PaymentReceivedModule } from './sales/payment-received/payment-received.module';
 import { LeaveModule } from './hr-payroll/leave/leave.module';
 import { OrganizationModule } from './settings/organization/organization.module';
+import { PaymentMadeModule } from './purchases/payment-made/payment-made.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { OrganizationModule } from './settings/organization/organization.module'
     PaymentReceivedModule,
     LeaveModule,
     OrganizationModule,
+    PaymentMadeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

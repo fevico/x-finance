@@ -70,6 +70,7 @@ model Entity {
   receipt         Receipt[]
   users           User[]
   vendor          vendor[]
+  paymentMade     PaymentMade[]
 
   @@index([name, taxId, email])
 }
@@ -191,6 +192,26 @@ model InvoiceItem {
   @@index([itemId])
 }
 
+model PaymentMade {
+  id               String   @id @default(cuid())
+  vendorId         String 
+  vendor           vendor @relation(fields: [vendorId], references: [id])
+  billNumber       String? 
+  paymentDate      DateTime
+  amount           String 
+  paymentMethod    PaymentMethod 
+  entityId         String 
+  entity           Entity @relation(fields: [entityId], references: [id])
+  accountId        String 
+  account          Account @relation(fields: [accountId], references: [id]) 
+  reference        String?
+  note             String?
+  status           PaymentMadeStatus @default(Pending)
+
+  @@index([entityId])
+}
+
+
 model vendor {
   id               String       @id @default(cuid())
   name             String
@@ -222,6 +243,7 @@ model vendor {
   bills            Bills[]
   entity           Entity       @relation(fields: [entityId], references: [id], onDelete: Cascade)
   expenses         Expenses[]
+  paymentMade      PaymentMade[]
   expenseAccount   Account?     @relation("vendorExpenseAccount", fields: [expenseAccountId], references: [id], onDelete: SetNull)
 
   @@unique([email, phone])
@@ -515,6 +537,7 @@ model Account {
   paymentReceived PaymentReceived[]
   vendorExpenses  vendor[]           @relation("vendorExpenseAccount")
   expenses        Expenses[]
+  paymentMade     PaymentMade[]
 
   @@index([id, entityId])
   @@index([subCategoryId])
@@ -670,6 +693,11 @@ model AuditLog {
 enum BillingCycle {
   Monthly
   Annual
+}
+
+enum PaymentMadeStatus {
+  Pending 
+  Cleared
 }
 
 enum systemRole {

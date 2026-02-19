@@ -14,6 +14,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npx prisma generate
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
@@ -55,6 +56,8 @@ jobs:
           echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> build/.env
           echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> build/.env
           echo "PORT=${{ secrets.PORT }}" >> build/.env
+          echo "DEFAULT_EMAIL_FROM=${{ secrets.DEFAULT_EMAIL_FROM }}" >> build/.env
+          echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> build/.env
 
       - name: Set up SSH key
         run: |
