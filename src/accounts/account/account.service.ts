@@ -108,7 +108,7 @@ export class AccountService {
     }
   }
 
-  async findAll(entityId: string, subCategory?: string): Promise<AccountResponseDto[]> {
+  async findAll(entityId: string, subCategory?: string): Promise<any> {
     try {
       const where: any = { entityId };
       
@@ -161,6 +161,10 @@ export class AccountService {
         categoryName: account.subCategory?.category?.name,
         subCategoryName: account.subCategory?.name,
       }));
+
+      // return {
+      //   data: accountsData
+      // }
     } catch (error) {
       throw new HttpException(
         `${error.message}`,

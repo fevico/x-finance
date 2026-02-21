@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { PaymentMadeService } from './payment-made.service';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard } from '@/auth/guards/auth.guard';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 import { CreatePaymentMade } from './dto/paymet-made';
 
