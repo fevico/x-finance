@@ -18,21 +18,21 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { BankingService } from './banking.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 import { BankAccountDto } from './dto/bank-account.dto';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
+import { AuthGuard } from '@/auth/guards/auth.guard';
 
 @ApiTags('Banking')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
-@Controller('/banking')
+@UseGuards(AuthGuard)
+@Controller('banking')
 export class BankingController {
   constructor(private readonly bankingService: BankingService) {}
 
-  @Post('/accounts')
+  @Post('accounts')
   @ApiOperation({
     summary: 'Create a new bank account',
     description:
