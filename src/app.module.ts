@@ -30,6 +30,7 @@ import { PaymentReceivedModule } from './sales/payment-received/payment-received
 import { LeaveModule } from './hr-payroll/leave/leave.module';
 import { OrganizationModule } from './settings/organization/organization.module';
 import { PaymentMadeModule } from './purchases/payment-made/payment-made.module';
+import { BankingModule } from './banking/banking.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { PaymentMadeModule } from './purchases/payment-made/payment-made.module'
     LeaveModule,
     OrganizationModule,
     PaymentMadeModule,
+    BankingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

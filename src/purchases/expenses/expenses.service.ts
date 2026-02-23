@@ -35,7 +35,7 @@ export class ExpensesService {
         );
       }
 
-      const resolvedAccountId = body.accountId ?? vendor.expenseAccountId;
+      const resolvedAccountId = body.accountId;
       if (!resolvedAccountId) {
         throw new HttpException(
           'Expense account is required',
@@ -234,9 +234,9 @@ export class ExpensesService {
           );
         }
 
-        if (!body.accountId) {
-          resolvedAccountId = vendor.expenseAccountId ?? resolvedAccountId;
-        }
+        // if (!body.accountId) {
+        //  return 
+        // }
       }
 
       if (!resolvedAccountId) {

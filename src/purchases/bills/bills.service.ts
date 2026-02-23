@@ -38,70 +38,63 @@ export class BillsService {
 
     const { items, ...billData } = body;
 
-    // Calculate item totals and bill totals
+    // Parse and prepare items as JSON
     let subtotal = 0;
-    const billItemsData = (JSON.parse(items as any) || []).map((item) => {
+    const billItems = (JSON.parse(items as any) || []).map((item) => {
       const total = item.rate * item.quantity;
       subtotal += total;
       return {
-        itemId: item.itemId,
+        name: item.name,
         rate: item.rate,
         quantity: item.quantity,
         total,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
     });
+
     // Calculate tax and discount (default 0 if not provided)
     const tax = billData.tax ?? 0;
     const discount = billData.discount ?? 0;
     const total = subtotal + Number(tax) - Number(discount);
 
-    // Create bill and items in a transaction
-    const bill = await this.prisma.$transaction(async (tx) => {
-      const createdBill = await tx.bills.create({
-        data: {
-          ...billData,
-          entityId,
-          subtotal,
-          tax: Number(tax),
-          discount: Number(discount),
-          total,
-          attachment: attachment
-            ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
-            : undefined,
-        },
-        include: {
-          vendor: {
-            select: {
-              id: true,
-              displayName: true,
-              email: true,
-              phone: true,
-            },
+    // Create bill with items as JSON
+    const bill = await this.prisma.bills.create({
+      data: {
+        ...billData,
+        entityId,
+        subtotal,
+        tax: Number(tax),
+        discount: Number(discount),
+        total,
+        items: billItems,
+        attachment: attachment
+          ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
+          : undefined,
+      },
+      include: {
+        vendor: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            phone: true,
           },
-          billItem: true,
         },
-      });
-
-      // Create bill items
-      const billItems = await Promise.all(
-        billItemsData.map((item) =>
-          tx.billItem.create({
-            data: {
-              ...item,
-              billId: createdBill.id,
-            },
-            include: { item: true },
-          })
-        )
-      );
-
-      return { ...createdBill, billItem: billItems };
+      },
     });
 
     // Update bill status automatically
     await this.updateBillStatus(bill.id);
 
-    return bill;
+    return {
+      ...bill,
+      billNumber: bill.billNumber ?? undefined,
+      poNumber: bill.poNumber ?? undefined,
+      notes: bill.notes ?? undefined,
+      attachment: bill.attachment as any,
+      items: bill.items as any,
+    };
   }
 
   async getBills(
@@ -159,7 +152,6 @@ export class BillsService {
               phone: true,
             },
           },
-          billItem: { include: { item: true } },
         },
         orderBy: {
           billDate: 'desc',
@@ -182,7 +174,7 @@ export class BillsService {
         b.attachment === null
           ? undefined
           : (b.attachment as Record<string, any>),
-      items: b.billItem, // Map billItem to items
+      items: (b.items as any) || [], // Items are now stored as JSON
       createdAt:
         b.createdAt instanceof Date ? b.createdAt.toISOString() : b.createdAt,
     }));
@@ -204,7 +196,6 @@ export class BillsService {
           select: { id: true, displayName: true, email: true, phone: true },
         },
         paymentRecord: true,
-        billItem: { include: { item: true } },
       },
     });
 
@@ -219,7 +210,7 @@ export class BillsService {
         bill.attachment === null
           ? undefined
           : (bill.attachment as Record<string, any>),
-      items: bill.billItem, // Map billItem to items
+      items: (bill.items as any) || [], // Items are now stored as JSON
       createdAt:
         bill.createdAt instanceof Date
           ? bill.createdAt.toISOString()
@@ -369,57 +360,40 @@ export class BillsService {
 
       // Calculate new bill items and totals
       let subtotal = 0;
-      const billItemsData = (items || []).map((item) => {
+      const billItems = (items || []).map((item) => {
         const total = item.rate * item.quantity;
         subtotal += total;
         return {
-          itemId: item.itemId,
+          name: item.name,
           rate: item.rate,
           quantity: item.quantity,
           total,
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
       });
+
       const tax = billData.tax ?? 0;
       const discount = billData.discount ?? 0;
       const total = subtotal + tax - discount;
 
-      // Replace all bill items and update bill in a transaction
-      const updatedBill = await this.prisma.$transaction(async (tx) => {
-        // Delete all existing items for this bill
-        await tx.billItem.deleteMany({ where: { billId } });
-
-        // Create new items
-        await Promise.all(
-          billItemsData.map((item) =>
-            tx.billItem.create({
-              data: {
-                ...item,
-                billId,
-              },
-            })
-          )
-        );
-
-        // Update bill
-        const updated = await tx.bills.update({
-          where: { id: billId },
-          data: {
-            ...billData,
-            subtotal,
-            tax,
-            discount,
-            total,
-            ...(file && { attachment }),
+      // Update bill with new items as JSON
+      const updatedBill = await this.prisma.bills.update({
+        where: { id: billId },
+        data: {
+          ...billData,
+          subtotal,
+          tax,
+          discount,
+          total,
+          items: billItems,
+          ...(file && { attachment }),
+        },
+        include: {
+          vendor: {
+            select: { id: true, displayName: true, email: true, phone: true },
           },
-          include: {
-            vendor: {
-              select: { id: true, displayName: true, email: true, phone: true },
-            },
-            billItem: { include: { item: true } },
-          },
-        });
-
-        return updated;
+        },
       });
 
       // Re-calculate status in case total or payments changed

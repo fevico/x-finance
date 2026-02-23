@@ -18,36 +18,10 @@ export class VendorService {
       });
       if (vendorExist) throw new UnauthorizedException('Vendor already exist!');
 
-      // Validate expense account if provided
-      if (body.expenseAccountId) {
-        const account = await this.prisma.account.findUnique({
-          where: { id: body.expenseAccountId },
-        });
-
-        if (!account) {
-          throw new HttpException(
-            'Expense account not found',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-
-        if (account.entityId !== entityId) {
-          throw new HttpException(
-            'Expense account does not belong to this entity',
-            HttpStatus.FORBIDDEN,
-          );
-        }
-      }
-
       const vendor = await this.prisma.vendor.create({
         data: {
           ...body,
           entityId,
-        },
-        include: {
-          expenseAccount: {
-            select: { id: true, name: true, code: true },
-          },
         },
       });
       return vendor;
@@ -82,9 +56,6 @@ export class VendorService {
           orderBy: { createdAt: 'desc' },
           include: {
             bills: true,
-            expenseAccount: {
-              select: { id: true, name: true, code: true },
-            },
           },
         }),
         this.prisma.vendor.count({ where }),
@@ -106,6 +77,117 @@ export class VendorService {
         limit,
       };
     } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async getVendorById(vendorId: string, entityId: string) {
+    try {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { id: vendorId },
+        include: {
+          bills: {
+            select: { id: true, billNumber: true, total: true, status: true },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+          },
+        },
+      });
+
+      if (!vendor || vendor.entityId !== entityId) {
+        throw new HttpException(
+          'Vendor not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        ...vendor,
+        createdAt: vendor.createdAt.toISOString(),
+        updatedAt: vendor.updatedAt.toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async updateVendor(vendorId: string, entityId: string, body: any) {
+    try {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { id: vendorId },
+      });
+
+      if (!vendor || vendor.entityId !== entityId) {
+        throw new HttpException(
+          'Vendor not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Check for duplicate email/phone (excluding current vendor)
+      if ((body.email && body.email !== vendor.email) || 
+          (body.phone && body.phone !== vendor.phone)) {
+        const existing = await this.prisma.vendor.findFirst({
+          where: {
+            OR: [
+              { email: body.email || vendor.email, NOT: { id: vendorId } },
+              { phone: body.phone || vendor.phone, NOT: { id: vendorId } },
+            ],
+          },
+        });
+        if (existing) {
+          throw new HttpException(
+            'Vendor with this email or phone already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      const updated = await this.prisma.vendor.update({
+        where: { id: vendorId },
+        data: body,
+      });
+
+      return {
+        ...updated,
+        createdAt: updated.createdAt.toISOString(),
+        updatedAt: updated.updatedAt.toISOString(),
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async deleteVendor(vendorId: string, entityId: string) {
+    try {
+      const vendor = await this.prisma.vendor.findUnique({
+        where: { id: vendorId },
+        include: { bills: true, expenses: true, paymentMade: true },
+      });
+
+      if (!vendor || vendor.entityId !== entityId) {
+        throw new HttpException(
+          'Vendor not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (vendor.bills.length > 0 || vendor.expenses.length > 0 || vendor.paymentMade.length > 0) {
+        throw new HttpException(
+          'Cannot delete vendor with associated records',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      await this.prisma.vendor.delete({
+        where: { id: vendorId },
+      });
+
+      return { message: 'Vendor deleted successfully' };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
       throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
     }
   }

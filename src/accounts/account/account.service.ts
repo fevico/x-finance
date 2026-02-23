@@ -108,7 +108,7 @@ export class AccountService {
     }
   }
 
-  async findAll(entityId: string, subCategory?: string): Promise<any> {
+  async findAll(entityId: string, subCategory?: string, type?: string, page: number = 1, pageSize: number = 10): Promise<any> {
     try {
       const where: any = { entityId };
       
@@ -133,11 +133,60 @@ export class AccountService {
           if (subCategoryRecord) {
             where.subCategoryId = subCategoryRecord.id;
           } else {
-            // Return empty array if subcategory not found
-            return [];
+            // Return empty result with pagination for not found
+            return {
+              data: [],
+              pagination: {
+                page,
+                pageSize,
+                total: 0,
+                totalPages: 0,
+              },
+            };
           }
         }
       }
+
+      // Filter by type name if provided
+      if (type) {
+        const entity = await this.prisma.entity.findUnique({
+          where: { id: entityId },
+        });
+
+        if (entity) {
+          const typeRecord = await this.prisma.accountType.findFirst({
+            where: {
+              name: type,
+              // groupId: entity.groupId,
+            },
+          });
+
+          if (typeRecord) {
+            where.subCategoryId = {
+              in: await this.prisma.accountSubCategory.findMany({
+                where: { category: { typeId: typeRecord.id } },
+                select: { id: true },
+              }).then((subCategories) => subCategories.map((sc) => sc.id)),
+            };
+          } else {
+            return {
+              data: [],
+              pagination: {
+                page,
+                pageSize,
+                total: 0,
+                totalPages: 0,
+              },
+            };
+          }
+        }
+      }
+
+      // Calculate pagination parameters
+      const skip = (page - 1) * pageSize;
+
+      // Get total count
+      const total = await this.prisma.account.count({ where });
 
       const accounts = await this.prisma.account.findMany({
         where,
@@ -152,19 +201,28 @@ export class AccountService {
             },
           },
         },
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
       });
 
       // Map accounts to include type, category, and subcategory names
-      return accounts.map((account) => ({
+      const data = accounts.map((account) => ({
         ...account,
         typeName: account.subCategory?.category?.type?.name,
         categoryName: account.subCategory?.category?.name,
         subCategoryName: account.subCategory?.name,
       }));
 
-      // return {
-      //   data: accountsData
-      // }
+      return {
+        data,
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      };
     } catch (error) {
       throw new HttpException(
         `${error.message}`,
