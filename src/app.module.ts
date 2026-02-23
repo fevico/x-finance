@@ -20,7 +20,7 @@ import { AccountModule } from './accounts/account/account.module';
 import { AccountTypeModule } from './accounts/account-type/account-type.module';
 import { AccountCategoryModule } from './accounts/account-category/account-category.module';
 import { AccountSubCategoryModule } from './accounts/account-subcategory/account-subcategory.module';
-import { JournalModule } from './accounts/journal/journal.module';
+import { JournalModule } from './accounts/journalgg/journal.module';
 import { LogModule } from './log/log.module';
 import { BudgetModule } from './accounts/budget/budget.module';
 import { AttendanceModule } from './hr-payroll/attendance/attendance.module';
