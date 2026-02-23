@@ -44,11 +44,7 @@ export class VendorService {
           ...body,
           entityId,
         },
-        include: {
-          expenseAccount: {
-            select: { id: true, name: true, code: true },
-          },
-        },
+        
       });
       return vendor;
     } catch (error) {
@@ -82,9 +78,7 @@ export class VendorService {
           orderBy: { createdAt: 'desc' },
           include: {
             bills: true,
-            expenseAccount: {
-              select: { id: true, name: true, code: true },
-            },
+            
           },
         }),
         this.prisma.vendor.count({ where }),

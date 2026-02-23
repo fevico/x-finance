@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileuploadService } from '@/fileupload/fileupload.service';
+import { JournalPostingService } from '@/accounts/journal/journal-posting.service';
 import { CreateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
@@ -11,6 +12,7 @@ export class BillsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileuploadService: FileuploadService,
+    private readonly journalPostingService: JournalPostingService,
   ) {}
 
   async createBill(
@@ -38,68 +40,82 @@ export class BillsService {
 
     const { items, ...billData } = body;
 
-    // Calculate item totals and bill totals
+    // Parse and calculate item totals - NOW with expenseAccountId per item
     let subtotal = 0;
-    const billItemsData = (JSON.parse(items as any) || []).map((item) => {
+    const billItemsData = (JSON.parse(items as any) || []).map((item, index) => {
+      // Validate required fields per item
+      if (!item.name) {
+        throw new BadRequestException(`Item ${index + 1}: name is required`);
+      }
+      if (!item.expenseAccountId) {
+        throw new BadRequestException(
+          `Item ${index + 1}: expenseAccountId is required`,
+        );
+      }
+
       const total = item.rate * item.quantity;
       subtotal += total;
       return {
-        itemId: item.itemId,
+        name: item.name,
         rate: item.rate,
         quantity: item.quantity,
         total,
+        expenseAccountId: item.expenseAccountId, // Store per item
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
     });
+
     // Calculate tax and discount (default 0 if not provided)
     const tax = billData.tax ?? 0;
     const discount = billData.discount ?? 0;
     const total = subtotal + Number(tax) - Number(discount);
 
-    // Create bill and items in a transaction
-    const bill = await this.prisma.$transaction(async (tx) => {
-      const createdBill = await tx.bills.create({
-        data: {
-          ...billData,
-          entityId,
-          subtotal,
-          tax: Number(tax),
-          discount: Number(discount),
-          total,
-          attachment: attachment
-            ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
-            : undefined,
-        },
-        include: {
-          vendor: {
-            select: {
-              id: true,
-              displayName: true,
-              email: true,
-              phone: true,
-            },
+    // Create bill with JSON items (items now include expenseAccountId)
+    const bill = await this.prisma.bills.create({
+      data: {
+        ...billData,
+        entityId,
+        subtotal,
+        tax: Number(tax),
+        discount: Number(discount),
+        total,
+        items: billItemsData,
+        attachment: attachment
+          ? { publicId: attachment.publicId, secureUrl: attachment.secureUrl }
+          : undefined,
+      },
+      include: {
+        vendor: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            phone: true,
           },
-          billItem: true,
         },
-      });
-
-      // Create bill items
-      const billItems = await Promise.all(
-        billItemsData.map((item) =>
-          tx.billItem.create({
-            data: {
-              ...item,
-              billId: createdBill.id,
-            },
-            include: { item: true },
-          })
-        )
-      );
-
-      return { ...createdBill, billItem: billItems };
+      },
     });
 
     // Update bill status automatically
     await this.updateBillStatus(bill.id);
+
+    // Post journal entry for vendor bill with PER-ITEM accounts
+    try {
+      await this.journalPostingService.postVendorBillWithItems(
+        bill.id,
+        entityId,
+        {
+          total: bill.total,
+          subtotal: bill.subtotal,
+          tax: bill.tax,
+          items: billItemsData, // Pass items with expenseAccountId
+        },
+      );
+    } catch (error) {
+      console.error('Journal posting failed:', error.message);
+      // Don't throw - bill is already created, log the error for review
+    }
 
     return bill;
   }
@@ -159,7 +175,6 @@ export class BillsService {
               phone: true,
             },
           },
-          billItem: { include: { item: true } },
         },
         orderBy: {
           billDate: 'desc',
@@ -182,7 +197,7 @@ export class BillsService {
         b.attachment === null
           ? undefined
           : (b.attachment as Record<string, any>),
-      items: b.billItem, // Map billItem to items
+      items: (b.items as any[]) || [], // Items stored as JSON array
       createdAt:
         b.createdAt instanceof Date ? b.createdAt.toISOString() : b.createdAt,
     }));
@@ -204,7 +219,6 @@ export class BillsService {
           select: { id: true, displayName: true, email: true, phone: true },
         },
         paymentRecord: true,
-        billItem: { include: { item: true } },
       },
     });
 
@@ -219,7 +233,7 @@ export class BillsService {
         bill.attachment === null
           ? undefined
           : (bill.attachment as Record<string, any>),
-      items: bill.billItem, // Map billItem to items
+      items: (bill.items as any[]) || [], // Items stored as JSON array
       createdAt:
         bill.createdAt instanceof Date
           ? bill.createdAt.toISOString()
@@ -282,6 +296,25 @@ export class BillsService {
 
     // Update bill status automatically
     await this.updateBillStatus(billId);
+
+    // Post journal entry for bill payment
+    // Requires cashAccountId in payment data (account field)
+    if (body.account) {
+      try {
+        await this.journalPostingService.postBillPayment(
+          payment.id,
+          billId,
+          entityId,
+          {
+            amount: body.amount,
+            cashAccountId: body.account,
+          },
+        );
+      } catch (error) {
+        console.error('Journal posting failed:', error.message);
+        // Don't throw - payment is already created, log the error for review
+      }
+    }
 
     return {
       ...payment,
@@ -367,59 +400,47 @@ export class BillsService {
 
       const { items, ...billData } = body;
 
-      // Calculate new bill items and totals
+      // Calculate new bill items and totals - NOW with expenseAccountId per item
       let subtotal = 0;
-      const billItemsData = (items || []).map((item) => {
+      const billItemsData = (items || []).map((item, index) => {
+        // Validate required fields per item
+        if (!item.name) {
+          throw new BadRequestException(`Item ${index + 1}: name is required`);
+        }
+        if (!item.expenseAccountId) {
+          throw new BadRequestException(
+            `Item ${index + 1}: expenseAccountId is required`,
+          );
+        }
+
         const total = item.rate * item.quantity;
         subtotal += total;
         return {
-          itemId: item.itemId,
+          name: item.name,
           rate: item.rate,
           quantity: item.quantity,
           total,
+          expenseAccountId: item.expenseAccountId, // Store per item
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
       });
       const tax = billData.tax ?? 0;
       const discount = billData.discount ?? 0;
       const total = subtotal + tax - discount;
 
-      // Replace all bill items and update bill in a transaction
-      const updatedBill = await this.prisma.$transaction(async (tx) => {
-        // Delete all existing items for this bill
-        await tx.billItem.deleteMany({ where: { billId } });
-
-        // Create new items
-        await Promise.all(
-          billItemsData.map((item) =>
-            tx.billItem.create({
-              data: {
-                ...item,
-                billId,
-              },
-            })
-          )
-        );
-
-        // Update bill
-        const updated = await tx.bills.update({
-          where: { id: billId },
-          data: {
-            ...billData,
-            subtotal,
-            tax,
-            discount,
-            total,
-            ...(file && { attachment }),
-          },
-          include: {
-            vendor: {
-              select: { id: true, displayName: true, email: true, phone: true },
-            },
-            billItem: { include: { item: true } },
-          },
-        });
-
-        return updated;
+      // Update bill with new JSON items (including expenseAccountId)
+      await this.prisma.bills.update({
+        where: { id: billId },
+        data: {
+          ...billData,
+          subtotal,
+          tax,
+          discount,
+          total,
+          items: billItemsData,
+          ...(file && { attachment }),
+        },
       });
 
       // Re-calculate status in case total or payments changed

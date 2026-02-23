@@ -57,10 +57,10 @@ export class AccountController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   
-  async findAll(@Req() req: Request, @Query('subCategory') subCategory?: string): Promise<AccountResponseDto[]> {
+  async findAll(@Req() req: Request, @Query('subCategory') subCategory?: string, @Query('type') type?: string): Promise<AccountResponseDto[]> {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.accountService.findAll(entityId, subCategory);
+    return this.accountService.findAll(entityId, subCategory, type);
   }
 
   @Post(':entityId/opening-balances')
