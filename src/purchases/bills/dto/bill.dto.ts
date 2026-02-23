@@ -15,7 +15,7 @@ export class BillItemDto {
   @IsString()
   id?: string;
 
-  @ApiProperty({ example: 'Office Supplies', description: 'Item description/name' })
+  @ApiProperty({ example: 'Office Supplies', description: 'Item name' })
   @IsString()
   name: string;
 

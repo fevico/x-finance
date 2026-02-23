@@ -51,16 +51,25 @@ export class AccountController {
   @ApiOperation({ summary: 'Get all accounts for the entity' })
   @ApiResponse({
     status: 200,
-    description: 'List of accounts',
-    type: AccountResponseDto,
-    isArray: true,
+    description: 'List of accounts with pagination',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   
-  async findAll(@Req() req: Request, @Query('subCategory') subCategory?: string, @Query('type') type?: string): Promise<AccountResponseDto[]> {
+  async findAll(
+    @Req() req: Request,
+    @Query('subCategory') subCategory?: string,
+
+    @Query('type') type?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.accountService.findAll(entityId, subCategory, type);
+    
+    const pageNum = page ? Math.max(1, parseInt(page)) : 1;
+    const pageSizeNum = pageSize ? Math.max(1, parseInt(pageSize)) : 10;
+    
+    return this.accountService.findAll(entityId, subCategory, type, pageNum, pageSizeNum);
   }
 
   @Post(':entityId/opening-balances')

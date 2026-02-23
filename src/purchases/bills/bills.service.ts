@@ -425,6 +425,7 @@ export class BillsService {
           updatedAt: new Date().toISOString(),
         };
       });
+
       const tax = billData.tax ?? 0;
       const discount = billData.discount ?? 0;
       const total = subtotal + tax - discount;

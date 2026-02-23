@@ -9,121 +9,76 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 /**
- * Default accounts to create for each entity
- * Maps common accounts that most businesses need
+ * Create accounts for all subcategories in the group
+ * ONE account per subcategory per entity
  */
-const defaultEntityAccounts = [
-  // Assets - Cash and Bank
-  {
-    subCategoryCode: '1110', // Cash and Cash Equivalents
-    name: 'Cash - Main',
-    description: 'Main cash account for day-to-day transactions',
-  },
-  {
-    subCategoryCode: '1110',
-    name: 'Petty Cash',
-    description: 'Small cash account for minor expenses',
-  },
-
-  // Assets - Receivables
-  {
-    subCategoryCode: '1120', // Accounts Receivable
-    name: 'Accounts Receivable',
-    description: 'Money owed by customers for sales',
-  },
-
-  // Assets - Inventory
-  {
-    subCategoryCode: '1130', // Inventory
-    name: 'Product Inventory',
-    description: 'Stock of products held for sale',
-  },
-
-  // Liabilities - Payables
-  {
-    subCategoryCode: '2110', // Accounts Payable
-    name: 'Accounts Payable',
-    description: 'Money owed to suppliers and vendors',
-  },
-
-  // Equity - Capital
-  {
-    subCategoryCode: '3110', // Capital Stock
-    name: 'Opening Balance Equity',
-    description: 'Initial equity balance at business start',
-  },
-
-  // Revenue - Sales
-  {
-    subCategoryCode: '4110', // Product Sales Revenue
-    name: 'Sales Revenue',
-    description: 'Revenue from customer sales',
-  },
-
-  // Expenses - Salaries
-  {
-    subCategoryCode: '5210', // Salaries & Wages
-    name: 'Salary Expense',
-    description: 'Employee salary and wage expenses',
-  },
-
-  // Expenses - Rent
-  {
-    subCategoryCode: '5220', // Rent Expense
-    name: 'Rent Expense',
-    description: 'Building and facility rental costs',
-  },
-
-  // Expenses - Utilities
-  {
-    subCategoryCode: '5230', // Utilities
-    name: 'Utilities Expense',
-    description: 'Electricity, water, and gas expenses',
-  },
-];
-
 async function seedDefaultEntityAccounts(entityId: string, groupId: string) {
   try {
-    console.log(`Seeding default accounts for entity: ${entityId}`);
+    console.log(`Seeding accounts for entity: ${entityId} in group: ${groupId}`);
 
-    for (const accountData of defaultEntityAccounts) {
-      // Find the subcategory
-      const subCategory = await prisma.accountSubCategory.findFirst({
-        where: {
-          code: accountData.subCategoryCode,
-          category: {
-            groupId,
+    // Fetch the entity to get its name
+    const entity = await prisma.entity.findUnique({
+      where: { id: entityId },
+    });
+
+    if (!entity) {
+      throw new Error(`Entity with ID ${entityId} not found`);
+    }
+
+    // Fetch all subcategories for this group
+    const subCategories = await prisma.accountSubCategory.findMany({
+      where: {
+        category: {
+          groupId,
+        },
+      },
+      include: {
+        category: true,
+      },
+      orderBy: [
+        { category: { code: 'asc' } },
+        { code: 'asc' },
+      ],
+    });
+
+    if (subCategories.length === 0) {
+      console.warn(
+        `⚠ No subcategories found for group ${groupId}. Skipping account creation.`,
+      );
+      return;
+    }
+
+    console.log(`  Found ${subCategories.length} subcategories`);
+
+    // Create one account per subcategory
+    let createdCount = 0;
+    let skippedCount = 0;
+
+    for (const subCategory of subCategories) {
+      try {
+        // Check if account already exists for this entity and subcategory
+        const existingAccount = await prisma.account.findFirst({
+          where: {
+            entityId,
+            subCategoryId: subCategory.id,
           },
-        },
-        include: {
-          category: true,
-        },
-      });
+        });
 
-      if (!subCategory) {
-        console.warn(
-          `⚠ SubCategory not found: ${accountData.subCategoryCode} for group ${groupId}`,
-        );
-        continue;
-      }
+        if (existingAccount) {
+          console.log(`  • Account already exists for ${subCategory.name}`);
+          skippedCount++;
+          continue;
+        }
 
-      // Check if account already exists
-      const existingAccount = await prisma.account.findFirst({
-        where: {
-          name: accountData.name,
-          entityId,
-        },
-      });
+        // Generate account code: {subCategoryCode}-01
+        const accountCode = `${subCategory.code}-01`;
 
-      if (!existingAccount) {
-        // Generate code based on subcategory
-        const code = `${subCategory.code}-01`;
-
+        // Create account with subcategory name
         const account = await prisma.account.create({
           data: {
-            name: accountData.name,
-            code,
-            description: accountData.description,
+            name: subCategory.name,
+            code: accountCode,
+            description: `${subCategory.name} for ${entity.name}`,
             subCategoryId: subCategory.id,
             entityId,
             balance: 0,
@@ -131,16 +86,23 @@ async function seedDefaultEntityAccounts(entityId: string, groupId: string) {
         });
 
         console.log(
-          `  ✓ Created account: ${accountData.name} (${code})`,
+          `  ✓ Created account: ${subCategory.name} (${accountCode})`,
         );
-      } else {
-        console.log(`  • Account already exists: ${accountData.name}`);
+        createdCount++;
+      } catch (error) {
+        console.error(
+          `  ✗ Failed to create account for ${subCategory.name}:`,
+          error instanceof Error ? error.message : String(error),
+        );
       }
     }
 
-    console.log(`✓ Default accounts seeded for entity: ${entityId}\n`);
+    console.log(
+      `✓ Account seeding completed for entity: ${entityId}`,
+    );
+    console.log(`  Created: ${createdCount}, Skipped: ${skippedCount}\n`);
   } catch (error) {
-    console.error('Error seeding default entity accounts:', error);
+    console.error('Error seeding entity accounts:', error);
     throw error;
   }
 }

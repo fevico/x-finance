@@ -116,7 +116,7 @@ export class AccountCategoryService {
     try {
       return await this.prisma.accountCategory.findMany({
         where: { groupId },
-        include: { type: true, subCategories: true },
+        include: { type: true, subCategories: { include: { accounts: { include: { entity: { select: { id: true, name: true } } } } } } },
         orderBy: [{ typeId: 'asc' }, { code: 'asc' }],
       });
     } catch (error) {
