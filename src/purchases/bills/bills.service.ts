@@ -34,7 +34,7 @@ export class BillsService {
           secureUrl: uploadResult.secureUrl,
         };
       } catch (error) {
-        throw new BadRequestException(`File upload failed: ${error.message}`);
+        throw new BadRequestException(`File upload failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -113,7 +113,7 @@ export class BillsService {
         },
       );
     } catch (error) {
-      console.error('Journal posting failed:', error.message);
+      console.error('Journal posting failed:', error instanceof Error ? error.message : String(error));
       // Don't throw - bill is already created, log the error for review
     }
 
@@ -311,7 +311,7 @@ export class BillsService {
           },
         );
       } catch (error) {
-        console.error('Journal posting failed:', error.message);
+        console.error('Journal posting failed:', error instanceof Error ? error.message : String(error));
         // Don't throw - payment is already created, log the error for review
       }
     }
@@ -449,7 +449,7 @@ export class BillsService {
       return this.getBillById(entityId, billId);
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(`Update failed: ${error.message}`);
+      throw new BadRequestException(`Update failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -476,7 +476,8 @@ export class BillsService {
       return { message: 'Bill deleted successfully' };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(`Delete failed: ${error.message}`);
+      throw new BadRequestException(`Delete failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+
 }
