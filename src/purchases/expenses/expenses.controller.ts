@@ -50,7 +50,6 @@ export class ExpensesController {
         date: { type: 'string', format: 'date-time' },
         reference: { type: 'string' },
         vendorId: { type: 'string' },
-        category: { type: 'string' },
         paymentMethod: {
           type: 'string',
           enum: ['Cash', 'Card', 'Transfer', 'Check'],
@@ -66,7 +65,6 @@ export class ExpensesController {
         'date',
         'reference',
         'vendorId',
-        'category',
         'paymentMethod',
         'amount',
       ],

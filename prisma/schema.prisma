@@ -194,56 +194,55 @@ model InvoiceItem {
 }
 
 model PaymentMade {
-  id               String   @id @default(cuid())
-  vendorId         String 
-  vendor           vendor @relation(fields: [vendorId], references: [id])
-  billNumber       String? 
-  paymentDate      DateTime
-  amount           String 
-  paymentMethod    PaymentMethod 
-  entityId         String 
-  entity           Entity @relation(fields: [entityId], references: [id])
-  accountId        String 
-  account          Account @relation(fields: [accountId], references: [id]) 
-  reference        String?
-  note             String?
-  status           PaymentMadeStatus @default(Pending)
+  id            String            @id @default(cuid())
+  vendorId      String
+  vendor        vendor            @relation(fields: [vendorId], references: [id])
+  billNumber    String?
+  paymentDate   DateTime
+  amount        String
+  paymentMethod PaymentMethod
+  entityId      String
+  entity        Entity            @relation(fields: [entityId], references: [id])
+  accountId     String
+  account       Account           @relation(fields: [accountId], references: [id])
+  reference     String?
+  note          String?
+  status        PaymentMadeStatus @default(Pending)
 
   @@index([entityId])
 }
 
-
 model vendor {
-  id               String       @id @default(cuid())
-  name             String
-  type             String
-  displayName      String
-  taxId            String
-  website          String?
-  companyName      String
-  jobTitle         String
-  email            String
-  phone            String
-  city             String
-  province         String
-  postalCode       String
-  country          String
-  paymentTerms     String
-  currency         String
-  accountNumber    String
-  creditLimit      String
-  bankName         String
-  accountName      String
-  entityId         String
-  routingNumber    String?
-  internalNote     String?
-  status           vendorStatus @default(Active)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @default(now()) @updatedAt
-  bills            Bills[]
-  entity           Entity       @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  expenses         Expenses[]
-  paymentMade      PaymentMade[]
+  id            String        @id @default(cuid())
+  name          String
+  type          String
+  displayName   String
+  taxId         String
+  website       String?
+  companyName   String
+  jobTitle      String
+  email         String
+  phone         String
+  city          String
+  province      String
+  postalCode    String
+  country       String
+  paymentTerms  String
+  currency      String
+  accountNumber String
+  creditLimit   String
+  bankName      String
+  accountName   String
+  entityId      String
+  routingNumber String?
+  internalNote  String?
+  status        vendorStatus  @default(Active)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now()) @updatedAt
+  bills         Bills[]
+  entity        Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  expenses      Expenses[]
+  paymentMade   PaymentMade[]
 
   @@unique([email, phone])
   @@index([email, entityId])
@@ -272,27 +271,29 @@ model PaymentReceived {
 }
 
 model Expenses {
-  id            String        @id @default(cuid())
-  date          DateTime
-  reference     String
-  vendorId      String?
-  vendor        vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  category      String
-  paymentMethod PaymentMethod
-  accountId     String
-  account       Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  amount        Int
-  tax           String
-  description   String?
-  status        ExpenseStatus @default(pending)
-  tags          String[]
-  attachment    Json?
-  entityId      String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now()) @updatedAt
-  entity        Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  id               String        @id @default(cuid())
+  date             DateTime
+  reference        String
+  vendorId         String?
+  vendor           vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  paymentMethod    PaymentMethod
+  paymentAccountId String
+  paymentAccount   Account       @relation("PaymentAccount", fields: [paymentAccountId], references: [id], onDelete: Restrict)
+  expenseAccountId String
+  expenseAccount   Account       @relation("ExpenseAccount", fields: [expenseAccountId], references: [id], onDelete: Restrict)
+  amount           Int
+  tax              String
+  description      String?
+  status           ExpenseStatus @default(pending)
+  tags             String[]
+  attachment       Json?
+  entityId         String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @default(now()) @updatedAt
+  entity           Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
-  @@index([reference, category])
+  @@index([reference, paymentAccountId])
+  @@index([reference, expenseAccountId])
 }
 
 model Bills {
@@ -311,7 +312,7 @@ model Bills {
   notes         String?
   attachment    Json?
   status        BillStatus      @default(unpaid)
-  items         Json            // Array of {name, rate, quantity, total, createdAt, updatedAt}
+  items         Json // Array of {name, rate, quantity, total, createdAt, updatedAt}
   entityId      String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @default(now()) @updatedAt
@@ -517,9 +518,10 @@ model Account {
   subCategory     AccountSubCategory @relation(fields: [subCategoryId], references: [id])
   budget          Budget[]
   paymentReceived PaymentReceived[]
-  expenses        Expenses[]
   paymentMade     PaymentMade[]
   bankAccount     BankAccount?       @relation("LinkedBankAccount")
+  expenseAccount  Expenses[]         @relation("ExpenseAccount")
+  paymentAccount  Expenses[]         @relation("PaymentAccount")
 
   @@index([id, entityId])
   @@index([subCategoryId])
@@ -673,42 +675,42 @@ model AuditLog {
 }
 
 model BankAccount {
-  id               String             @id @default(cuid())
-  accountName      String
-  bankName         String
-  accountType      String
-  currency         String
-  accountNumber    String             @unique
-  routingNumber    String?
-  openingBalance   Int                @default(0)
-  currentBalance   Int                @default(0)
-  status           BankAccountStatus  @default(active)
-  linkedAccountId  String             @unique
-  entityId         String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @default(now()) @updatedAt
-  entity           Entity             @relation("BankAccounts", fields: [entityId], references: [id], onDelete: Cascade)
-  linkedAccount    Account            @relation("LinkedBankAccount", fields: [linkedAccountId], references: [id])
-  transactions     BankTransaction[]
+  id              String            @id @default(cuid())
+  accountName     String
+  bankName        String
+  accountType     String
+  currency        String
+  accountNumber   String            @unique
+  routingNumber   String?
+  openingBalance  Int               @default(0)
+  currentBalance  Int               @default(0)
+  status          BankAccountStatus @default(active)
+  linkedAccountId String            @unique
+  entityId        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  entity          Entity            @relation("BankAccounts", fields: [entityId], references: [id], onDelete: Cascade)
+  linkedAccount   Account           @relation("LinkedBankAccount", fields: [linkedAccountId], references: [id])
+  transactions    BankTransaction[]
 
   @@index([entityId, linkedAccountId])
   @@index([accountNumber])
 }
 
 model BankTransaction {
-  id            String                   @id @default(cuid())
+  id            String                @id @default(cuid())
   date          DateTime
   description   String
   category      String?
   amount        Int
   type          BankTransactionType
   reference     String?
-  status        BankTransactionStatus    @default(pending)
+  status        BankTransactionStatus @default(pending)
   metadata      Json?
   bankAccountId String
-  createdAt     DateTime                 @default(now())
-  updatedAt     DateTime                 @default(now()) @updatedAt
-  bankAccount   BankAccount              @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @default(now()) @updatedAt
+  bankAccount   BankAccount           @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
 
   @@index([bankAccountId, date])
   @@index([date])
@@ -720,7 +722,7 @@ enum BillingCycle {
 }
 
 enum PaymentMadeStatus {
-  Pending 
+  Pending
   Cleared
 }
 
@@ -835,4 +837,3 @@ enum BankTransactionStatus {
   reconciled
   reversed
 }
-

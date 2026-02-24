@@ -157,7 +157,6 @@ export class AccountService {
           const typeRecord = await this.prisma.accountType.findFirst({
             where: {
               name: type,
-              // groupId: entity.groupId,
             },
           });
 

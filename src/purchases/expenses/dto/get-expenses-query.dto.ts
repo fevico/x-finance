@@ -22,9 +22,7 @@ export class GetExpensesQueryDto {
     example: 'Office Supplies',
     description: 'Filter by category',
   })
-  @IsOptional()
-  @IsString()
-  category?: string;
+  
 
   @ApiPropertyOptional({
     example: 'Acme',

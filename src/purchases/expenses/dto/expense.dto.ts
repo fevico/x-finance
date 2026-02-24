@@ -21,9 +21,9 @@ export class CreateExpenseDto {
   @IsString()
   vendorId: string;
 
-  @ApiProperty({ example: 'Office Supplies', description: 'Expense category' })
+  @ApiProperty({ example: 'Office Supplies', description: 'Expense account ID' })
   @IsString()
-  category: string;
+  expenseAccountId: string;
 
   @ApiProperty({
     example: PaymentMethod.Cash,
@@ -35,11 +35,11 @@ export class CreateExpenseDto {
 
   @ApiPropertyOptional({
     example: 'acc_abc123',
-    description: 'Expense account ID (defaults from vendor if omitted)',
+    description: 'Payment account ID)',
   })
   @IsOptional()
   @IsString()
-  accountId?: string;
+  paymentAccountId?: string;
 
   @ApiProperty({
     example: 5000,
@@ -136,12 +136,21 @@ export class ExpenseDto extends CreateExpenseDto {
     example: { id: 'acc_abc123', name: 'Office Supplies', code: '5200' },
     description: 'Expense account details',
   })
-  account?: {
-    id: string;
-    name: string;
-    code: string;
-  };
+//   expenseAccountId?: {
+//     id: string;
+//     name: string;
+//     code: string;
+//   };
 
+//  @ApiPropertyOptional({
+//     example: { id: 'acc_abc123', name: 'Office Supplies', code: '5200' },
+//     description: 'Payment account details',
+//   })
+//  paymentAccountId?: {
+//     id: string;
+//     name: string;
+//     code: string;
+//   };
   @ApiPropertyOptional({
     example: { publicId: 'exp/file', secureUrl: 'https://...' },
     description: 'Attachment info',

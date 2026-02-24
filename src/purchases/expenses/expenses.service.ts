@@ -35,8 +35,8 @@ export class ExpensesService {
         );
       }
 
-      const resolvedAccountId = body.accountId;
-      if (!resolvedAccountId) {
+      const expenseAccountId = body.expenseAccountId;
+      if (!expenseAccountId) {
         throw new HttpException(
           'Expense account is required',
           HttpStatus.BAD_REQUEST,
@@ -45,7 +45,7 @@ export class ExpensesService {
 
       // Validate account exists and belongs to the same entity
       const account = await this.prisma.account.findUnique({
-        where: { id: resolvedAccountId },
+        where: { id: expenseAccountId },
       });
 
       if (!account) {
@@ -53,6 +53,31 @@ export class ExpensesService {
       }
 
       if (account.entityId !== entityId) {
+        throw new HttpException(
+          'Account does not belong to this entity',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+
+       const paymentAccountId = body.paymentAccountId;
+      if (!paymentAccountId) {
+        throw new HttpException(
+          'Payment account is required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Validate account exists and belongs to the same entity
+      const paymentAccount = await this.prisma.account.findUnique({
+        where: { id: paymentAccountId },
+      });
+
+      if (!paymentAccount) {
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (paymentAccount.entityId !== entityId) {
         throw new HttpException(
           'Account does not belong to this entity',
           HttpStatus.FORBIDDEN,
@@ -72,7 +97,8 @@ export class ExpensesService {
       const expense = await this.prisma.expenses.create({
         data: {
           ...body,
-          accountId: resolvedAccountId,
+          expenseAccountId,
+          paymentAccountId,
           reference,
           entityId,
           vendorId: body.vendorId,
@@ -81,7 +107,10 @@ export class ExpensesService {
             : undefined,
         },
         include: {
-          account: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          paymentAccount: {
             select: { id: true, name: true, code: true },
           },
           vendor: {
@@ -103,7 +132,6 @@ export class ExpensesService {
       const skip = (page - 1) * limit;
 
       const where: any = { entityId };
-      if (query.category) where.category = query.category;
       if (query.search) {
         where.OR = [
           { reference: { contains: query.search, mode: 'insensitive' } },
@@ -119,7 +147,10 @@ export class ExpensesService {
           take: Number(limit),
           orderBy: { date: 'desc' },
           include: {
-            account: {
+            expenseAccount: {
+              select: { id: true, name: true, code: true },
+            },
+            paymentAccount: {
               select: { id: true, name: true, code: true },
             },
             vendor: {
@@ -178,7 +209,10 @@ export class ExpensesService {
         where: { id: expenseId },
         data: { status: 'approved' },
         include: {
-          account: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          paymentAccount: {
             select: { id: true, name: true, code: true },
           },
           vendor: {
@@ -216,7 +250,6 @@ export class ExpensesService {
         );
       }
 
-      let resolvedAccountId = body.accountId ?? expense.accountId;
 
       if (body.vendorId) {
         const vendor = await this.prisma.vendor.findUnique({
@@ -239,7 +272,7 @@ export class ExpensesService {
       //   }
       }
 
-      if (!resolvedAccountId) {
+      if (!body.expenseAccountId) {
         throw new HttpException(
           'Expense account is required',
           HttpStatus.BAD_REQUEST,
@@ -247,9 +280,9 @@ export class ExpensesService {
       }
 
       // Validate account if changed or resolved from vendor
-      if (resolvedAccountId !== expense.accountId || body.accountId) {
+      if (body.expenseAccountId !== expense.expenseAccountId) {
         const account = await this.prisma.account.findUnique({
-          where: { id: resolvedAccountId },
+          where: { id: body.expenseAccountId },
         });
 
         if (!account) {
@@ -287,11 +320,15 @@ export class ExpensesService {
         where: { id: expenseId },
         data: {
           ...body,
-          accountId: resolvedAccountId,
+          expenseAccountId: body.expenseAccountId,
+          paymentAccountId: body.paymentAccountId,
           ...(file && { attachment }),
         },
         include: {
-          account: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          paymentAccount: {
             select: { id: true, name: true, code: true },
           },
           vendor: {
