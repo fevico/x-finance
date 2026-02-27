@@ -100,6 +100,19 @@ export class CreateBillDto {
   @IsOptional()
   @IsString()
   tax?: string;
+
+  @ApiProperty({ example: 'acc-payable-123', description: 'Accounts payable account ID for this bill' })
+  @IsOptional()
+  @IsString()
+  accountsPayableId: string;
+
+
+  @ApiProperty({ example: 'acc-payable-123', description: 'Accounts payable account ID for this bill' })
+  @IsOptional()
+  @IsString()
+  subject: string;
+
+
 }
 
 export class UpdateBillDto {

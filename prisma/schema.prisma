@@ -297,28 +297,31 @@ model Expenses {
 }
 
 model Bills {
-  id            String          @id @default(cuid())
-  billDate      DateTime
-  billNumber    String?
-  vendorId      String
-  dueDate       DateTime
-  poNumber      String?
-  paymentTerms  String
-  subtotal      Int
-  tax           Int
-  discount      Int
-  total         Int
-  category      String
-  notes         String?
-  attachment    Json?
-  status        BillStatus      @default(unpaid)
-  items         Json // Array of {name, rate, quantity, total, createdAt, updatedAt}
-  entityId      String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @default(now()) @updatedAt
-  entity        Entity          @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  vendor        vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  paymentRecord PaymentRecord[]
+  id                String          @id @default(cuid())
+  billDate          DateTime
+  billNumber        String?
+  vendorId          String
+  dueDate           DateTime
+  poNumber          String?
+  paymentTerms      String
+  subtotal          Int
+  subject            String
+  tax               Int
+  discount          Int
+  total             Int
+  category          String
+  notes             String?
+  attachment        Json?
+  accountsPayableId String
+  status            BillStatus      @default(unpaid)
+  items             Json // Array of {name, rate, quantity, total, createdAt, updatedAt}
+  entityId          String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now()) @updatedAt
+  entity            Entity          @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  vendor            vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  paymentRecord     PaymentRecord[]
+  accountsPayable   Account         @relation(fields: [accountsPayableId], references: [id], onDelete: Restrict)
 
   @@index([billDate, category])
 }
@@ -522,6 +525,7 @@ model Account {
   bankAccount     BankAccount?       @relation("LinkedBankAccount")
   expenseAccount  Expenses[]         @relation("ExpenseAccount")
   paymentAccount  Expenses[]         @relation("PaymentAccount")
+  bills           Bills[]
 
   @@index([id, entityId])
   @@index([subCategoryId])

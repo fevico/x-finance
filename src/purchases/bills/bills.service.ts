@@ -75,6 +75,7 @@ export class BillsService {
     const bill = await this.prisma.bills.create({
       data: {
         ...billData,
+        accountsPayableId: billData.accountsPayableId ?? undefined,
         entityId,
         subtotal,
         tax: Number(tax),

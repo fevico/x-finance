@@ -45,9 +45,11 @@ export class AuthController {
     );
     // Encrypt minimal payload (userId, groupId, entityId, systemRole) to keep token size small
     const token = await encryptSession(tokenPayload);
-    res.setHeader('Set-Cookie', deleteCookie('xf_group'));
-    res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
-    res.setHeader('Set-Cookie', createCookie('xf', token, 60 * 60 * 24 * 7));
+    res.setHeader('Set-Cookie', [
+      deleteCookie('xf_group'),
+      deleteCookie('xf_entity'),
+      createCookie('xf', token, 60 * 60 * 24 * 7),
+    ]);
     // Send full user data to client
     return res.send(user);
   }
