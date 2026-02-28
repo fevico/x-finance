@@ -56,8 +56,13 @@ export class VendorService {
           take: Number(limit),
           orderBy: { createdAt: 'desc' },
           include: {
-            bills: true,
-            
+            bills: {
+              select: {
+                id: true,
+                total: true,
+                status: true,
+              },
+            },
           },
         }),
         this.prisma.vendor.count({ where }),
@@ -65,11 +70,19 @@ export class VendorService {
 
       const totalPages = Math.ceil(totalCount / limit);
 
-      const transformed = vendors.map((v) => ({
-        ...v,
-        billsCount: v.bills.length,
-        createdAt: v.createdAt.toISOString(),
-      }));
+      const transformed = vendors.map((v) => {
+        // Calculate outstanding amount (unpaid + partial bills)
+        const outstandingAmount = v.bills
+          .filter((bill) => bill.status === 'unpaid' || bill.status === 'partial')
+          .reduce((sum, bill) => sum + bill.total, 0);
+
+        return {
+          ...v,
+          billsCount: v.bills.length,
+          outstandingAmount,
+          createdAt: v.createdAt.toISOString(),
+        };
+      });
 
       return {
         vendors: transformed,
@@ -89,9 +102,15 @@ export class VendorService {
         where: { id: vendorId },
         include: {
           bills: {
-            select: { id: true, billNumber: true, total: true, status: true },
+            select: {
+              id: true,
+              billNumber: true,
+              total: true,
+              status: true,
+              createdAt: true,
+            },
             orderBy: { createdAt: 'desc' },
-            take: 5,
+            take: 10,
           },
         },
       });
@@ -103,8 +122,19 @@ export class VendorService {
         );
       }
 
+      // Calculate outstanding amount (unpaid + partial bills)
+      const outstandingAmount = vendor.bills
+        .filter((bill) => bill.status === 'unpaid' || bill.status === 'partial')
+        .reduce((sum, bill) => sum + bill.total, 0);
+
+      // Calculate total bills amount
+      const totalBillsAmount = vendor.bills.reduce((sum, bill) => sum + bill.total, 0);
+
       return {
         ...vendor,
+        billsCount: vendor.bills.length,
+        totalBillsAmount,
+        outstandingAmount,
         createdAt: vendor.createdAt.toISOString(),
         updatedAt: vendor.updatedAt.toISOString(),
       };

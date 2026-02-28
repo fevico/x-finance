@@ -10,6 +10,9 @@ import {
   BadRequestException,
   Patch,
   Delete,
+  UnauthorizedException,
+  Param,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -21,16 +24,14 @@ import {
   ApiOperation,
   ApiResponse,
   ApiQuery,
+  ApiNotFoundResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { BillsService } from './bills.service';
 import { CreateBillDto, UpdateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
-import { CreatePaymentDto, PaymentDto } from './dto/payment.dto';
-import { GetPaymentsResponseDto } from './dto/get-payments-response.dto';
-import { Param } from '@nestjs/common';
 import { AuthGuard } from '@/auth/guards/auth.guard';
-import { Req } from '@nestjs/common';
 import { Request } from 'express';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 
@@ -188,42 +189,6 @@ export class BillsController {
     return bill;
   }
 
-  @Post(':id/payments')
-  @ApiOperation({ summary: 'Create a payment record for a bill' })
-  @ApiResponse({
-    status: 201,
-    description: 'Payment recorded',
-    type: PaymentDto,
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async createPayment(
-    @Param('id') id: string,
-    @Body() body: CreatePaymentDto,
-    @Req() req: Request,
-  ) {
-    const entityId = getEffectiveEntityId(req);
-    if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.billsService.createPayment(id, entityId, body);
-  }
-
-  @Get(':id/payments')
-  @ApiOperation({ summary: 'Get all payments for the entity' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payments returned',
-    type: GetPaymentsResponseDto,
-  })
-  async getPayments(
-    @Param('id') id: string,
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    @Req() req: Request,
-  ) {
-    const entityId = getEffectiveEntityId(req);
-    if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.billsService.getPayments(entityId, Number(page), Number(limit));
-  }
-
   @Patch(':id')
   @UseInterceptors(FileInterceptor('attachment'))
   @ApiOperation({ summary: 'Update a bill' })
@@ -276,6 +241,25 @@ export class BillsController {
     );
   }
 
+  @Patch(':id/mark-unpaid')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Mark a draft bill as unpaid (triggers journal posting)' })
+  // @ApiParam({ name: 'id', description: 'Bill ID' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiResponse({ status: 200, description: 'Bill marked as unpaid successfully' })
+  @ApiNotFoundResponse({ description: 'Bill not found' })
+  @ApiBadRequestResponse({ description: 'Bill must be in draft status' })
+  // @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async markBillUnpaid(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.billsService.markBillUnpaid(id, entityId);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a bill' })
   @ApiResponse({ status: 200, description: 'Bill deleted successfully' })
@@ -284,5 +268,41 @@ export class BillsController {
     if (!entityId) throw new BadRequestException('Entity ID is required');
 
     return this.billsService.deleteBill(id, entityId);
+  }
+
+  @Get('failed/list')
+  @ApiOperation({ summary: 'Get all failed bill postings' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiResponse({
+    status: 200,
+    description: 'Failed bills retrieved successfully',
+  })
+  async getFailedBills(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Req() req: Request,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+
+    return this.billsService.getFailedBills(entityId, Number(page), Number(limit));
+  }
+
+  @Post(':id/retry-posting')
+  @ApiOperation({
+    summary: 'Retry failed bill journal posting',
+    description: 'Requeue a failed bill posting job. Only works for bills with Failed status.',
+  })
+  @ApiResponse({ status: 200, description: 'Reposting job queued successfully' })
+  @ApiNotFoundResponse({ description: 'Bill not found' })
+  @ApiBadRequestResponse({
+    description: 'Bill is not in Failed status or requeuing failed',
+  })
+  async retryFailedBillPosting(@Param('id') id: string, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+
+    return this.billsService.retryFailedBillPosting(id, entityId);
   }
 }

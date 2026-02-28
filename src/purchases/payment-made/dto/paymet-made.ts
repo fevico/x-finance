@@ -2,27 +2,32 @@ import {
   IsDate,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
 import { PaymentMethod } from 'prisma/generated/enums';
 
 export class CreatePaymentMade {
   @IsNotEmpty()
   @IsString()
-  vendorId: string;
+  billId: string; // Required - which bill is this payment for
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  billNumber: string;
+  vendorId: string;
 
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   paymentDate: Date;
 
   @IsNotEmpty()
-  @IsString()
-  amount: string;
+  @IsNumber()
+  @Type(() => Number)
+  amount: number;
 
   @IsNotEmpty()
   @IsString()
@@ -31,6 +36,7 @@ export class CreatePaymentMade {
   @IsOptional()
   @IsString()
   reference?: string;
+
   @IsOptional()
   @IsString()
   note?: string;

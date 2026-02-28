@@ -74,229 +74,229 @@ export class InvoiceService {
    *   Dr COGS (5000)                        = Sum(costPrice × qty)
    *   Cr Inventory (1200)                   = Same amount
    */
-  private async postInvoiceToJournal(
-    invoiceId: string,
-    invoiceData: {
-      invoiceNumber: string;
-      entityId: string;
-      subtotal: number;
-      tax: number;
-      total: number;
-      items: Array<{
-        itemId: string;
-        quantity: number;
-        rate: number;
-        total: number;
-      }>;
-    },
-  ) {
-    try {
-      // Fetch item details to determine type and COGS
-      const itemDetails = await this.prisma.items.findMany({
-        where: {
-          id: { in: invoiceData.items.map((i) => i.itemId) },
-        },
-        select: {
-          id: true,
-          type: true,
-          trackInventory: true,
-          costPrice: true,
-        },
-      });
+  // private async postInvoiceToJournal(
+  //   invoiceId: string,
+  //   invoiceData: {
+  //     invoiceNumber: string;
+  //     entityId: string;
+  //     subtotal: number;
+  //     tax: number;
+  //     total: number;
+  //     items: Array<{
+  //       itemId: string;
+  //       quantity: number;
+  //       rate: number;
+  //       total: number;
+  //     }>;
+  //   },
+  // ) {
+  //   try {
+  //     // Fetch item details to determine type and COGS
+  //     const itemDetails = await this.prisma.items.findMany({
+  //       where: {
+  //         id: { in: invoiceData.items.map((i) => i.itemId) },
+  //       },
+  //       select: {
+  //         id: true,
+  //         type: true,
+  //         trackInventory: true,
+  //         costPrice: true,
+  //       },
+  //     });
 
-      // Separate items by type
-      let productNetTotal = 0;
-      let serviceNetTotal = 0;
-      let cogsTotal = 0;
+  //     // Separate items by type
+  //     let productNetTotal = 0;
+  //     let serviceNetTotal = 0;
+  //     let cogsTotal = 0;
 
-      for (const item of invoiceData.items) {
-        const itemDetail = itemDetails.find((i) => i.id === item.itemId);
-        if (!itemDetail) continue;
+  //     for (const item of invoiceData.items) {
+  //       const itemDetail = itemDetails.find((i) => i.id === item.itemId);
+  //       if (!itemDetail) continue;
 
-        const netAmount = item.total; // Already calculated as rate × quantity
+  //       const netAmount = item.total; // Already calculated as rate × quantity
 
-        if (itemDetail.type === ItemsType.product) {
-          productNetTotal += netAmount;
+  //       if (itemDetail.type === ItemsType.product) {
+  //         productNetTotal += netAmount;
 
-          // Calculate COGS if inventory tracking enabled
-          if (itemDetail.trackInventory && itemDetail.costPrice) {
-            const itemCogs = itemDetail.costPrice * item.quantity;
-            cogsTotal += itemCogs;
-          }
-        } else if (itemDetail.type === ItemsType.service) {
-          serviceNetTotal += netAmount;
-        }
-      }
+  //         // Calculate COGS if inventory tracking enabled
+  //         if (itemDetail.trackInventory && itemDetail.costPrice) {
+  //           const itemCogs = itemDetail.costPrice * item.quantity;
+  //           cogsTotal += itemCogs;
+  //         }
+  //       } else if (itemDetail.type === ItemsType.service) {
+  //         serviceNetTotal += netAmount;
+  //       }
+  //     }
 
-      // Find account codes from AccountSubCategory
-      const [
-        arAccount,
-        productRevenueAccount,
-        serviceRevenueAccount,
-        vatAccount,
-        cogsAccount,
-        inventoryAccount,
-      ] = await Promise.all([
-        this.prisma.account.findFirst({
-          where: {
-            code: '1120-01', // Accounts Receivable
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '4110-01', // Product Sales Revenue
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '4120-01', // Service Revenue
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '2140-01', // VAT Payable
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '5110-01', // COGS
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '1130-01', // Inventory
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-      ]);
+  //     // Find account codes from AccountSubCategory
+  //     const [
+  //       arAccount,
+  //       productRevenueAccount,
+  //       serviceRevenueAccount,
+  //       vatAccount,
+  //       cogsAccount,
+  //       inventoryAccount,
+  //     ] = await Promise.all([
+  //       this.prisma.account.findFirst({
+  //         where: {
+  //           code: '1120-01', // Accounts Receivable
+  //           entityId: invoiceData.entityId,
+  //         },
+  //         select: { id: true },
+  //       }),
+  //       this.prisma.account.findFirst({
+  //         where: {
+  //           code: '4110-01', // Product Sales Revenue
+  //           entityId: invoiceData.entityId,
+  //         },
+  //         select: { id: true },
+  //       }),
+  //       this.prisma.account.findFirst({
+  //         where: {
+  //           code: '4120-01', // Service Revenue
+  //           entityId: invoiceData.entityId,
+  //         },
+  //         select: { id: true },
+  //       }),
+  //       this.prisma.account.findFirst({
+  //         where: {
+  //           code: '2140-01', // VAT Payable
+  //           entityId: invoiceData.entityId,
+  //         },
+  //         select: { id: true },
+  //       }),
+  //       this.prisma.account.findFirst({
+  //         where: {
+  //           code: '5110-01', // COGS
+  //           entityId: invoiceData.entityId,
+  //         },
+  //         select: { id: true },
+  //       }),
+  //       this.prisma.account.findFirst({
+  //         where: {
+  //           code: '1130-01', // Inventory
+  //           entityId: invoiceData.entityId,
+  //         },
+  //         select: { id: true },
+  //       }),
+  //     ]);
 
-      if (!arAccount) {
-        throw new BadRequestException(
-          'Accounts Receivable account (1120-01) not found for entity',
-        );
-      }
+  //     if (!arAccount) {
+  //       throw new BadRequestException(
+  //         'Accounts Receivable account (1120-01) not found for entity',
+  //       );
+  //     }
 
-      // Build journal lines
-      const journalLines: Array<{
-        accountId: string;
-        debit: number;
-        credit: number;
-      }> = [];
+  //     // Build journal lines
+  //     const journalLines: Array<{
+  //       accountId: string;
+  //       debit: number;
+  //       credit: number;
+  //     }> = [];
 
-      // Dr Accounts Receivable
-      journalLines.push({
-        accountId: arAccount.id,
-        debit: invoiceData.total,
-        credit: 0,
-      });
+  //     // Dr Accounts Receivable
+  //     journalLines.push({
+  //       accountId: arAccount.id,
+  //       debit: invoiceData.total,
+  //       credit: 0,
+  //     });
 
-      // Cr Product Sales Revenue (if any products)
-      if (productNetTotal > 0 && productRevenueAccount) {
-        journalLines.push({
-          accountId: productRevenueAccount.id,
-          debit: 0,
-          credit: productNetTotal,
-        });
-      }
+  //     // Cr Product Sales Revenue (if any products)
+  //     if (productNetTotal > 0 && productRevenueAccount) {
+  //       journalLines.push({
+  //         accountId: productRevenueAccount.id,
+  //         debit: 0,
+  //         credit: productNetTotal,
+  //       });
+  //     }
 
-      // Cr Service Revenue (if any services)
-      if (serviceNetTotal > 0 && serviceRevenueAccount) {
-        journalLines.push({
-          accountId: serviceRevenueAccount.id,
-          debit: 0,
-          credit: serviceNetTotal,
-        });
-      }
+  //     // Cr Service Revenue (if any services)
+  //     if (serviceNetTotal > 0 && serviceRevenueAccount) {
+  //       journalLines.push({
+  //         accountId: serviceRevenueAccount.id,
+  //         debit: 0,
+  //         credit: serviceNetTotal,
+  //       });
+  //     }
 
-      // Cr VAT Payable (if tax > 0)
-      if (invoiceData.tax > 0 && vatAccount) {
-        journalLines.push({
-          accountId: vatAccount.id,
-          debit: 0,
-          credit: invoiceData.tax,
-        });
-      }
+  //     // Cr VAT Payable (if tax > 0)
+  //     if (invoiceData.tax > 0 && vatAccount) {
+  //       journalLines.push({
+  //         accountId: vatAccount.id,
+  //         debit: 0,
+  //         credit: invoiceData.tax,
+  //       });
+  //     }
 
-      // Dr COGS and Cr Inventory (if applicable)
-      if (cogsTotal > 0 && cogsAccount && inventoryAccount) {
-        journalLines.push({
-          accountId: cogsAccount.id,
-          debit: cogsTotal,
-          credit: 0,
-        });
+  //     // Dr COGS and Cr Inventory (if applicable)
+  //     if (cogsTotal > 0 && cogsAccount && inventoryAccount) {
+  //       journalLines.push({
+  //         accountId: cogsAccount.id,
+  //         debit: cogsTotal,
+  //         credit: 0,
+  //       });
 
-        journalLines.push({
-          accountId: inventoryAccount.id,
-          debit: 0,
-          credit: cogsTotal,
-        });
-      }
+  //       journalLines.push({
+  //         accountId: inventoryAccount.id,
+  //         debit: 0,
+  //         credit: cogsTotal,
+  //       });
+  //     }
 
-      // Validate journal balances
-      const totalDebit = journalLines.reduce(
-        (sum, line) => sum + line.debit,
-        0,
-      );
-      const totalCredit = journalLines.reduce(
-        (sum, line) => sum + line.credit,
-        0,
-      );
+  //     // Validate journal balances
+  //     const totalDebit = journalLines.reduce(
+  //       (sum, line) => sum + line.debit,
+  //       0,
+  //     );
+  //     const totalCredit = journalLines.reduce(
+  //       (sum, line) => sum + line.credit,
+  //       0,
+  //     );
 
-      if (totalDebit !== totalCredit) {
-        throw new BadRequestException(
-          `Journal entry does not balance. Debit: ${totalDebit}, Credit: ${totalCredit}`,
-        );
-      }
+  //     if (totalDebit !== totalCredit) {
+  //       throw new BadRequestException(
+  //         `Journal entry does not balance. Debit: ${totalDebit}, Credit: ${totalCredit}`,
+  //       );
+  //     }
 
-      // Create journal entry
-      const journalRef = generateJournalReference('INV');
-      await this.prisma.journal.create({
-        data: {
-          description: `Invoice ${invoiceData.invoiceNumber} posted`,
-          date: new Date(),
-          reference: journalRef,
-          entityId: invoiceData.entityId,
-          lines: journalLines,
-        },
-      });
+  //     // Create journal entry
+  //     const journalRef = generateJournalReference('INV');
+  //     await this.prisma.journal.create({
+  //       data: {
+  //         description: `Invoice ${invoiceData.invoiceNumber} posted`,
+  //         date: new Date(),
+  //         reference: journalRef,
+  //         entityId: invoiceData.entityId,
+  //         lines: journalLines,
+  //       },
+  //     });
 
-      // Update account balances for all accounts in the journal entry
-      // Debit increases balance, Credit decreases balance
-      await Promise.all(
-        journalLines.map((line) =>
-          this.prisma.account.update({
-            where: { id: line.accountId },
-            data: {
-              balance: {
-                increment: line.debit - line.credit, // Debit = +, Credit = -
-              },
-            },
-          }),
-        ),
-      );
+  //     // Update account balances for all accounts in the journal entry
+  //     // Debit increases balance, Credit decreases balance
+  //     await Promise.all(
+  //       journalLines.map((line) =>
+  //         this.prisma.account.update({
+  //           where: { id: line.accountId },
+  //           data: {
+  //             balance: {
+  //               increment: line.debit - line.credit, // Debit = +, Credit = -
+  //             },
+  //           },
+  //         }),
+  //       ),
+  //     );
 
-      console.log(
-        `Invoice ${invoiceData.invoiceNumber} posted to journal with reference ${journalRef}`,
-      );
-    } catch (error) {
-      console.error(
-        'Error posting invoice to journal:',
-        error instanceof Error ? error.message : String(error),
-      );
-      throw error;
-    }
-  }
+  //     console.log(
+  //       `Invoice ${invoiceData.invoiceNumber} posted to journal with reference ${journalRef}`,
+  //     );
+  //   } catch (error) {
+  //     console.error(
+  //       'Error posting invoice to journal:',
+  //       error instanceof Error ? error.message : String(error),
+  //     );
+  //     throw error;
+  //   }
+  // }
 
   // async createInvoice(body: CreateInvoiceDto, entityId: string) {
   //   try {

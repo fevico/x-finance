@@ -61,6 +61,15 @@ export class CreateExpenseDto {
   @IsString()
   description?: string;
 
+  @ApiPropertyOptional({
+    example: 'draft',
+    enum: ['draft', 'approved', 'rejected'],
+    description: 'Expense status',
+  })
+  @IsOptional()
+  @IsEnum(['draft', 'approved', 'rejected'])
+  status?: string;
+
   @ApiPropertyOptional({ example: ['office', 'supplies'], description: 'Tags' })
   @IsOptional()
   @IsArray()
@@ -120,6 +129,15 @@ export class UpdateExpenseDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({
+    example: 'approved',
+    enum: ['draft', 'approved', 'rejected'],
+    description: 'Expense status',
+  })
+  @IsOptional()
+  @IsEnum(['draft', 'approved', 'rejected'])
+  status?: string;
 
   @ApiPropertyOptional({ example: ['office', 'supplies'], description: 'Tags' })
   @IsOptional()

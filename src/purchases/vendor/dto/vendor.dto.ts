@@ -131,6 +131,18 @@ export class VendorDto extends CreateVendorDto {
     name: string;
     code: string;
   };
+
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Total number of bills from this vendor',
+  })
+  billsCount?: number;
+
+  @ApiPropertyOptional({
+    example: 150000,
+    description: 'Total outstanding amount for unpaid/partial bills (in smallest currency unit)',
+  })
+  outstandingAmount?: number;
 }
 
 export class UpdateVendorDto {

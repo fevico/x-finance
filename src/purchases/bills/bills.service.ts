@@ -1,18 +1,20 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { FileuploadService } from '@/fileupload/fileupload.service';
-import { JournalPostingService } from '@/accounts/journal/journal-posting.service';
+import { BullmqService } from '@/bullmq/bullmq.service';
 import { CreateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
-import { CreatePaymentDto, PaymentDto } from './dto/payment.dto';
+import { BillStatus } from 'prisma/generated/enums';
 
 @Injectable()
 export class BillsService {
+  private readonly logger = new Logger(BillsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileuploadService: FileuploadService,
-    private readonly journalPostingService: JournalPostingService,
+    private readonly bullmqService: BullmqService,
   ) {}
 
   async createBill(
@@ -38,7 +40,10 @@ export class BillsService {
       }
     }
 
-    const { items, ...billData } = body;
+    const { items, status = 'draft', ...billData } = body;
+
+    // Cast status to BillStatus enum
+    const billStatus = (status || 'draft') as BillStatus;
 
     // Parse and calculate item totals - NOW with expenseAccountId per item
     let subtotal = 0;
@@ -75,6 +80,7 @@ export class BillsService {
     const bill = await this.prisma.bills.create({
       data: {
         ...billData,
+        status: billStatus,
         accountsPayableId: billData.accountsPayableId ?? undefined,
         entityId,
         subtotal,
@@ -98,25 +104,34 @@ export class BillsService {
       },
     });
 
-    // Update bill status automatically
-    await this.updateBillStatus(bill.id);
-
-    // Post journal entry for vendor bill with PER-ITEM accounts
-    try {
-      await this.journalPostingService.postVendorBillWithItems(
-        bill.id,
-        entityId,
-        {
-          total: bill.total,
-          subtotal: bill.subtotal,
-          tax: bill.tax,
-          items: billItemsData, // Pass items with expenseAccountId
-        },
-      );
-    } catch (error) {
-      console.error('Journal posting failed:', error instanceof Error ? error.message : String(error));
-      // Don't throw - bill is already created, log the error for review
+    // Queue posting job ONLY if status is unpaid
+    if (billStatus === 'unpaid') {
+      try {
+        await this.bullmqService.addJob('post-bill-journal', {
+          billId: bill.id,
+          billData: {
+            billNumber: bill.billNumber,
+            entityId,
+            subtotal: bill.subtotal,
+            tax: bill.tax,
+            discount: bill.discount,
+            total: bill.total,
+            accountsPayableId: bill.accountsPayableId,
+            items: billItemsData, // Items with expenseAccountId
+          },
+        });
+        this.logger.log(
+          `Queued journal posting job for bill ${bill.billNumber}`,
+        );
+      } catch (queueError) {
+        this.logger.error(
+          `Failed to queue bill journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+        );
+        // Don't throw - bill is already created, job will retry
+      }
     }
+
+    return bill;
 
     return bill;
   }
@@ -201,6 +216,9 @@ export class BillsService {
       items: (b.items as any[]) || [], // Items stored as JSON array
       createdAt:
         b.createdAt instanceof Date ? b.createdAt.toISOString() : b.createdAt,
+      postedAt: b.postedAt instanceof Date
+        ? b.postedAt.toISOString()
+        : b.postedAt,
     }));
 
     return {
@@ -219,11 +237,23 @@ export class BillsService {
         vendor: {
           select: { id: true, displayName: true, email: true, phone: true },
         },
-        paymentRecord: true,
+        paymentsMade: {
+          include: {
+            vendor: { select: { id: true, displayName: true } },
+            account: { select: { id: true, code: true, name: true } },
+          },
+          orderBy: { paymentDate: 'desc' },
+        },
       },
     });
 
     if (!bill || bill.entityId !== entityId) return null;
+
+    // Calculate total paid
+    const totalPaid = bill.paymentsMade.reduce(
+      (sum, p) => sum + p.amount,
+      0,
+    );
 
     return {
       ...bill,
@@ -234,134 +264,26 @@ export class BillsService {
         bill.attachment === null
           ? undefined
           : (bill.attachment as Record<string, any>),
-      items: (bill.items as any[]) || [], // Items stored as JSON array
+      items: (bill.items as any[]) || [],
       createdAt:
         bill.createdAt instanceof Date
           ? bill.createdAt.toISOString()
           : bill.createdAt,
-      paymentRecord: bill.paymentRecord.map((p) => ({
+      postedAt: bill.postedAt instanceof Date
+        ? bill.postedAt.toISOString()
+        : bill.postedAt,
+      paymentsMade: bill.paymentsMade.map((p) => ({
         ...p,
+        paymentDate:
+          p.paymentDate instanceof Date
+            ? p.paymentDate.toISOString()
+            : p.paymentDate,
+        postedAt: p.postedAt instanceof Date
+          ? p.postedAt.toISOString()
+          : p.postedAt,
         note: p.note ?? undefined,
-        paidAt: p.paidAt instanceof Date ? p.paidAt.toISOString() : p.paidAt,
-        createdAt:
-          p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
       })),
-    };
-  }
-
-  private async updateBillStatus(billId: string) {
-    const bill = await this.prisma.bills.findUnique({
-      where: { id: billId },
-      include: { paymentRecord: true },
-    });
-
-    if (!bill) return;
-
-    const totalPaid = bill.paymentRecord.reduce((sum, p) => sum + p.amount, 0);
-
-    let status: any = 'unpaid';
-    if (totalPaid >= bill.total) {
-      status = 'paid';
-    } else if (totalPaid > 0) {
-      status = 'partial';
-    }
-
-    await this.prisma.bills.update({
-      where: { id: billId },
-      data: { status },
-    });
-  }
-
-  async createPayment(
-    billId: string,
-    entityId: string,
-    body: CreatePaymentDto,
-  ): Promise<any> {
-    // Ensure bill belongs to entity
-    const bill = await this.prisma.bills.findUnique({ where: { id: billId } });
-    if (!bill || bill.entityId !== entityId) {
-      throw new BadRequestException('Bill not found for this entity');
-    }
-
-    const payment = await this.prisma.paymentRecord.create({
-      data: {
-        billId,
-        paidAt: body.paidAt,
-        paymentMethod: body.paymentMethod,
-        reference: body.reference,
-        account: body.account,
-        amount: body.amount,
-        note: body.note ?? undefined,
-      },
-    });
-
-    // Update bill status automatically
-    await this.updateBillStatus(billId);
-
-    // Post journal entry for bill payment
-    // Requires cashAccountId in payment data (account field)
-    if (body.account) {
-      try {
-        await this.journalPostingService.postBillPayment(
-          payment.id,
-          billId,
-          entityId,
-          {
-            amount: body.amount,
-            cashAccountId: body.account,
-          },
-        );
-      } catch (error) {
-        console.error('Journal posting failed:', error instanceof Error ? error.message : String(error));
-        // Don't throw - payment is already created, log the error for review
-      }
-    }
-
-    return {
-      ...payment,
-      note: payment.note ?? undefined,
-    };
-  }
-
-  async getPayments(entityId: string, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
-
-    const [payments, total] = await Promise.all([
-      this.prisma.paymentRecord.findMany({
-        where: {
-          bill: { entityId },
-        },
-        include: {
-          bill: {
-            select: {
-              vendor: { select: { displayName: true } },
-            },
-          },
-        },
-        orderBy: { paidAt: 'desc' },
-        skip,
-        take: Number(limit),
-      }),
-      this.prisma.paymentRecord.count({ where: { bill: { entityId } } }),
-    ]);
-
-    const paymentsTransformed = payments.map((p) => ({
-      ...p,
-      paidAt: p.paidAt instanceof Date ? p.paidAt.toISOString() : p.paidAt,
-      createdAt:
-        p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
-      note: p.note ?? undefined,
-      vendorName: p.bill?.vendor?.displayName ?? undefined,
-    }));
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      payments: paymentsTransformed,
-      total,
-      currentPage: page,
-      pageSize: limit,
-      totalPages,
+      totalPaid,
     };
   }
 
@@ -445,13 +367,101 @@ export class BillsService {
         },
       });
 
-      // Re-calculate status in case total or payments changed
-      await this.updateBillStatus(billId);
+      // Bill status is now updated automatically when payments are posted via PaymentMade
+      // No manual status update needed here
+
+      // Check if status changed to unpaid and queue posting if needed
+      if (billData.status && billData.status !== bill.status && billData.status === 'unpaid') {
+        try {
+          const updatedBill = await this.prisma.bills.findUnique({
+            where: { id: billId },
+          });
+          if (updatedBill) {
+            await this.bullmqService.addJob('post-bill-journal', {
+              billId: updatedBill.id,
+              billData: {
+                billNumber: updatedBill.billNumber,
+                entityId,
+                subtotal: updatedBill.subtotal,
+                tax: updatedBill.tax,
+                discount: updatedBill.discount,
+                total: updatedBill.total,
+                accountsPayableId: updatedBill.accountsPayableId,
+                items: billItemsData,
+              },
+            });
+            this.logger.log(
+              `Queued journal posting job for bill ${updatedBill.billNumber}`,
+            );
+          }
+        } catch (queueError) {
+          this.logger.error(
+            `Failed to queue bill journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          );
+        }
+      }
 
       return this.getBillById(entityId, billId);
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new BadRequestException(`Update failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Mark a draft bill as unpaid (triggers journal posting)
+   */
+  async markBillUnpaid(billId: string, entityId: string) {
+    try {
+      const bill = await this.prisma.bills.findUnique({
+        where: { id: billId },
+        include: { paymentRecord: true },
+      });
+
+      if (!bill || bill.entityId !== entityId) {
+        throw new BadRequestException('Bill not found for this entity');
+      }
+
+      if (bill.status !== 'draft') {
+        throw new BadRequestException(`Bill must be in draft status, current status is ${bill.status}`);
+      }
+
+      // Update bill to unpaid
+      await this.prisma.bills.update({
+        where: { id: billId },
+        data: { status: 'unpaid' },
+      });
+
+      // Queue posting job
+      try {
+        const billItemsData = (bill.items as any[]) || [];
+        await this.bullmqService.addJob('post-bill-journal', {
+          billId: bill.id,
+          billData: {
+            billNumber: bill.billNumber,
+            entityId,
+            subtotal: bill.subtotal,
+            tax: bill.tax,
+            discount: bill.discount,
+            total: bill.total,
+            accountsPayableId: bill.accountsPayableId,
+            items: billItemsData,
+          },
+        });
+        this.logger.log(
+          `Queued journal posting job for bill ${bill.billNumber}`,
+        );
+      } catch (queueError) {
+        this.logger.error(
+          `Failed to queue bill journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+        );
+        throw new BadRequestException(`Failed to queue journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`);
+      }
+
+      return this.getBillById(entityId, billId);
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(`Mark unpaid failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -482,4 +492,138 @@ export class BillsService {
     }
   }
 
+  /**
+   * Get all failed bill postings for an entity
+   */
+  async getFailedBills(
+    entityId: string,
+    page = 1,
+    limit = 10,
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
+
+    const [bills, total] = await Promise.all([
+      this.prisma.bills.findMany({
+        where: {
+          entityId,
+          postingStatus: 'Failed',
+        },
+        include: {
+          vendor: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+        skip,
+        take: Number(limit),
+      }),
+      this.prisma.bills.count({
+        where: {
+          entityId,
+          postingStatus: 'Failed',
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    const transformedBills = bills.map((b) => ({
+      ...b,
+      billNumber: b.billNumber ?? undefined,
+      poNumber: b.poNumber ?? undefined,
+      notes: b.notes ?? undefined,
+      errorMessage: b.errorMessage ?? undefined,
+      errorCode: b.errorCode ?? undefined,
+      attachment:
+        b.attachment === null
+          ? undefined
+          : (b.attachment as Record<string, any>),
+      items: (b.items as any[]) || [],
+      createdAt:
+        b.createdAt instanceof Date ? b.createdAt.toISOString() : b.createdAt,
+      updatedAt:
+        b.updatedAt instanceof Date ? b.updatedAt.toISOString() : b.updatedAt,
+    }));
+
+    return {
+      bills: transformedBills,
+      total,
+      currentPage: page,
+      pageSize: limit,
+      totalPages,
+    };
+  }
+
+  /**
+   * Retry failed bill journal posting
+   */
+  async retryFailedBillPosting(billId: string, entityId: string): Promise<any> {
+    try {
+      const bill = await this.prisma.bills.findUnique({
+        where: { id: billId },
+      });
+
+      if (!bill || bill.entityId !== entityId) {
+        throw new BadRequestException('Bill not found for this entity');
+      }
+
+      if (bill.postingStatus !== 'Failed') {
+        throw new BadRequestException(
+          `Bill posting status is ${bill.postingStatus}, only failed postings can be retried`,
+        );
+      }
+
+      // Reset to Pending and queue the job
+      await this.prisma.bills.update({
+        where: { id: billId },
+        data: {
+          postingStatus: 'Pending',
+          errorMessage: null,
+          errorCode: null,
+        },
+      });
+
+      // Queue posting job
+      try {
+        const billItemsData = (bill.items as any[]) || [];
+        await this.bullmqService.addJob('post-bill-journal', {
+          billId: bill.id,
+          billData: {
+            billNumber: bill.billNumber,
+            entityId,
+            subtotal: bill.subtotal,
+            tax: bill.tax,
+            discount: bill.discount,
+            total: bill.total,
+            accountsPayableId: bill.accountsPayableId,
+            items: billItemsData,
+          },
+        });
+        this.logger.log(
+          `Requeued journal posting job for failed bill ${bill.billNumber}`,
+        );
+      } catch (queueError) {
+        this.logger.error(
+          `Failed to queue bill journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+        );
+        throw new BadRequestException(
+          `Failed to queue journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+        );
+      }
+
+      return this.getBillById(entityId, billId);
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        `Retry failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 }

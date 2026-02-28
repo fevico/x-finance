@@ -36,6 +36,12 @@ export class BullmqProcessor extends WorkerHost {
       return this.handlePaymentReceivedPosting(job);
     } else if (job.name === 'post-receipt-journal') {
       return this.handleReceiptJournalPosting(job);
+    } else if (job.name === 'post-bill-journal') {
+      return this.handleBillJournalPosting(job);
+    } else if (job.name === 'post-expense-journal') {
+      return this.handleExpenseJournalPosting(job);
+    } else if (job.name === 'post-payment-made-journal') {
+      return this.handlePaymentMadeJournalPosting(job);
     } else {
       this.logger.warn(`[Job ${job.id}] Unknown job type: ${job.name}`);
     }
@@ -1040,6 +1046,668 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
       } catch (updateError) {
         this.logger.error(
           `[Job ${job.id}] Failed to update receipt status to Failed`,
+        );
+      }
+
+      throw error; // Rethrow to trigger retry
+    }
+  }
+
+  /**
+   * Handle bill journal posting job
+   * Posts vendor bill to journal following accounting rules:
+   * Dr Expense accounts (per item) = item net amounts
+   * Dr Input VAT (1300) = tax (if tax > 0)
+   * Cr Accounts Payable (2000) = total
+   */
+  async handleBillJournalPosting(job: Job): Promise<any> {
+    const { billId, billData } = job.data as {
+      billId: string;
+      billData: {
+        billNumber: string;
+        entityId: string;
+        subtotal: number;
+        tax: number;
+        total: number;
+        discount: number;
+        accountsPayableId: string;
+        items: Array<{
+          name: string;
+          rate: number;
+          quantity: number;
+          total: number;
+          expenseAccountId: string;
+        }>;
+      };
+    };
+
+    this.logger.log(
+      `[Job ${job.id}] Processing bill journal posting for bill: ${billData.billNumber}`,
+    );
+
+    try {
+      // Mark as Processing
+      this.logger.debug(`[Job ${job.id}] Setting bill ${billId} to Processing state`);
+      await this.prisma.bills.update({
+        where: { id: billId },
+        data: { postingStatus: 'Processing' },
+      });
+
+      // Find accounts
+      const [apAccount, vatAccount, 
+        // discountAccount
+      ] = await Promise.all([
+        this.prisma.account.findUnique({
+          where: { id: billData.accountsPayableId },
+          select: { id: true },
+        }),
+        this.prisma.account.findFirst({
+          where: {
+            code: '2140-01', // Input VAT account
+            entityId: billData.entityId,
+          },
+          select: { id: true },
+        }),
+        // COMMENTED OUT - Discount account not yet available
+        // this.prisma.account.findFirst({
+        //   where: {
+        //     code: '4100-02', // Purchase Discount account (contra-expense)
+        //     entityId: billData.entityId,
+        //   },
+        //   select: { id: true },
+        // }),
+      ]);
+
+      if (!apAccount) {
+        throw new Error(`Accounts Payable account not found for ID: ${billData.accountsPayableId}`);
+      }
+
+      // Build journal lines
+      const journalLines: Array<{
+        accountId: string;
+        debit: number;
+        credit: number;
+      }> = [];
+
+      // Dr Expense accounts (one per item)
+      for (const item of billData.items) {
+        journalLines.push({
+          accountId: item.expenseAccountId,
+          debit: item.total,
+          credit: 0,
+        });
+      }
+
+      // Dr Input VAT (if tax > 0)
+      if (billData.tax > 0 && vatAccount) {
+        journalLines.push({
+          accountId: vatAccount.id,
+          debit: billData.tax,
+          credit: 0,
+        });
+      }
+
+      // COMMENTED OUT - Discount account posting deferred
+      // Dr Purchase Discount (if discount > 0) - debit to reduce expense
+      // if (billData.discount > 0 && discountAccount) {
+      //   journalLines.push({
+      //     accountId: discountAccount.id,
+      //     debit: billData.discount,
+      //     credit: 0,
+      //   });
+      // }
+
+      // Cr Accounts Payable
+      // NOTE: Discount posting deferred - credit AP for subtotal + tax only
+      const apCredit = billData.subtotal + billData.tax;
+      journalLines.push({
+        accountId: apAccount.id,
+        debit: 0,
+        credit: apCredit,
+      });
+
+      // Validate journal balances
+      const totalDebit = journalLines.reduce(
+        (sum, line) => sum + line.debit,
+        0,
+      );
+      const totalCredit = journalLines.reduce(
+        (sum, line) => sum + line.credit,
+        0,
+      );
+
+      if (totalDebit !== totalCredit) {
+        const difference = totalDebit - totalCredit;
+        const errorMsg = `Journal entry does not balance. Debit: ${totalDebit}, Credit: ${totalCredit}, Difference: ${difference}. 
+        Subtotal: ${billData.subtotal}, Tax: ${billData.tax}, Discount: ${billData.discount} (not posted), Total: ${billData.total}`;
+        throw new Error(errorMsg);
+      }
+
+      // Create journal entry in transaction
+      await this.prisma.$transaction(async (tx) => {
+        const journalRef = generateJournalReference('BILL');
+        const postedAt = new Date();
+
+        // Create journal
+        await tx.journal.create({
+          data: {
+            description: `Bill ${billData.billNumber} posted`,
+            date: postedAt,
+            reference: journalRef,
+            entityId: billData.entityId,
+            lines: journalLines,
+          },
+        });
+
+        // Get current account balances and update them
+        const updatedAccounts = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.update({
+              where: { id: line.accountId },
+              data: {
+                balance: {
+                  increment: line.debit - line.credit,
+                },
+              },
+              select: { balance: true },
+            }),
+          ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) =>
+            tx.accountTransaction.create({
+              data: {
+                date: postedAt,
+                description: `Bill ${billData.billNumber} posted to journal`,
+                reference: journalRef,
+                type: 'BILL_POSTING',
+                status: 'Success',
+                accountId: line.accountId,
+                debitAmount: line.debit,
+                creditAmount: line.credit,
+                runningBalance: updatedAccounts[index].balance,
+                entityId: billData.entityId,
+                relatedEntityId: billId,
+                relatedEntityType: 'Bill',
+                metadata: {
+                  billNumber: billData.billNumber,
+                  journalReference: journalRef,
+                },
+              },
+            }),
+          ),
+        );
+
+        // Mark bill as successfully posted with reference and timestamp
+        this.logger.debug(`[Job ${job.id}] Updating bill ${billId} with postingStatus=Success and reference=${journalRef}`);
+        
+        const billUpdateResult = await tx.bills.update({
+          where: { id: billId },
+          data: {
+            postingStatus: 'Success',
+            journalReference: journalRef,
+            postedAt,
+          },
+        });
+
+        this.logger.debug(
+          `[Job ${job.id}] Bill updated. postingStatus=${billUpdateResult.postingStatus}, journalReference=${billUpdateResult.journalReference}`,
+        );
+      });
+
+      this.logger.log(
+        `[Job ${job.id}] Successfully posted bill ${billData.billNumber} to journal`,
+      );
+
+      return { success: true, billId };
+    } catch (error) {
+      this.logger.error(
+        `[Job ${job.id}] Failed to post bill journal: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      // Update bill posting status to Failed and store error details
+      try {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await this.prisma.bills.update({
+          where: { id: billId },
+          data: {
+            postingStatus: 'Failed',
+            errorMessage: errorMessage.substring(0, 500), // Store first 500 chars
+            errorCode: 'JOURNAL_POSTING_FAILED',
+          },
+        });
+        this.logger.log(
+          `[Job ${job.id}] Bill ${billId} marked as Failed with error stored`,
+        );
+      } catch (updateError) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to update bill status to Failed: ${updateError instanceof Error ? updateError.message : String(updateError)}`,
+        );
+      }
+
+      throw error; // Rethrow to trigger retry
+    }
+  }
+
+  async handleExpenseJournalPosting(job: Job): Promise<any> {
+    const { expenseId, expenseData } = job.data as {
+      expenseId: string;
+      expenseData: {
+        reference: string;
+        entityId: string;
+        amount: number;
+        tax: number;
+        expenseAccountId: string;
+        paymentAccountId: string;
+      };
+    };
+
+    this.logger.log(
+      `[Job ${job.id}] Processing expense journal posting for expense: ${expenseData.reference}`,
+    );
+
+    try {
+      // Mark as Processing
+      this.logger.debug(`[Job ${job.id}] Setting expense ${expenseId} to Processing state`);
+      await this.prisma.expenses.update({
+        where: { id: expenseId },
+        data: { postingStatus: 'Processing' },
+      });
+
+      // Find accounts
+      const [expenseAccount, paymentAccount, vatAccount] = await Promise.all([
+        this.prisma.account.findUnique({
+          where: { id: expenseData.expenseAccountId },
+          select: { id: true },
+        }),
+        this.prisma.account.findUnique({
+          where: { id: expenseData.paymentAccountId },
+          select: { id: true },
+        }),
+        this.prisma.account.findFirst({
+          where: {
+            code: '2140-01', // Input VAT account
+            entityId: expenseData.entityId,
+          },
+          select: { id: true },
+        }),
+      ]);
+
+      if (!expenseAccount) {
+        throw new Error(`Expense account not found for ID: ${expenseData.expenseAccountId}`);
+      }
+
+      if (!paymentAccount) {
+        throw new Error(`Payment account not found for ID: ${expenseData.paymentAccountId}`);
+      }
+
+      // Build journal lines
+      // Posting rule: Dr Expense + Dr VAT = Cr Bank/Cash
+      const journalLines: Array<{
+        accountId: string;
+        debit: number;
+        credit: number;
+      }> = [];
+
+      // Dr Expense Account
+      journalLines.push({
+        accountId: expenseAccount.id,
+        debit: expenseData.amount,
+        credit: 0,
+      });
+
+      // Dr Input VAT (if tax > 0)
+      if (expenseData.tax > 0 && vatAccount) {
+        journalLines.push({
+          accountId: vatAccount.id,
+          debit: expenseData.tax,
+          credit: 0,
+        });
+      }
+
+      // Cr Payment Account (Bank/Cash)
+      const creditAmount = expenseData.amount + expenseData.tax;
+      journalLines.push({
+        accountId: paymentAccount.id,
+        debit: 0,
+        credit: creditAmount,
+      });
+
+      // Validate journal balances
+      const totalDebit = journalLines.reduce((sum, line) => sum + line.debit, 0);
+      const totalCredit = journalLines.reduce((sum, line) => sum + line.credit, 0);
+
+      if (totalDebit !== totalCredit) {
+        const difference = totalDebit - totalCredit;
+        const errorMsg = `Journal entry does not balance. Debit: ${totalDebit}, Credit: ${totalCredit}, Difference: ${difference}. Amount: ${expenseData.amount}, Tax: ${expenseData.tax}`;
+        throw new Error(errorMsg);
+      }
+
+      // Create journal entry in transaction
+      await this.prisma.$transaction(async (tx) => {
+        const journalRef = generateJournalReference('EXP');
+        const postedAt = new Date();
+
+        // Create journal
+        await tx.journal.create({
+          data: {
+            description: `Expense ${expenseData.reference} posted`,
+            date: postedAt,
+            reference: journalRef,
+            entityId: expenseData.entityId,
+            lines: journalLines,
+          },
+        });
+
+        // Get current account balances and update them
+        const updatedAccounts = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.update({
+              where: { id: line.accountId },
+              data: {
+                balance: {
+                  increment: line.debit - line.credit,
+                },
+              },
+              select: { balance: true },
+            }),
+          ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) =>
+            tx.accountTransaction.create({
+              data: {
+                date: postedAt,
+                description: `Expense ${expenseData.reference} posted to journal`,
+                reference: journalRef,
+                type: 'EXPENSE_POSTING',
+                status: 'Success',
+                accountId: line.accountId,
+                debitAmount: line.debit,
+                creditAmount: line.credit,
+                runningBalance: updatedAccounts[index].balance,
+                entityId: expenseData.entityId,
+                relatedEntityId: expenseId,
+                relatedEntityType: 'Expense',
+                metadata: {
+                  reference: expenseData.reference,
+                  journalReference: journalRef,
+                },
+              },
+            }),
+          ),
+        );
+
+        // Mark expense as successfully posted with reference and timestamp
+        this.logger.debug(`[Job ${job.id}] Updating expense ${expenseId} with postingStatus=Success and reference=${journalRef}`);
+
+        const expenseUpdateResult = await tx.expenses.update({
+          where: { id: expenseId },
+          data: {
+            postingStatus: 'Success',
+            journalReference: journalRef,
+            postedAt,
+          },
+        });
+
+        this.logger.debug(
+          `[Job ${job.id}] Expense updated. postingStatus=${expenseUpdateResult.postingStatus}, journalReference=${expenseUpdateResult.journalReference}`,
+        );
+      });
+
+      this.logger.log(
+        `[Job ${job.id}] Successfully posted expense ${expenseData.reference} to journal`,
+      );
+
+      return { success: true, expenseId };
+    } catch (error) {
+      this.logger.error(
+        `[Job ${job.id}] Failed to post expense journal: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      // Update expense posting status to Failed and store error details
+      try {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await this.prisma.expenses.update({
+          where: { id: expenseId },
+          data: {
+            postingStatus: 'Failed',
+            errorMessage: errorMessage.substring(0, 500),
+            errorCode: 'JOURNAL_POSTING_FAILED',
+          },
+        });
+        this.logger.log(
+          `[Job ${job.id}] Expense ${expenseId} marked as Failed with error stored`,
+        );
+      } catch (updateError) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to update expense status to Failed: ${updateError instanceof Error ? updateError.message : String(updateError)}`,
+        );
+      }
+
+      throw error; // Rethrow to trigger retry
+    }
+  }
+
+  async handlePaymentMadeJournalPosting(job: Job): Promise<any> {
+    const { paymentMadeId, paymentData } = job.data as {
+      paymentMadeId: string;
+      paymentData: {
+        reference: string;
+        entityId: string;
+        billId: string;
+        amount: number;
+        paymentAccountId: string;
+        apAccountId: string;
+      };
+    };
+
+    this.logger.log(
+      `[Job ${job.id}] Processing payment made journal posting for payment: ${paymentData.reference}`,
+    );
+
+    try {
+      // Mark as Processing
+      this.logger.debug(`[Job ${job.id}] Setting payment made ${paymentMadeId} to Processing state`);
+      await this.prisma.paymentMade.update({
+        where: { id: paymentMadeId },
+        data: { postingStatus: 'Processing' },
+      });
+
+      // Find accounts
+      const [apAccount, paymentAccount] = await Promise.all([
+        this.prisma.account.findUnique({
+          where: { id: paymentData.apAccountId },
+          select: { id: true },
+        }),
+        this.prisma.account.findUnique({
+          where: { id: paymentData.paymentAccountId },
+          select: { id: true },
+        }),
+      ]);
+
+      if (!apAccount) {
+        throw new Error(`Accounts Payable account not found for ID: ${paymentData.apAccountId}`);
+      }
+
+      if (!paymentAccount) {
+        throw new Error(`Payment account not found for ID: ${paymentData.paymentAccountId}`);
+      }
+
+      // Build journal lines
+      // Posting rule: Dr Accounts Payable = Cr Bank/Cash
+      const journalLines: Array<{
+        accountId: string;
+        debit: number;
+        credit: number;
+      }> = [];
+
+      // Dr Accounts Payable
+      journalLines.push({
+        accountId: apAccount.id,
+        debit: paymentData.amount,
+        credit: 0,
+      });
+
+      // Cr Bank/Cash Account
+      journalLines.push({
+        accountId: paymentAccount.id,
+        debit: 0,
+        credit: paymentData.amount,
+      });
+
+      // Validate journal balances
+      const totalDebit = journalLines.reduce((sum, line) => sum + line.debit, 0);
+      const totalCredit = journalLines.reduce((sum, line) => sum + line.credit, 0);
+
+      if (totalDebit !== totalCredit) {
+        const difference = totalDebit - totalCredit;
+        const errorMsg = `Journal entry does not balance. Debit: ${totalDebit}, Credit: ${totalCredit}, Difference: ${difference}. Amount: ${paymentData.amount}`;
+        throw new Error(errorMsg);
+      }
+
+      // Create journal entry in transaction
+      await this.prisma.$transaction(async (tx) => {
+        const journalRef = generateJournalReference('PMT');
+        const postedAt = new Date();
+
+        // Create journal
+        await tx.journal.create({
+          data: {
+            description: `Payment Made ${paymentData.reference} posted`,
+            date: postedAt,
+            reference: journalRef,
+            entityId: paymentData.entityId,
+            lines: journalLines,
+          },
+        });
+
+        // Get current account balances and update them
+        const updatedAccounts = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.update({
+              where: { id: line.accountId },
+              data: {
+                balance: {
+                  increment: line.debit - line.credit,
+                },
+              },
+              select: { balance: true },
+            }),
+          ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) =>
+            tx.accountTransaction.create({
+              data: {
+                date: postedAt,
+                description: `Payment Made ${paymentData.reference} posted to journal`,
+                reference: journalRef,
+                type: 'PAYMENT_MADE_POSTING',
+                status: 'Success',
+                accountId: line.accountId,
+                debitAmount: line.debit,
+                creditAmount: line.credit,
+                runningBalance: updatedAccounts[index].balance,
+                entityId: paymentData.entityId,
+                relatedEntityId: paymentMadeId,
+                relatedEntityType: 'PaymentMade',
+                metadata: {
+                  reference: paymentData.reference,
+                  journalReference: journalRef,
+                },
+              },
+            }),
+          ),
+        );
+
+        // Mark payment made as successfully posted with reference and timestamp
+        this.logger.debug(`[Job ${job.id}] Updating payment made ${paymentMadeId} with postingStatus=Success and reference=${journalRef}`);
+
+        const paymentUpdateResult = await tx.paymentMade.update({
+          where: { id: paymentMadeId },
+          data: {
+            postingStatus: 'Success',
+            journalReference: journalRef,
+            postedAt,
+          },
+        });
+
+        this.logger.debug(
+          `[Job ${job.id}] Payment Made updated. postingStatus=${paymentUpdateResult.postingStatus}, journalReference=${paymentUpdateResult.journalReference}`,
+        );
+
+        // UPDATE BILL STATUS based on total paid amount
+        if (paymentData.billId) {
+          const bill = await tx.bills.findUnique({
+            where: { id: paymentData.billId },
+          });
+
+          if (bill) {
+            // Calculate total paid for this bill
+            const totalPaidResult = await tx.paymentMade.aggregate({
+              where: { billId: paymentData.billId },
+              _sum: { amount: true },
+            });
+
+            const totalPaid = totalPaidResult._sum?.amount || 0;
+
+            // Determine new bill status
+            let newBillStatus: string;
+            if (totalPaid >= bill.total) {
+              newBillStatus = 'paid';
+            } else if (totalPaid > 0) {
+              newBillStatus = 'partial';
+            } else {
+              newBillStatus = 'unpaid';
+            }
+
+            // Update bill status
+            await tx.bills.update({
+              where: { id: paymentData.billId },
+              data: { status: newBillStatus as any },
+            });
+
+            this.logger.log(
+              `[Job ${job.id}] Bill ${paymentData.billId} status updated to ${newBillStatus}. Total paid: ${totalPaid}/${bill.total}`,
+            );
+          }
+        }
+      });
+
+      this.logger.log(
+        `[Job ${job.id}] Successfully posted payment made ${paymentData.reference} to journal`,
+      );
+
+      return { success: true, paymentMadeId };
+    } catch (error) {
+      this.logger.error(
+        `[Job ${job.id}] Failed to post payment made journal: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      // Update payment made posting status to Failed and store error details
+      try {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await this.prisma.paymentMade.update({
+          where: { id: paymentMadeId },
+          data: {
+            postingStatus: 'Failed',
+            errorMessage: errorMessage.substring(0, 500),
+            errorCode: 'JOURNAL_POSTING_FAILED',
+          },
+        });
+        this.logger.log(
+          `[Job ${job.id}] Payment Made ${paymentMadeId} marked as Failed with error stored`,
+        );
+      } catch (updateError) {
+        this.logger.error(
+          `[Job ${job.id}] Failed to update payment made status to Failed: ${updateError instanceof Error ? updateError.message : String(updateError)}`,
         );
       }
 

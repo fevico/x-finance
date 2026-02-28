@@ -101,6 +101,15 @@ export class CreateBillDto {
   @IsString()
   tax?: string;
 
+  @ApiPropertyOptional({
+    example: 'draft',
+    enum: ['draft', 'unpaid', 'partial', 'paid'],
+    description: 'Bill status (default: draft)',
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
   @ApiProperty({ example: 'acc-payable-123', description: 'Accounts payable account ID for this bill' })
   @IsOptional()
   @IsString()
@@ -216,6 +225,15 @@ export class UpdateBillDto {
   @IsOptional()
   @IsString()
   tax?: string;
+
+  @ApiPropertyOptional({
+    example: 'unpaid',
+    enum: ['draft', 'unpaid', 'partial', 'paid'],
+    description: 'Bill status',
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
 }
 
 export class BillDto extends CreateBillDto {
@@ -229,4 +247,23 @@ export class BillDto extends CreateBillDto {
 
   @ApiProperty({ example: '2025-12-24T00:00:00Z' })
   createdAt: string;
+
+  @ApiPropertyOptional({
+    example: 'Pending',
+    enum: ['Pending', 'Processing', 'Success', 'Failed'],
+    description: 'Journal posting status',
+  })
+  postingStatus?: string;
+
+  @ApiPropertyOptional({
+    example: 'BILL-JNL-20260228001',
+    description: 'Reference to the journal entry',
+  })
+  journalReference?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-02-28T10:30:00Z',
+    description: 'Timestamp when successfully posted to journal',
+  })
+  postedAt?: string;
 }

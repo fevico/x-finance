@@ -201,22 +201,29 @@ model InvoiceItem {
 }
 
 model PaymentMade {
-  id            String            @id @default(cuid())
-  vendorId      String
-  vendor        vendor            @relation(fields: [vendorId], references: [id])
-  billNumber    String?
-  paymentDate   DateTime
-  amount        String
-  paymentMethod PaymentMethod
-  entityId      String
-  entity        Entity            @relation(fields: [entityId], references: [id])
-  accountId     String
-  account       Account           @relation(fields: [accountId], references: [id])
-  reference     String?
-  note          String?
-  status        PaymentMadeStatus @default(Pending)
+  id                String               @id @default(cuid())
+  vendorId          String
+  vendor            vendor               @relation(fields: [vendorId], references: [id])
+  billId            String?
+  bill              Bills?               @relation(fields: [billId], references: [id], onDelete: SetNull)
+  paymentDate       DateTime
+  amount            Int
+  paymentMethod     PaymentMethod
+  entityId          String
+  entity            Entity               @relation(fields: [entityId], references: [id])
+  accountId         String
+  account           Account              @relation(fields: [accountId], references: [id])
+  reference         String?
+  note              String?
+  status            PaymentMadeStatus    @default(Pending)
+  postingStatus     JournalPostingStatus @default(Pending) // Journal posting status
+  journalReference  String? // Reference to the journal entry
+  postedAt          DateTime? // When successfully posted to journal
+  errorMessage      String? // Error details if posting failed
+  errorCode         String? // Error code for tracking
 
   @@index([entityId])
+  @@index([billId])
 }
 
 model vendor {
@@ -284,33 +291,38 @@ model PaymentReceived {
 }
 
 model Expenses {
-  id               String        @id @default(cuid())
-  date             DateTime
-  reference        String
-  vendorId         String?
-  vendor           vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  paymentMethod    PaymentMethod
-  paymentAccountId String
-  paymentAccount   Account       @relation("PaymentAccount", fields: [paymentAccountId], references: [id], onDelete: Restrict)
-  expenseAccountId String
-  expenseAccount   Account       @relation("ExpenseAccount", fields: [expenseAccountId], references: [id], onDelete: Restrict)
-  amount           Int
-  tax              String
-  description      String?
-  status           ExpenseStatus @default(pending)
-  tags             String[]
-  attachment       Json?
-  entityId         String
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @default(now()) @updatedAt
-  entity           Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  id                String               @id @default(cuid())
+  date              DateTime
+  reference         String
+  vendorId          String?
+  vendor            vendor?              @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  paymentMethod     PaymentMethod
+  paymentAccountId  String
+  paymentAccount    Account              @relation("PaymentAccount", fields: [paymentAccountId], references: [id], onDelete: Restrict)
+  expenseAccountId  String
+  expenseAccount    Account              @relation("ExpenseAccount", fields: [expenseAccountId], references: [id], onDelete: Restrict)
+  amount            Int
+  tax               String
+  description       String?
+  status            ExpenseStatus        @default(draft)
+  postingStatus     JournalPostingStatus @default(Pending) // Journal posting status
+  journalReference  String? // Reference to the journal entry
+  postedAt          DateTime? // When successfully posted to journal
+  errorMessage      String? // Error details if posting failed
+  errorCode         String? // Error code for tracking
+  tags              String[]
+  attachment        Json?
+  entityId          String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @default(now()) @updatedAt
+  entity            Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@index([reference, paymentAccountId])
   @@index([reference, expenseAccountId])
 }
 
 model Bills {
-  id                String          @id @default(cuid())
+  id                String               @id @default(cuid())
   billDate          DateTime
   billNumber        String?
   vendorId          String
@@ -326,15 +338,21 @@ model Bills {
   notes             String?
   attachment        Json?
   accountsPayableId String
-  status            BillStatus      @default(unpaid)
-  items             Json // Array of {name, rate, quantity, total, createdAt, updatedAt}
+  status            BillStatus           @default(draft)
+  postingStatus     JournalPostingStatus @default(Pending) // Journal posting status
+  journalReference  String? // Reference to the journal entry
+  postedAt          DateTime? // When successfully posted to journal
+  errorMessage      String? // Error details if posting failed
+  errorCode         String? // Error code for tracking
+  items             Json // Array of {name, rate, quantity, total, expenseAccountId, createdAt, updatedAt}
   entityId          String
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @default(now()) @updatedAt
-  entity            Entity          @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  vendor            vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @default(now()) @updatedAt
+  entity            Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  vendor            vendor               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   paymentRecord     PaymentRecord[]
-  accountsPayable   Account         @relation(fields: [accountsPayableId], references: [id], onDelete: Restrict)
+  paymentsMade      PaymentMade[]
+  accountsPayable   Account              @relation(fields: [accountsPayableId], references: [id], onDelete: Restrict)
 
   @@index([billDate, category])
 }
@@ -832,10 +850,10 @@ enum ItemsType {
 }
 
 enum BillStatus {
-  paid
+  draft
   unpaid
   partial
-  pending
+  paid
 }
 
 enum vendorStatus {
@@ -844,7 +862,6 @@ enum vendorStatus {
 }
 
 enum ExpenseStatus {
-  pending
   draft
   approved
   rejected
@@ -901,6 +918,7 @@ enum AccountTransactionType {
   JOURNAL_ENTRY
   EXPENSE_POSTING
   BILL_POSTING
+  PAYMENT_MADE_POSTING
 }
 
 enum TransactionPostingStatus {

@@ -1,15 +1,20 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { ExpenseStatus } from './../../../prisma/generated/enums';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreateExpenseDto } from './dto/expense.dto';
 import { GetExpensesQueryDto } from './dto/get-expenses-query.dto';
 import { FileuploadService } from '@/fileupload/fileupload.service';
+import { BullmqService } from '@/bullmq/bullmq.service';
 import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 
 @Injectable()
 export class ExpensesService {
+  private readonly logger = new Logger(ExpensesService.name);
+
   constructor(
     private prisma: PrismaService,
     private fileuploadService: FileuploadService,
+    private bullmqService: BullmqService,
   ) {}
 
   async createExpense(
@@ -59,8 +64,7 @@ export class ExpensesService {
         );
       }
 
-
-       const paymentAccountId = body.paymentAccountId;
+      const paymentAccountId = body.paymentAccountId;
       if (!paymentAccountId) {
         throw new HttpException(
           'Payment account is required',
@@ -93,10 +97,12 @@ export class ExpensesService {
       }
 
       const reference = generateRandomInvoiceNumber({ prefix: 'EXP' });
+      const status = body.status || 'draft' as any;
 
       const expense = await this.prisma.expenses.create({
         data: {
           ...body,
+          status,
           expenseAccountId,
           paymentAccountId,
           reference,
@@ -118,6 +124,35 @@ export class ExpensesService {
           },
         },
       });
+
+      // Queue posting job ONLY if status is approved
+      if (status === 'approved') {
+        try {
+          await this.bullmqService.addJob('post-expense-journal', {
+            expenseId: expense.id,
+            expenseData: {
+              reference: expense.reference,
+              entityId,
+              amount: expense.amount,
+              tax: parseInt(expense.tax) || 0,
+              expenseAccountId: expense.expenseAccountId,
+              paymentAccountId: expense.paymentAccountId,
+            },
+          });
+          this.logger.log(
+            `Queued journal posting job for expense ${expense.reference}`,
+          );
+        } catch (queueError) {
+          this.logger.error(
+            `Failed to queue expense journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          );
+          throw new HttpException(
+            `Failed to queue journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
       return expense;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -198,7 +233,7 @@ export class ExpensesService {
         );
       }
 
-      if (expense.status !== 'pending') {
+      if (expense.status !== 'draft') {
         throw new HttpException(
           `Cannot approve expense with status: ${expense.status}`,
           HttpStatus.BAD_REQUEST,
@@ -220,6 +255,32 @@ export class ExpensesService {
           },
         },
       });
+
+      // Queue posting job
+      try {
+        await this.bullmqService.addJob('post-expense-journal', {
+          expenseId: updatedExpense.id,
+          expenseData: {
+            reference: updatedExpense.reference,
+            entityId,
+            amount: updatedExpense.amount,
+            tax: parseInt(updatedExpense.tax) || 0,
+            expenseAccountId: updatedExpense.expenseAccountId,
+            paymentAccountId: updatedExpense.paymentAccountId,
+          },
+        });
+        this.logger.log(
+          `Queued journal posting job for expense ${updatedExpense.reference}`,
+        );
+      } catch (queueError) {
+        this.logger.error(
+          `Failed to queue expense journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+        );
+        throw new HttpException(
+          `Failed to queue journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       return updatedExpense;
     } catch (error) {
@@ -337,6 +398,30 @@ export class ExpensesService {
         },
       });
 
+      // Check if status changed to approved and queue posting
+      if (body.status && body.status !== expense.status && body.status === 'approved') {
+        try {
+          await this.bullmqService.addJob('post-expense-journal', {
+            expenseId: updatedExpense.id,
+            expenseData: {
+              reference: updatedExpense.reference,
+              entityId,
+              amount: updatedExpense.amount,
+              tax: parseInt(updatedExpense.tax) || 0,
+              expenseAccountId: updatedExpense.expenseAccountId,
+              paymentAccountId: updatedExpense.paymentAccountId,
+            },
+          });
+          this.logger.log(
+            `Queued journal posting job for expense ${updatedExpense.reference}`,
+          );
+        } catch (queueError) {
+          this.logger.error(
+            `Failed to queue expense journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          );
+        }
+      }
+
       return updatedExpense;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -375,6 +460,222 @@ export class ExpensesService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * Update expense status with validation and posting logic
+   */
+  async updateExpenseStatus(expenseId: string, entityId: string, newStatus: string) {
+    try {
+      const expense = await this.prisma.expenses.findUnique({
+        where: { id: expenseId },
+      });
+
+      if (!expense) {
+        throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (expense.entityId !== entityId) {
+        throw new HttpException(
+          'You do not have permission to update this expense',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      // Validate status transitions
+      if (newStatus === 'approved' && expense.status !== 'draft') {
+        throw new HttpException(
+          `Cannot approve expense with status: ${expense.status}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (newStatus === 'rejected' && expense.status !== 'draft') {
+        throw new HttpException(
+          `Cannot reject expense with status: ${expense.status}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const updatedExpense = await this.prisma.expenses.update({
+        where: { id: expenseId },
+        data: { status: newStatus as any },
+        include: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          paymentAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          vendor: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+
+      // Queue posting if status is now approved
+      if (newStatus === 'approved') {
+        try {
+          await this.bullmqService.addJob('post-expense-journal', {
+            expenseId: updatedExpense.id,
+            expenseData: {
+              reference: updatedExpense.reference,
+              entityId,
+              amount: updatedExpense.amount,
+              tax: parseInt(updatedExpense.tax) || 0,
+              expenseAccountId: updatedExpense.expenseAccountId,
+              paymentAccountId: updatedExpense.paymentAccountId,
+            },
+          });
+          this.logger.log(
+            `Queued journal posting job for expense ${updatedExpense.reference}`,
+          );
+        } catch (queueError) {
+          this.logger.error(
+            `Failed to queue expense journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          );
+          throw new HttpException(
+            `Failed to queue journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      return updatedExpense;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        `Update status failed: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * Get all failed expense postings for an entity
+   */
+  async getFailedExpenses(entityId: string, page = 1, limit = 10): Promise<any> {
+    const skip = (page - 1) * limit;
+
+    const [expenses, total] = await Promise.all([
+      this.prisma.expenses.findMany({
+        where: {
+          entityId,
+          postingStatus: 'Failed',
+        },
+        include: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          paymentAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          vendor: {
+            select: { id: true, name: true },
+          },
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+        skip,
+        take: Number(limit),
+      }),
+      this.prisma.expenses.count({
+        where: {
+          entityId,
+          postingStatus: 'Failed',
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      expenses,
+      total,
+      currentPage: page,
+      pageSize: limit,
+      totalPages,
+    };
+  }
+
+  /**
+   * Retry failed expense journal posting
+   */
+  async retryFailedExpense(expenseId: string, entityId: string): Promise<any> {
+    try {
+      const expense = await this.prisma.expenses.findUnique({
+        where: { id: expenseId },
+      });
+
+      if (!expense || expense.entityId !== entityId) {
+        throw new HttpException('Expense not found for this entity', HttpStatus.NOT_FOUND);
+      }
+
+      if (expense.postingStatus !== 'Failed') {
+        throw new HttpException(
+          `Expense posting status is ${expense.postingStatus}, only failed postings can be retried`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Reset to Pending and queue the job
+      await this.prisma.expenses.update({
+        where: { id: expenseId },
+        data: {
+          postingStatus: 'Pending',
+          errorMessage: null,
+          errorCode: null,
+        },
+      });
+
+      // Queue posting job
+      try {
+        await this.bullmqService.addJob('post-expense-journal', {
+          expenseId: expense.id,
+          expenseData: {
+            reference: expense.reference,
+            entityId,
+            amount: expense.amount,
+            tax: parseInt(expense.tax) || 0,
+            expenseAccountId: expense.expenseAccountId,
+            paymentAccountId: expense.paymentAccountId,
+          },
+        });
+        this.logger.log(
+          `Requeued journal posting job for failed expense ${expense.reference}`,
+        );
+      } catch (queueError) {
+        this.logger.error(
+          `Failed to queue expense journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+        );
+        throw new HttpException(
+          `Failed to queue journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return this.prisma.expenses.findUnique({
+        where: { id: expenseId },
+        include: {
+          expenseAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          paymentAccount: {
+            select: { id: true, name: true, code: true },
+          },
+          vendor: {
+            select: { id: true, name: true },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        `Retry failed: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

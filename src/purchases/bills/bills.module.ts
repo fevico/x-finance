@@ -5,9 +5,10 @@ import { PrismaModule } from '@/prisma/prisma.module';
 import { FileuploadModule } from '@/fileupload/fileupload.module';
 import { JournalModule } from '@/accounts/journal/journal.module';
 import { AuthService } from '@/auth/auth.service';
+import { BullmqModule } from '@/bullmq/bullmq.module';
 
 @Module({
-  imports: [PrismaModule, FileuploadModule, JournalModule],
+  imports: [PrismaModule, FileuploadModule, JournalModule, BullmqModule],
   controllers: [BillsController],
   providers: [BillsService, AuthService],
 })

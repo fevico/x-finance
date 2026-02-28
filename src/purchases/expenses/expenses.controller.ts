@@ -12,6 +12,7 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ExpensesService } from './expenses.service';
@@ -29,6 +30,9 @@ import {
   ApiUnauthorizedResponse,
   ApiConsumes,
   ApiBody,
+  ApiNotFoundResponse,
+  ApiBadRequestResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 
 @ApiTags('Expenses')
@@ -165,5 +169,92 @@ export class ExpensesController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.expensesService.deleteExpense(expenseId, entityId);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Update expense status (draft → approved/rejected)',
+    description: 'Update expense status. draft → approved triggers journal posting',
+  })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          enum: ['draft', 'approved', 'rejected'],
+          description: 'New status',
+        },
+      },
+      required: ['status'],
+    },
+  })
+  @ApiOkResponse({ description: 'Status updated successfully' })
+  @ApiNotFoundResponse({ description: 'Expense not found' })
+  @ApiBadRequestResponse({ description: 'Invalid status transition' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async updateExpenseStatus(
+    @Req() req,
+    @Param('id') expenseId: string,
+    @Body() body: { status: string },
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    if (!body.status) throw new BadRequestException('Status is required');
+    return this.expensesService.updateExpenseStatus(
+      expenseId,
+      entityId,
+      body.status,
+    );
+  }
+
+  @Get('failed/list')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Get all failed expense postings' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({
+    description: 'Failed expenses retrieved successfully',
+  })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async getFailedExpenses(
+    @Req() req,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.expensesService.getFailedExpenses(
+      entityId,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+  @Post(':id/retry-posting')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Retry failed expense journal posting',
+    description:
+      'Requeue a failed expense posting job. Only works for expenses with Failed posting status.',
+  })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Reposting job queued successfully' })
+  @ApiNotFoundResponse({ description: 'Expense not found' })
+  @ApiBadRequestResponse({
+    description:
+      'Expense posting is not in Failed status or requeuing failed',
+  })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async retryFailedExpense(@Req() req, @Param('id') expenseId: string) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.expensesService.retryFailedExpense(expenseId, entityId);
   }
 }
