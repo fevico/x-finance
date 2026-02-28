@@ -1,0 +1,34 @@
+Invoice
+
+1. Calculate item total: rate × quantity per item
+2. Sum all items → subtotal
+3. Apply tax if ANY item has taxable=true
+   tax = subtotal × 0.1  // Example
+4. Total = subtotal + tax
+5. Create invoice + invoice items in transaction
+6. Log activity: "Invoice created" with status
+
+
+
+FROM Items, determine if Product or Service:
+
+For PRODUCT items (type="product"):
+  ✓ Revenue Account: Product Sales Revenue (4110)
+  ✓ If trackInventory=true: COGS posting
+  
+For SERVICE items (type="service"):
+  ✓ Revenue Account: Service Revenue (4120)
+  ✓ No COGS (no inventory)
+
+Journal Entries:
+─────────────────────────────────────────
+Dr Accounts Receivable (1100)           = Total
+  Cr Product Sales Revenue (4110)       = Net (if product)
+  OR
+  Cr Service Revenue (4120)             = Net (if service)
+  Cr VAT Payable (2100)                 = Tax (if tax > 0)
+
+IF inventory + COGS enabled:
+Dr COGS (5000)                          = Sum(costPrice × qty for products)
+  Cr Inventory (1200)                   = Same amount
+─────────────────────────────────────────

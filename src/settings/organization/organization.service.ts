@@ -62,7 +62,7 @@ export class OrganizationService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -108,7 +108,7 @@ export class OrganizationService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.BAD_REQUEST,
       );
     }

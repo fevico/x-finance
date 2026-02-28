@@ -34,7 +34,7 @@ export class PaymentMadeService {
       return paymentMade;
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -49,7 +49,7 @@ export class PaymentMadeService {
       return entityPaymentmade;
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

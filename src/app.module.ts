@@ -24,6 +24,7 @@ import { AccountSubCategoryModule } from './accounts/account-subcategory/account
 import { JournalModule } from './accounts/journal/journal.module';
 import { LogModule } from './log/log.module';
 import { BudgetModule } from './accounts/budget/budget.module';
+import { OpeningBalanceModule } from './accounts/opening-balance/opening-balance.module';
 import { AttendanceModule } from './hr-payroll/attendance/attendance.module';
 import { EmployeeModule } from './hr-payroll/employee/employee.module';
 import { BullmqModule } from './bullmq/bullmq.module';
@@ -31,6 +32,7 @@ import { PaymentReceivedModule } from './sales/payment-received/payment-received
 import { LeaveModule } from './hr-payroll/leave/leave.module';
 import { OrganizationModule } from './settings/organization/organization.module';
 import { PaymentMadeModule } from './purchases/payment-made/payment-made.module';
+import { AccountTransactionModule } from './accounts/account-transaction/account-transaction.module';
 
 @Module({
   imports: [
@@ -56,6 +58,7 @@ import { PaymentMadeModule } from './purchases/payment-made/payment-made.module'
     JournalModule,
     LogModule,
     BudgetModule,
+    OpeningBalanceModule,
     AttendanceModule,
     EmployeeModule,
     BullmqModule,
@@ -64,6 +67,7 @@ import { PaymentMadeModule } from './purchases/payment-made/payment-made.module'
     OrganizationModule,
     PaymentMadeModule,
     BankingModule,
+    AccountTransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

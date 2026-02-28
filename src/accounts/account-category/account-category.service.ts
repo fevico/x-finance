@@ -57,7 +57,7 @@ export class AccountCategoryService {
       return nextCode.toString();
     } catch (error) {
       throw new HttpException(
-        `Failed to generate category code: ${error.message}`,
+        `Failed to generate category code: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -106,7 +106,7 @@ export class AccountCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to create account category: ${error.message}`,
+        `Failed to create account category: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -121,7 +121,7 @@ export class AccountCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account categories: ${error.message}`,
+        `Failed to fetch account categories: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -136,7 +136,7 @@ export class AccountCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account categories: ${error.message}`,
+        `Failed to fetch account categories: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -159,7 +159,7 @@ export class AccountCategoryService {
       return category;
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account category: ${error.message}`,
+        `Failed to fetch account category: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -186,7 +186,7 @@ export class AccountCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to update account category: ${error.message}`,
+        `Failed to update account category: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -211,7 +211,7 @@ export class AccountCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to delete account category: ${error.message}`,
+        `Failed to delete account category: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

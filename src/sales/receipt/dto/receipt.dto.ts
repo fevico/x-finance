@@ -48,6 +48,13 @@ export class CreateReceiptDto {
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
 
+  @ApiProperty({ 
+    example: 'acct_123', 
+    description: 'Account ID where cash is deposited (Cash/Bank account 1010/1000)' 
+  })
+  @IsString()
+  depositTo: string;
+
   @ApiProperty({ type: [ReceiptItemDto], description: 'List of items' })
   @IsArray()
   @ValidateNested({ each: true })
@@ -94,6 +101,14 @@ export class UpdateReceiptDto {
   @IsOptional()
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
+
+  @ApiPropertyOptional({ 
+    example: 'acct_123', 
+    description: 'Account ID where cash is deposited (Cash/Bank account 1010/1000)' 
+  })
+  @IsOptional()
+  @IsString()
+  depositTo?: string;
 
   @ApiPropertyOptional({ type: [ReceiptItemDto], description: 'List of items' })
   @IsOptional()

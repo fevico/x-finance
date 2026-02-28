@@ -64,7 +64,7 @@ export class AttendanceService {
       return result;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -99,7 +99,7 @@ export class AttendanceService {
       return attendanceLog;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -138,7 +138,7 @@ export class AttendanceService {
         },
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -169,7 +169,7 @@ export class AttendanceService {
       return attendance;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -218,7 +218,7 @@ export class AttendanceService {
       return updatedAttendance;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -249,7 +249,7 @@ export class AttendanceService {
       return { success: true, message: 'Attendance log deleted successfully' };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -409,7 +409,7 @@ export class AttendanceService {
         },
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 }

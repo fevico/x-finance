@@ -107,7 +107,7 @@ export class BankingService {
         },
         include: {
           linkedAccount: true,
-          transactions: {
+          accountTransactions: {
             orderBy: { date: 'desc' },
             take: 5,
           },
@@ -139,7 +139,7 @@ export class BankingService {
       where: { id },
       include: {
         linkedAccount: true,
-        transactions: {
+        accountTransactions: {
           orderBy: { date: 'desc' },
           take: 20,
         },
@@ -203,7 +203,7 @@ export class BankingService {
     const bankAccount = await this.prisma.bankAccount.findUnique({
       where: { id },
       include: {
-        transactions: true,
+        accountTransactions: true,
       },
     });
 
@@ -215,7 +215,7 @@ export class BankingService {
       throw new ForbiddenException('Access denied');
     }
 
-    if (bankAccount.transactions.length > 0) {
+    if (bankAccount.accountTransactions.length > 0) {
       throw new BadRequestException(
         'Cannot delete bank account with existing transactions',
       );
@@ -245,12 +245,15 @@ export class BankingService {
       amount: number;
       type: 'credit' | 'debit';
       reference?: string;
+      payee?: string;
+      method?: string;
       metadata?: any;
     },
     effectiveEntityId: any,
   ) {
     const bankAccount = await this.prisma.bankAccount.findUnique({
       where: { id: bankAccountId },
+      include: { linkedAccount: true },
     });
 
     if (!bankAccount) {
@@ -268,12 +271,24 @@ export class BankingService {
         : -transactionData.amount;
     const newBalance = bankAccount.currentBalance + balanceChange;
 
-    // Create transaction and update balance
-    const [transaction] = await Promise.all([
-      this.prisma.bankTransaction.create({
+    // Create account transaction record
+    const [accountTransaction] = await Promise.all([
+      this.prisma.accountTransaction.create({
         data: {
-          ...transactionData,
-          bankAccountId,
+          date: transactionData.date,
+          description: transactionData.description,
+          reference: transactionData.reference,
+          type: 'BANK',
+          status: 'Success',
+          accountId: bankAccount.linkedAccountId,
+          debitAmount: transactionData.type === 'debit' ? transactionData.amount : 0,
+          creditAmount: transactionData.type === 'credit' ? transactionData.amount : 0,
+          runningBalance: newBalance,
+          payee: transactionData.payee,
+          method: transactionData.method,
+          entityId: effectiveEntityId,
+          bankAccountId: bankAccountId,
+          metadata: transactionData.metadata || {},
         },
       }),
       this.prisma.bankAccount.update({
@@ -284,7 +299,7 @@ export class BankingService {
       }),
     ]);
 
-    return transaction;
+    return accountTransaction;
   }
 
   async getTransactions(
@@ -308,17 +323,28 @@ export class BankingService {
     const skip = (page - 1) * pageSize;
 
     const [transactions, total] = await Promise.all([
-      this.prisma.bankTransaction.findMany({
+      this.prisma.accountTransaction.findMany({
         where: {
           bankAccountId,
+          entityId: effectiveEntityId,
         },
         skip,
         take: pageSize,
         orderBy: { date: 'desc' },
+        include: {
+          account: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
+        },
       }),
-      this.prisma.bankTransaction.count({
+      this.prisma.accountTransaction.count({
         where: {
           bankAccountId,
+          entityId: effectiveEntityId,
         },
       }),
     ]);

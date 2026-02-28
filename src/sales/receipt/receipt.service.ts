@@ -1,25 +1,56 @@
 import { PrismaService } from '@/prisma/prisma.service';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { CreateReceiptDto, UpdateReceiptDto } from './dto/receipt.dto';
 import { GetReceiptsQueryDto } from './dto/get-receipts-query.dto';
 import { GetReceiptsResponseDto } from './dto/get-receipts-response.dto';
 import { ReceiptStatus, PaymentMethod } from 'prisma/generated/enums';
 import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
+import { BullmqService } from '@/bullmq/bullmq.service';
 
 @Injectable()
 export class ReceiptService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ReceiptService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private bullmqService: BullmqService,
+  ) {}
 
   async createReceipt(body: CreateReceiptDto, entityId: string) {
     try {
       const receiptNumber = generateRandomInvoiceNumber({ prefix: 'RCT' });
-      const { items, ...receiptData } = body;
+      const { items, depositTo, ...receiptData } = body;
+
+      if (!depositTo) {
+        throw new BadRequestException('depositTo (cash/bank account) is required');
+      }
+
+      // Fetch item details to check for taxable items and determine type
+      const itemDetails =
+        items && items.length > 0
+          ? await this.prisma.items.findMany({
+              where: {
+                id: { in: items.map((i) => i.itemId) },
+                entityId,
+              },
+              select: {
+                id: true,
+                taxable: true,
+                type: true,
+              },
+            })
+          : [];
 
       // Calculate item totals and receipt totals
       let subtotal = 0;
+      let hasTaxableItems = false;
       const receiptItemsData = (items || []).map((item) => {
+        const itemDetail = itemDetails.find((i) => i.id === item.itemId);
         const total = item.rate * item.quantity;
         subtotal += total;
+        if (itemDetail?.taxable) {
+          hasTaxableItems = true;
+        }
         return {
           itemId: item.itemId,
           rate: item.rate,
@@ -27,7 +58,9 @@ export class ReceiptService {
           total,
         };
       });
-      const tax = 0; // Add tax logic if needed
+      
+      // Calculate tax only if there are taxable items (10% like invoices)
+      const tax = hasTaxableItems ? Math.round(0.1 * subtotal) : 0;
       const total = subtotal + tax;
 
       // Create receipt and items in a transaction
@@ -40,6 +73,7 @@ export class ReceiptService {
             subtotal,
             tax,
             total,
+            depositTo,
           },
           include: {
             receiptItem: { include: { item: true } },
@@ -61,9 +95,40 @@ export class ReceiptService {
 
         return { ...receipt, receiptItem: receiptItems };
       });
+
+      // Queue posting job if status is Completed
+      if (receiptData.status === ReceiptStatus.Completed) {
+        try {
+          await this.bullmqService.addJob('post-receipt-journal', {
+            receiptId: result.id,
+            receiptData: {
+              receiptNumber: result.receiptNumber,
+              entityId,
+              subtotal,
+              tax,
+              total,
+              depositTo,
+              items: receiptItemsData,
+            },
+          });
+          this.logger.log(
+            `Queued journal posting job for receipt ${result.receiptNumber}`,
+          );
+        } catch (queueError) {
+          this.logger.error(
+            `Failed to queue receipt journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          );
+          // Don't throw - receipt is already created, job will retry
+        }
+      }
+
       return result;
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_GATEWAY);
+      if (error instanceof BadRequestException) throw error;
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_GATEWAY,
+      );
     }
   }
 
@@ -171,7 +236,7 @@ export class ReceiptService {
         limit,
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -199,7 +264,7 @@ export class ReceiptService {
       return receipt;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -278,7 +343,7 @@ export class ReceiptService {
       return updatedReceipt;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -286,6 +351,7 @@ export class ReceiptService {
     try {
       const receipt = await this.prisma.receipt.findUnique({
         where: { id: receiptId },
+        include: { receiptItem: { include: { item: true } } },
       });
 
       if (!receipt) {
@@ -314,10 +380,46 @@ export class ReceiptService {
         },
       });
 
+      // Queue posting job if transitioning to Completed
+      if (receipt.status !== ReceiptStatus.Completed && newStatus === ReceiptStatus.Completed) {
+        try {
+          const itemsForPosting = receipt.receiptItem.map((ri) => ({
+            itemId: ri.itemId,
+            quantity: ri.quantity,
+            rate: ri.rate,
+            total: ri.total,
+          }));
+
+          await this.bullmqService.addJob('post-receipt-journal', {
+            receiptId,
+            receiptData: {
+              receiptNumber: receipt.receiptNumber,
+              entityId,
+              subtotal: receipt.subtotal,
+              tax: receipt.tax,
+              total: receipt.total,
+              depositTo: receipt.depositTo,
+              items: itemsForPosting,
+            },
+          });
+          this.logger.log(
+            `Queued journal posting job for receipt ${receipt.receiptNumber}`,
+          );
+        } catch (queueError) {
+          this.logger.error(
+            `Failed to queue receipt journal posting: ${queueError instanceof Error ? queueError.message : String(queueError)}`,
+          );
+          // Don't throw - receipt status is already updated, job will retry
+        }
+      }
+
       return updatedReceipt;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

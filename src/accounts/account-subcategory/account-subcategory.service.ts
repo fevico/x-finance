@@ -56,7 +56,7 @@ export class AccountSubCategoryService {
       return nextCode.toString();
     } catch (error) {
       throw new HttpException(
-        `Failed to generate subcategory code: ${error.message}`,
+        `Failed to generate subcategory code: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -104,7 +104,7 @@ export class AccountSubCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to create account subcategory: ${error.message}`,
+        `Failed to create account subcategory: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -119,7 +119,7 @@ export class AccountSubCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account subcategories: ${error.message}`,
+        `Failed to fetch account subcategories: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -142,7 +142,7 @@ export class AccountSubCategoryService {
       return subCategory;
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account subcategory: ${error.message}`,
+        `Failed to fetch account subcategory: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -157,7 +157,7 @@ export class AccountSubCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to update account subcategory: ${error.message}`,
+        `Failed to update account subcategory: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -170,7 +170,7 @@ export class AccountSubCategoryService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to delete account subcategory: ${error.message}`,
+        `Failed to delete account subcategory: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -14,7 +14,7 @@ import {
 import { InvoiceService } from './invoice.service';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
-import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/invoice.dto';
+import { CreateInvoiceDto, UpdateInvoiceDto, UpdateInvoiceStatusDto } from './dto/invoice.dto';
 import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
 import { GetPaidInvoicesQueryDto } from './dto/get-paid-invoices-query.dto';
 import { GetEntityInvoicesResponseDto } from './dto/get-entity-invoices-response.dto';
@@ -44,7 +44,8 @@ export class InvoiceController {
   @ApiUnauthorizedResponse({ description: 'Access denied' })
   async createInvoice(@Body() body: CreateInvoiceDto, @Req() req) {
     const entityId = getEffectiveEntityId(req);
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
+    // console.log(`${req.user} Creating invoice for entity:`, entityId, 'by user:', userId);
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.createInvoice(body, entityId, userId);
   }
@@ -73,7 +74,6 @@ export class InvoiceController {
   async getInvoices(@Req() req, @Query() query: GetInvoicesQueryDto) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    console.log('hheh')
     return this.invoiceService.getEntityInvoice(entityId, query);
   }
 
@@ -128,9 +128,33 @@ export class InvoiceController {
     @Body() body: UpdateInvoiceDto,
   ) {
     const entityId = getEffectiveEntityId(req);
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.updateInvoice(invoiceId, entityId, body, userId);
+  }
+
+  @Patch(':invoiceId/status')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Update invoice status (Draft → Sent with automatic journal posting)' })
+  @ApiParam({ name: 'invoiceId', description: 'Invoice ID', type: 'string' })
+  @ApiBody({ type: UpdateInvoiceStatusDto })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ description: 'Invoice status updated successfully and posted to journal if applicable' })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  @ApiNotFoundResponse({ description: 'Invoice not found' })
+  @ApiForbiddenResponse({
+    description: 'You do not have permission to update this invoice',
+  })
+  async updateInvoiceStatus(
+    @Req() req,
+    @Param('invoiceId') invoiceId: string,
+    @Body() body: UpdateInvoiceStatusDto,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    const userId = req.user?.userId;
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+    return this.invoiceService.updateInvoiceStatus(invoiceId, entityId, body.status, userId);
   }
 
   @Delete(':invoiceId')
@@ -147,7 +171,7 @@ export class InvoiceController {
   })
   async deleteInvoice(@Req() req, @Param('invoiceId') invoiceId: string) {
     const entityId = getEffectiveEntityId(req);
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!entityId) throw new UnauthorizedException('Access denied!');
     return this.invoiceService.deleteInvoice(invoiceId, entityId, userId);
   }

@@ -61,7 +61,7 @@ export class AccountService {
       return `${baseCode}-01`;
     } catch (error) {
       throw new HttpException(
-        `Failed to generate account code: ${error.message}`,
+        `Failed to generate account code: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -102,7 +102,7 @@ export class AccountService {
       return account;
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -224,7 +224,7 @@ export class AccountService {
       };
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -308,7 +308,7 @@ export class AccountService {
       throw error instanceof HttpException
         ? error
         : new HttpException(
-            `${error.message}`,
+            `${error instanceof Error ? error.message : String(error)}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
     }
@@ -363,7 +363,7 @@ export class AccountService {
       throw error instanceof HttpException
         ? error
         : new HttpException(
-            `${error.message}`,
+            `${error instanceof Error ? error.message : String(error)}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
     }
@@ -402,7 +402,7 @@ export class AccountService {
       throw error instanceof HttpException
         ? error
         : new HttpException(
-            `${error.message}`,
+            `${error instanceof Error ? error.message : String(error)}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
     }

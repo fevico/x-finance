@@ -71,7 +71,7 @@ export class LeaveService {
       return leave;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -148,7 +148,7 @@ export class LeaveService {
         },
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -175,7 +175,7 @@ export class LeaveService {
       return leave;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -234,7 +234,7 @@ export class LeaveService {
       return updatedLeave;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -262,7 +262,7 @@ export class LeaveService {
       return { success: true, message: 'Leave record deleted successfully' };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -303,7 +303,7 @@ export class LeaveService {
       return updatedLeave;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 }

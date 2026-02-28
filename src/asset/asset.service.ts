@@ -38,7 +38,7 @@ export class AssetService {
       return assest;
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -77,7 +77,7 @@ export class AssetService {
     } catch (error) {
       console.error('Asset overview failed:', error);
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

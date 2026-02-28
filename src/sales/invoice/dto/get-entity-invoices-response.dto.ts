@@ -13,9 +13,6 @@ export class InvoiceStatsDto {
 
 export class InvoiceAggregatesDto {
   @ApiProperty({ type: InvoiceStatsDto })
-  pending: InvoiceStatsDto;
-
-  @ApiProperty({ type: InvoiceStatsDto })
   sent: InvoiceStatsDto;
 
   @ApiProperty({ type: InvoiceStatsDto })
@@ -41,7 +38,7 @@ export class InvoiceWithCustomerDto {
   @ApiProperty({ example: 'Acme Corp', description: 'Customer name' })
   customerName: string;
 
-  @ApiProperty({ example: 'Pending', description: 'Invoice status' })
+  @ApiProperty({ example: 'Sent', description: 'Invoice status' })
   status: string;
 
   @ApiProperty({ example: 5000, description: 'Invoice total amount' })

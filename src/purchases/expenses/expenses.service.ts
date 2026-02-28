@@ -121,7 +121,7 @@ export class ExpensesService {
       return expense;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -177,7 +177,7 @@ export class ExpensesService {
         limit,
       };
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -224,7 +224,7 @@ export class ExpensesService {
       return updatedExpense;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -340,7 +340,7 @@ export class ExpensesService {
       return updatedExpense;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -374,7 +374,7 @@ export class ExpensesService {
       return { message: 'Expense deleted successfully' };
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException(`${error.message}`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`${error instanceof Error ? error.message : String(error)}`, HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -136,6 +136,8 @@ export class BankingController {
         amount: { type: 'number' },
         type: { enum: ['credit', 'debit'] },
         reference: { type: 'string' },
+        payee: { type: 'string', description: 'Payee or payor name' },
+        method: { type: 'string', description: 'Payment method (ACH, Wire, Check, Card, Transfer, Other)' },
         metadata: { type: 'object' },
       },
       required: ['date', 'description', 'amount', 'type'],
@@ -152,6 +154,8 @@ export class BankingController {
       amount: number;
       type: 'credit' | 'debit';
       reference?: string;
+      payee?: string;
+      method?: string;
       metadata?: any;
     },
 @Req() req: any,) {

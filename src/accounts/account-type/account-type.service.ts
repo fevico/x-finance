@@ -16,7 +16,7 @@ export class AccountTypeService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to create account type: ${error.message}`,
+        `Failed to create account type: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -29,7 +29,7 @@ export class AccountTypeService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account types: ${error.message}`,
+        `Failed to fetch account types: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -49,7 +49,7 @@ export class AccountTypeService {
       return accountType;
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account type: ${error.message}`,
+        `Failed to fetch account type: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -62,7 +62,7 @@ export class AccountTypeService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to fetch account type: ${error.message}`,
+        `Failed to fetch account type: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -76,7 +76,7 @@ export class AccountTypeService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to update account type: ${error.message}`,
+        `Failed to update account type: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -89,7 +89,7 @@ export class AccountTypeService {
       });
     } catch (error) {
       throw new HttpException(
-        `Failed to delete account type: ${error.message}`,
+        `Failed to delete account type: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

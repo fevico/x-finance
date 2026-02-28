@@ -1,6 +1,6 @@
-import { IsString, IsInt, IsDate, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsInt, IsDate, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaymentMethod, PaymentReceivedStatus } from 'prisma/generated/enums';
+import { PaymentMethod } from 'prisma/generated/enums';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePaymentReceivedDto {
@@ -46,15 +46,6 @@ export class CreatePaymentReceivedDto {
   @IsOptional()
   @IsString()
   note?: string;
-
-  @ApiPropertyOptional({
-    example: PaymentReceivedStatus.Paid,
-    enum: PaymentReceivedStatus,
-    description: 'Payment status',
-  })
-  @IsOptional()
-  @IsEnum(PaymentReceivedStatus)
-  status?: PaymentReceivedStatus;
 }
 
 export class UpdatePaymentReceivedDto {
@@ -101,15 +92,6 @@ export class UpdatePaymentReceivedDto {
   @IsOptional()
   @IsString()
   note?: string;
-
-  @ApiPropertyOptional({
-    example: PaymentReceivedStatus.Partial,
-    enum: PaymentReceivedStatus,
-    description: 'Payment status',
-  })
-  @IsOptional()
-  @IsEnum(PaymentReceivedStatus)
-  status?: PaymentReceivedStatus;
 }
 
 export class PaymentReceivedResponseDto extends CreatePaymentReceivedDto {

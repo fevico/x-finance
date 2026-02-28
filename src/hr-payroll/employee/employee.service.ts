@@ -46,7 +46,7 @@ export class EmployeeService {
       return employee as EmployeeResponseDto;
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -86,7 +86,7 @@ export class EmployeeService {
       return { employees: employees as EmployeeResponseDto[], stats };
     } catch (error) {
       throw new HttpException(
-        `${error.message}`,
+        `${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

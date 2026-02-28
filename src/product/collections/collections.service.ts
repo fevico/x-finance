@@ -50,7 +50,7 @@ export class CollectionsService {
             secureUrl: uploadResult.secureUrl,
           };
         } catch (error: any) {
-          throw new BadRequestException(`Image upload failed: ${error.message}`);
+          throw new BadRequestException(`Image upload failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 
@@ -358,7 +358,7 @@ export class CollectionsService {
             secureUrl: uploadResult.secureUrl,
           };
         } catch (error: any) {
-          throw new BadRequestException(`Image upload failed: ${error.message}`);
+          throw new BadRequestException(`Image upload failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 

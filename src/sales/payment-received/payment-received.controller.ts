@@ -80,7 +80,6 @@ export class PaymentReceivedController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('search') search?: string,
-    @Query('status') status?: string,
   ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
@@ -88,7 +87,7 @@ export class PaymentReceivedController {
       entityId,
       page,
       limit,
-      { search, status },
+      { search },
     );
   }
 
@@ -194,7 +193,6 @@ export class PaymentReceivedController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
     @Query('search') search?: string,
-    @Query('status') status?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
@@ -204,7 +202,7 @@ export class PaymentReceivedController {
       entityId,
       page,
       limit,
-      { search, status, from, to },
+      { search, from, to },
     );
   }
 }

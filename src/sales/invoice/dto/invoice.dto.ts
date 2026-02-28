@@ -60,7 +60,7 @@ export class CreateInvoiceDto {
 
   @IsOptional()
   @IsEnum(InvoiceStatus)
-  status?: InvoiceStatus;
+  status?: InvoiceStatus = InvoiceStatus.Draft; // Default to Draft
 }
 
 // Update Invoice DTO (for partial updates with item management)
@@ -123,4 +123,10 @@ export class InvoiceDto extends CreateInvoiceDto {
   @IsDate()
   @Type(() => Date)
   updatedAt: Date = new Date();
+}
+
+// Update Invoice Status DTO
+export class UpdateInvoiceStatusDto {
+  @IsEnum(InvoiceStatus)
+  status: InvoiceStatus;
 }

@@ -23,7 +23,7 @@ export class GetInvoicesQueryDto {
   limit?: number = 10;
 
   @ApiPropertyOptional({
-    enum: ['Pending', 'Paid', 'Sent', 'Draft', 'Cancelled'],
+    enum: ['Paid', 'Sent', 'Draft', 'Partial', 'Overdue'],
     description: 'Filter by invoice status',
   })
   @IsOptional()
