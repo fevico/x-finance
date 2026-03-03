@@ -1,9 +1,10 @@
-import { IsString, IsDate, IsArray, IsOptional, IsInt, ValidateNested } from 'class-validator';
+import { IsString, IsDate, IsArray, IsOptional, IsInt, ValidateNested, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 
 export class CreateOpeningBalanceItemDto {
   @IsString()
-  accountId: string;
+  accountId!: string;
 
   @IsInt()
   debit: number = 0;
@@ -15,7 +16,7 @@ export class CreateOpeningBalanceItemDto {
 export class CreateOpeningBalanceDto {
   @IsDate()
   @Type(() => Date)
-  date: Date;
+  date!: Date;
 
   @IsString()
   @IsOptional()
@@ -28,7 +29,7 @@ export class CreateOpeningBalanceDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateOpeningBalanceItemDto)
-  items: CreateOpeningBalanceItemDto[];
+  items!: CreateOpeningBalanceItemDto[];
 }
 
 export class UpdateOpeningBalanceDto {
@@ -53,29 +54,82 @@ export class UpdateOpeningBalanceDto {
 }
 
 export class OpeningBalanceDto {
-  id: string;
-  entityId: string;
-  date: Date;
+  id!: string;
+  entityId!: string;
+  date!: Date;
   fiscalYear?: string;
-  totalCredit: number;
-  totalDebit: number;
-  difference: number;
-  status: string;
+  totalCredit!: number;
+  totalDebit!: number;
+  difference!: number;
+  status!: string;
   note?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export class OpeningBalanceItemDto {
-  id: string;
-  openingBalanceId: string;
-  accountId: string;
-  debit: number;
-  credit: number;
-  createdAt: Date;
-  updatedAt: Date;
+  id!: string;
+  openingBalanceId!: string;
+  accountId!: string;
+  debit!: number;
+  credit!: number;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export class GetOpeningBalanceResponseDto extends OpeningBalanceDto {
-  items: OpeningBalanceItemDto[];
+  items!: OpeningBalanceItemDto[];
+}
+export class GetOpeningBalancesQueryDto {
+  @ApiPropertyOptional({ example: 1, description: 'Page number (1-indexed)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Items per page',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number = 10;
+
+  @ApiPropertyOptional({
+    example: 'INV-20250101',
+    description: 'Search by opening balance id, date, or note',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+
+export class GetOpeningBalancesResponseDto {
+  @ApiProperty({
+    type: [GetOpeningBalanceResponseDto],
+    description: 'Paginated opening balance list',
+  })
+  data!: GetOpeningBalanceResponseDto[];
+
+  @ApiProperty({
+    example: 50,
+    description: 'Total opening balances matching the filter',
+  })
+  totalCount!: number;
+
+  @ApiProperty({
+    example: 5,
+    description: 'Total pages',
+  })
+  totalPages!: number;
+
+  @ApiProperty({ example: 1, description: 'Current page' })
+  currentPage!: number;
+
+  @ApiProperty({ example: 10, description: 'Items per page' })
+  limit!: number;
 }

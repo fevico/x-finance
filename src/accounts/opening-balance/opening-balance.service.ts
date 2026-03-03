@@ -10,6 +10,8 @@ import {
   CreateOpeningBalanceDto,
   UpdateOpeningBalanceDto,
   GetOpeningBalanceResponseDto,
+  GetOpeningBalancesQueryDto,
+  GetOpeningBalancesResponseDto,
 } from './dto/opening-balance.dto';
 import { OpeningBalanceStatus } from 'prisma/generated/enums';
 import { BullmqService } from '@/bullmq/bullmq.service';
@@ -85,7 +87,6 @@ export class OpeningBalanceService {
       // Validate each account and check for duplicates/balance issues
       const validationResults = new Map<string, AccountValidationResult>();
       const failedAccounts: Array<{ accountId: string; error: string }> = [];
-      let validItemCount = 0;
 
       for (const item of dto.items) {
         const account = accountMap.get(item.accountId);
@@ -105,10 +106,15 @@ export class OpeningBalanceService {
           continue;
         }
 
-        // Check if opening balance already exists for this account
+        // Check if opening balance already exists for this account (across all opening balances for this entity)
         const existingOpeningBalance =
           await this.prisma.openingBalanceItem.findFirst({
-            where: { accountId: item.accountId },
+            where: { 
+              accountId: item.accountId,
+              openingBalance: {
+                entityId: entityId,
+              }
+            },
           });
 
         if (existingOpeningBalance) {
@@ -120,22 +126,19 @@ export class OpeningBalanceService {
 
         // Account passed all validations
         validationResults.set(item.accountId, { valid: true, account });
-        validItemCount++;
       }
 
-      // If no valid accounts, throw error
-      if (validItemCount === 0) {
+      // If ANY accounts failed validation, reject the entire request (all-or-nothing approach)
+      if (failedAccounts.length > 0) {
         throw new BadRequestException(
-          `No valid accounts to create opening balance. Failures: ${failedAccounts.map((f) => `${f.accountId}: ${f.error}`).join('; ')}`,
+          `Cannot create opening balance. All accounts must pass validation. Failed accounts: ${failedAccounts.map((f) => `${f.accountId}: ${f.error}`).join('; ')}`,
         );
       }
 
-      // Filter items to only valid accounts
-      const validItems = dto.items.filter(
-        (item) => validationResults.get(item.accountId)?.valid,
-      );
+      // Filter items to only valid accounts (all items are valid at this point due to all-or-nothing validation)
+      const validItems = dto.items;
 
-      // Calculate totals from valid items only
+      // Calculate totals from all items (since validation passed)
       let totalDebit = 0;
       let totalCredit = 0;
 
@@ -186,22 +189,15 @@ export class OpeningBalanceService {
         openingBalanceId: result.id,
         entityId,
         items: result.items,
-        validItems,
+        validItems: result.items, // All items are valid due to all-or-nothing validation
         accountMap: Array.from(accountMap.entries()).map(([id, acc]) => ({
           id,
           account: acc,
         })),
       });
 
-      // Add validation summary
-      const response = result as OpeningBalanceCreationResult;
-      response.validationSummary = {
-        successCount: validItemCount,
-        failureCount: failedAccounts.length,
-        failedAccounts,
-      };
-
-      return response;
+      // Return the created opening balance (all items succeeded)
+      return result as OpeningBalanceCreationResult;
     } catch (error) {
       if (
         error instanceof UnauthorizedException ||
@@ -233,23 +229,26 @@ export class OpeningBalanceService {
         accountMapData.map((item) => [item.id, item.account]),
       );
 
-      // Process each item
-      for (const item of items) {
-        const validItem = validItems.find((vi) => vi.accountId === item.accountId);
-        if (!validItem) continue;
+      // Process all items in a SINGLE transaction (more efficient than separate transactions per item)
+      await this.prisma.$transaction(
+        async (tx) => {
+          for (const item of items) {
+            const validItem = validItems.find((vi) => vi.accountId === item.accountId);
+            if (!validItem) continue;
 
-        await this.prisma.$transaction(async (tx) => {
-          await this.postOpeningBalanceToJournalInternal(
-            tx,
-            openingBalanceId,
-            item.accountId,
-            item.debit,
-            item.credit,
-            accountMap.get(item.accountId)!,
-            entityId,
-          );
-        });
-      }
+            await this.postOpeningBalanceToJournalInternal(
+              tx,
+              openingBalanceId,
+              item.accountId,
+              item.debit,
+              item.credit,
+              accountMap.get(item.accountId)!,
+              entityId,
+            );
+          }
+        },
+        { timeout: 15000 }, // Increase timeout to 15 seconds for opening balance posting with multiple items
+      );
 
       // Update opening balance status to completed
       await this.prisma.openingBalance.update({
@@ -326,13 +325,13 @@ export class OpeningBalanceService {
         data: {
           description: `Opening Balance - ${openingBalanceId} posted`,
           date: new Date(),
-          reference: `OB-${openingBalanceId}`,
+          reference: generateJournalReference('OB'),
           entityId,
           lines: lines as any,
         },
       });
 
-      // Update account balances
+      // Update account balances and create account transactions
       for (const line of lines) {
         const accountDetail = await tx.account.findUnique({
           where: { id: line.accountId },
@@ -367,6 +366,29 @@ export class OpeningBalanceService {
           await tx.account.update({
             where: { id: line.accountId },
             data: { balance: newBalance },
+          });
+
+          // Create account transaction record for audit trail
+          await tx.accountTransaction.create({
+            data: {
+              date: new Date(),
+              description: `Opening Balance posted - ${line.description}`,
+              reference: journal.reference,
+              type: 'OPENING_BALANCE',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: newBalance,
+              entityId: entityId,
+              relatedEntityId: openingBalanceId,
+              relatedEntityType: 'OpeningBalance',
+              metadata: {
+                journalReference: journal.reference,
+                accountCode: accountDetail.code,
+                accountName: accountDetail.name,
+              },
+            },
           });
         }
       }
@@ -438,8 +460,13 @@ export class OpeningBalanceService {
 
   async getOpeningBalanceByEntity(
     entityId: string,
-  ): Promise<GetOpeningBalanceResponseDto | null> {
+    query: GetOpeningBalancesQueryDto,
+  ): Promise<GetOpeningBalancesResponseDto> {
     try {
+      const page = query.page || 1;
+      const limit = query.limit || 10;
+      const skip = (page - 1) * limit;
+
       // Check if entity exists
       const entity = await this.prisma.entity.findUnique({
         where: { id: entityId },
@@ -450,15 +477,40 @@ export class OpeningBalanceService {
         throw new UnauthorizedException('Entity not found or access denied');
       }
 
-      const openingBalance = await this.prisma.openingBalance.findFirst({
-        where: { entityId },
+      // Build where clause for filtering
+      const whereClause: any = { entityId };
+      if (query.search) {
+        whereClause.OR = [
+          { id: { contains: query.search, mode: 'insensitive' } },
+          { note: { contains: query.search, mode: 'insensitive' } },
+        ];
+      }
+
+      // Fetch paginated opening balances
+      const openingBalances = await this.prisma.openingBalance.findMany({
+        where: whereClause,
         include: {
           items: true,
         },
+        skip,
+        take: Number(limit),
         orderBy: { createdAt: 'desc' },
       });
 
-      return openingBalance as GetOpeningBalanceResponseDto | null;
+      // Get total count for pagination
+      const totalCount = await this.prisma.openingBalance.count({
+        where: whereClause,
+      });
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        data: openingBalances as GetOpeningBalanceResponseDto[],
+        totalCount,
+        totalPages,
+        currentPage: page,
+        limit,
+      };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;

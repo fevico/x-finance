@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/prisma/prisma.service';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { systemRole } from 'prisma/generated/enums';
 import { EmailService } from '@/email/email.service';
@@ -46,6 +46,8 @@ export class BullmqProcessor extends WorkerHost {
       return this.handlePaymentMadeJournalPosting(job);
     } else if (job.name === 'post-opening-balance-journal') {
       return this.handleOpeningBalanceJournalPosting(job);
+    } else if (job.name === 'post-manual-journal') {
+      return this.handleManualJournalPosting(job);
     } else {
       this.logger.warn(`[Job ${job.id}] Unknown job type: ${job.name}`);
     }
@@ -1772,6 +1774,127 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
         );
       }
 
+      throw error; // Rethrow to trigger retry
+    }
+  }
+
+  /**
+   * Handle manual journal posting
+   * Updates account balances based on debit/credit entries
+   * Applies posting rules: Assets/Expenses increase with debit, Liabilities/Equity/Revenue increase with credit
+   */
+  async handleManualJournalPosting(job: Job): Promise<any> {
+    const { journalId, entityId, lines, accountMap } = job.data as {
+      journalId: string;
+      entityId: string;
+      lines: Array<{
+        accountId: string;
+        description: string;
+        debit: number;
+        credit: number;
+      }>;
+      accountMap: Array<{
+        id: string;
+        account: any;
+      }>;
+    };
+
+    try {
+      this.logger.debug(
+        `[Job ${job.id}] Processing manual journal posting for journal: ${journalId}`,
+      );
+
+      // Get journal reference from existing journal
+      const journal = await this.prisma.journal.findUnique({
+        where: { id: journalId },
+      });
+
+      if (!journal) {
+        throw new NotFoundException(`Journal ${journalId} not found`);
+      }
+
+      // Reconstruct account map
+      const reconstructedAccountMap = new Map(
+        accountMap.map((item) => [item.id, item.account]),
+      );
+
+      // Update account balances for each line following posting rules
+      await this.prisma.$transaction(
+        async (tx) => {
+          for (const line of lines) {
+            const account = reconstructedAccountMap.get(line.accountId);
+            if (!account) {
+              this.logger.warn(
+                `[Job ${job.id}] Account ${line.accountId} not found in account map`,
+              );
+              continue;
+            }
+
+            // Determine account type (Asset, Liability, Equity, Revenue, Expense)
+            const accountType = account.subCategory.category.type.name;
+            const isDebitNormal =
+              accountType === 'Asset' || accountType === 'Expense';
+
+            // Calculate balance change based on posting rules
+            let balanceChange = 0;
+
+            if (isDebitNormal) {
+              // Assets and Expenses: Debit increases, Credit decreases
+              balanceChange = (line.debit || 0) - (line.credit || 0);
+            } else {
+              // Liabilities, Equity, Revenue: Credit increases, Debit decreases
+              balanceChange = (line.credit || 0) - (line.debit || 0);
+            }
+
+            const newBalance = account.balance + balanceChange;
+
+            // Update account balance
+            await tx.account.update({
+              where: { id: line.accountId },
+              data: { balance: newBalance },
+            });
+
+            // Create account transaction record for audit trail
+            await tx.accountTransaction.create({
+              data: {
+                date: new Date(),
+                description: `Journal entry posted - ${line.description || 'Manual journal'}`,
+                reference: journal.reference,
+                type: 'JOURNAL_ENTRY',
+                status: 'Success',
+                accountId: line.accountId,
+                debitAmount: line.debit || 0,
+                creditAmount: line.credit || 0,
+                runningBalance: newBalance,
+                entityId: entityId,
+                relatedEntityId: journalId,
+                relatedEntityType: 'Journal',
+                metadata: {
+                  journalReference: journal.reference,
+                  accountCode: account.code,
+                  accountName: account.name,
+                },
+              },
+            });
+
+            this.logger.debug(
+              `[Job ${job.id}] Updated account ${account.code} (${account.name}): ${account.balance} → ${newBalance} (${accountType}, change: ${balanceChange})`,
+            );
+          }
+        },
+        { timeout: 15000 },
+      );
+
+      this.logger.log(
+        `[Job ${job.id}] Successfully posted manual journal: ${journalId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[Job ${job.id}] Failed to post manual journal: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      // Log the error but don't fail - journal still exists, just balances not updated
+      // User can retry posting manually later
       throw error; // Rethrow to trigger retry
     }
   }

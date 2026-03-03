@@ -572,15 +572,16 @@ model Account {
 }
 
 model Journal {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   description String
   date        DateTime
   lines       Json
   reference   String
   entityId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  entity      Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  status      JournalStatus @default(Active)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now()) @updatedAt
+  entity      Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@index([id, entityId])
 }
@@ -938,4 +939,9 @@ enum JournalPostingStatus {
 enum OpeningBalanceStatus {
   Draft
   Finalized
+}
+
+enum JournalStatus {
+  Draft
+  Active
 }

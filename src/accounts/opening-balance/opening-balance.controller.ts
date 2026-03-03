@@ -11,9 +11,11 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
+import { ApiOperation, ApiOkResponse, ApiBearerAuth, ApiCookieAuth } from '@nestjs/swagger';
 import { OpeningBalanceService } from './opening-balance.service';
-import { CreateOpeningBalanceDto, UpdateOpeningBalanceDto, GetOpeningBalanceResponseDto } from './dto/opening-balance.dto';
+import { CreateOpeningBalanceDto, UpdateOpeningBalanceDto, GetOpeningBalanceResponseDto, GetOpeningBalancesQueryDto, GetOpeningBalancesResponseDto } from './dto/opening-balance.dto';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 
@@ -30,12 +32,16 @@ export class OpeningBalanceController {
     return this.openingBalanceService.createOpeningBalance(entityId, dto);
   }
 
-  @Get('current')
+  @Get('')
   @UseGuards(AuthGuard)
-  async getByEntity(@Req() req): Promise<GetOpeningBalanceResponseDto | null> {
+  @ApiOperation({ summary: 'Get opening balances (paginated + searchable)' })
+  @ApiBearerAuth('jwt')
+  @ApiCookieAuth('cookieAuth')
+  @ApiOkResponse({ type: GetOpeningBalancesResponseDto })
+  async getByEntity(@Req() req, @Query() query: GetOpeningBalancesQueryDto): Promise<GetOpeningBalancesResponseDto> {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new UnauthorizedException('Access denied!');
-    return this.openingBalanceService.getOpeningBalanceByEntity(entityId);
+    return this.openingBalanceService.getOpeningBalanceByEntity(entityId, query);
   }
 
   @Get(':id')

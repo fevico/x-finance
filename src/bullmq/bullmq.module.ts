@@ -5,6 +5,7 @@ import { PrismaModule } from '@/prisma/prisma.module';
 import { BullmqProcessor } from './bullmq.processor';
 import { EmailService } from '@/email/email.service';
 import { OpeningBalanceModule } from '@/accounts/opening-balance/opening-balance.module';
+import { JournalModule } from '@/accounts/journal/journal.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { OpeningBalanceModule } from '@/accounts/opening-balance/opening-balance
     BullModule.registerQueue({ name: 'default' }),
     PrismaModule,
     forwardRef(() => OpeningBalanceModule),
+    forwardRef(() => JournalModule),
   ],
   providers: [BullmqService, BullmqProcessor, EmailService],
   exports: [BullmqService],

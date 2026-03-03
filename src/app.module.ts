@@ -33,6 +33,7 @@ import { LeaveModule } from './hr-payroll/leave/leave.module';
 import { OrganizationModule } from './settings/organization/organization.module';
 import { PaymentMadeModule } from './purchases/payment-made/payment-made.module';
 import { AccountTransactionModule } from './accounts/account-transaction/account-transaction.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { AccountTransactionModule } from './accounts/account-transaction/account
     PaymentMadeModule,
     BankingModule,
     AccountTransactionModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

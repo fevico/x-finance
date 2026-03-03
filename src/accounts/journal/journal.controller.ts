@@ -95,6 +95,19 @@ export class JournalController {
     return await this.journalsService.remove(id, entityId);
   }
 
+  @Post(':id/activate')
+  @ApiOperation({ summary: 'Activate a draft journal (triggers posting)' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'Journal activated and posting queued' })
+  async activateDraftJournal(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<Journal> {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Access denied!');
+    return this.journalsService.activateDraftJournal(id, entityId);
+  }
+
   @Get('by-reference/:reference')
   @ApiOperation({ summary: 'Find journals by reference number' })
   @ApiParam({ name: 'reference', type: String })

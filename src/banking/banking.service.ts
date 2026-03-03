@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccountService } from '../accounts/account/account.service';
+import { OpeningBalanceService } from '../accounts/opening-balance/opening-balance.service';
+import { BullmqService } from '../bullmq/bullmq.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 
@@ -14,6 +16,8 @@ export class BankingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly accountService: AccountService,
+    private readonly openingBalanceService: OpeningBalanceService,
+    private readonly bullmqService: BullmqService,
   ) {}
 
   async createBankAccount(
@@ -60,7 +64,7 @@ export class BankingService {
       );
     }
 
-    // Auto-create linked account
+    // Auto-create linked account with balance = 0 (will be set via opening balance posting)
     const accountCode = this.generateAccountCode(
       cashSubCategory.code,
       createBankAccountDto.accountName,
@@ -73,22 +77,81 @@ export class BankingService {
         description: `Bank account: ${createBankAccountDto.bankName} (${createBankAccountDto.accountNumber})`,
         entityId: effectiveEntityId,
         subCategoryId: cashSubCategory.id,
-        balance: createBankAccountDto.openingBalance,
+        balance: 0, // Start at 0, will be updated via opening balance posting
       },
     });
 
-    // Create bank account
+    // Create bank account (with opening balance placeholder)
     const bankAccount = await this.prisma.bankAccount.create({
       data: {
         ...createBankAccountDto,
         linkedAccountId: linkedAccount.id,
         entityId: effectiveEntityId,
-        currentBalance: createBankAccountDto.openingBalance,
+        currentBalance: 0, // Will be updated after opening balance posts
       },
       include: {
         linkedAccount: true,
       },
     });
+
+    // If opening balance is provided, create opening balance record and post to journal
+    if (createBankAccountDto.openingBalance > 0) {
+      // Create opening balance record with single item (this bank account)
+      const openingBalanceRecord = await this.prisma.openingBalance.create({
+        data: {
+          entityId: effectiveEntityId,
+          date: new Date(),
+          fiscalYear: new Date().getFullYear().toString(),
+          totalDebit: createBankAccountDto.openingBalance,
+          totalCredit: 0,
+          difference: createBankAccountDto.openingBalance,
+          status: 'Draft',
+          note: `Opening balance for bank account: ${createBankAccountDto.accountName}`,
+        },
+      });
+
+      // Create opening balance item
+      const openingBalanceItem = await this.prisma.openingBalanceItem.create({
+        data: {
+          openingBalanceId: openingBalanceRecord.id,
+          accountId: linkedAccount.id,
+          debit: createBankAccountDto.openingBalance,
+          credit: 0,
+        },
+      });
+
+      // Queue opening balance posting to journal (async via BullMQ)
+      const accounts = await this.prisma.account.findMany({
+        where: {
+          id: linkedAccount.id,
+          entityId: effectiveEntityId,
+        },
+        include: {
+          subCategory: {
+            include: {
+              category: {
+                include: {
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const accountMap = new Map(accounts.map((acc) => [acc.id, acc]));
+
+      await this.bullmqService.addJob('post-opening-balance-journal', {
+        openingBalanceId: openingBalanceRecord.id,
+        entityId: effectiveEntityId,
+        items: [openingBalanceItem],
+        validItems: [openingBalanceItem],
+        accountMap: Array.from(accountMap.entries()).map(([id, acc]) => ({
+          id,
+          account: acc,
+        })),
+      });
+    }
 
     return bankAccount;
   }
