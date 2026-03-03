@@ -62,6 +62,22 @@ export class RecentTransactionDto {
   status: string;
 }
 
+export class BankAccountSummaryDto {
+  id: string;
+  accountName: string;
+  bankName: string;
+  accountType: string;
+  currency: string;
+  currentBalance: number;
+  status: string;
+}
+
+export class BankingSummaryDto {
+  totalBankCash: number;
+  numberOfBankAccounts: number;
+  accounts: BankAccountSummaryDto[];
+}
+
 export class DashboardResponseDto {
   kpis: KPIDto;
   monthlyBreakdown: MonthlyDataPointDto[];

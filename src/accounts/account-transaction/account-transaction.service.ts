@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   CreateAccountTransactionDto,
@@ -14,9 +18,7 @@ export class AccountTransactionService {
    * Create a new account transaction record
    * This is called whenever an account is modified (posting, manual entry, etc.)
    */
-  async createTransaction(
-    createDto: CreateAccountTransactionDto,
-  ) {
+  async createTransaction(createDto: CreateAccountTransactionDto) {
     // Validate account exists and belongs to entity
     const account = await this.prisma.account.findUnique({
       where: { id: createDto.accountId },
@@ -37,21 +39,29 @@ export class AccountTransactionService {
       });
 
       if (!bankAccount || bankAccount.entityId !== createDto.entityId) {
-        throw new BadRequestException('Bank account not found or does not belong to this entity');
+        throw new BadRequestException(
+          'Bank account not found or does not belong to this entity',
+        );
       }
     }
 
     // Validate amounts
     if (createDto.debitAmount < 0 || createDto.creditAmount < 0) {
-      throw new BadRequestException('Debit and credit amounts must be positive');
+      throw new BadRequestException(
+        'Debit and credit amounts must be positive',
+      );
     }
 
     if (createDto.debitAmount > 0 && createDto.creditAmount > 0) {
-      throw new BadRequestException('A transaction cannot have both debit and credit amounts');
+      throw new BadRequestException(
+        'A transaction cannot have both debit and credit amounts',
+      );
     }
 
     if (createDto.debitAmount === 0 && createDto.creditAmount === 0) {
-      throw new BadRequestException('Transaction must have either debit or credit amount');
+      throw new BadRequestException(
+        'Transaction must have either debit or credit amount',
+      );
     }
 
     // Create the transaction
@@ -108,6 +118,8 @@ export class AccountTransactionService {
       relatedEntityType,
       method,
     } = filters;
+
+    console.log(type, "type")
 
     // Build where clause
     const where: AccountTransactionWhereInput = {
@@ -177,6 +189,17 @@ export class AccountTransactionService {
               subCategory: {
                 select: {
                   name: true,
+                  category: {
+                    select: {
+                      name: true,
+
+                      type: {
+                        select: {
+                          name: true,
+                        },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -238,6 +261,21 @@ export class AccountTransactionService {
               id: true,
               name: true,
               code: true,
+              subCategory: {
+                select: {
+                  name: true,
+                  category: {
+                    select: {
+                      name: true,
+                      type: {
+                        select: {
+                          name: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -385,18 +423,19 @@ export class AccountTransactionService {
     }
 
     // Get aggregates
-    const [totalDebits, totalCredits, transactionCount, typeBreakdown] = await Promise.all([
-      this.prisma.accountTransaction.aggregate({
-        where,
-        _sum: { debitAmount: true },
-      }),
-      this.prisma.accountTransaction.aggregate({
-        where,
-        _sum: { creditAmount: true },
-      }),
-      this.prisma.accountTransaction.count({ where }),
-      this.getTransactionBreakdownByType(entityId, accountId, bankAccountId),
-    ]);
+    const [totalDebits, totalCredits, transactionCount, typeBreakdown] =
+      await Promise.all([
+        this.prisma.accountTransaction.aggregate({
+          where,
+          _sum: { debitAmount: true },
+        }),
+        this.prisma.accountTransaction.aggregate({
+          where,
+          _sum: { creditAmount: true },
+        }),
+        this.prisma.accountTransaction.count({ where }),
+        this.getTransactionBreakdownByType(entityId, accountId, bankAccountId),
+      ]);
 
     return {
       totalDebits: totalDebits._sum.debitAmount || 0,

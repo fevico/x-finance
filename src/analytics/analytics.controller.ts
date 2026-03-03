@@ -215,4 +215,19 @@ export class AnalyticsController {
 
     return this.analyticsService.getRecentTransactions(entityId, 10);
   }
+
+  @Get('/banking-summary')
+  @ApiOperation({
+    summary: 'Get banking summary (total cash + account count)',
+  })
+  @ApiOkResponse({
+    description: 'Total bank cash balance, number of accounts, and account details',
+  })
+  @ApiUnauthorizedResponse({ description: 'Access denied' })
+  async getBankingSummary(@Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+
+    return this.analyticsService.getBankingSummary(entityId);
+  }
 }

@@ -525,30 +525,48 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           ),
         );
 
-        // Create account transactions for each journal line with running balance
-        await Promise.all(
-          journalLines.map((line, index) =>
-            tx.accountTransaction.create({
-              data: {
-                date: postedAt,
-                description: `Invoice ${invoiceData.invoiceNumber} posted to journal`,
-                reference: journalRef,
-                type: 'INVOICE_POSTING',
-                status: 'Success',
-                accountId: line.accountId,
-                debitAmount: line.debit,
-                creditAmount: line.credit,
-                runningBalance: updatedAccounts[index].balance,
-                entityId: invoiceData.entityId,
-                relatedEntityId: invoiceId,
-                relatedEntityType: 'Invoice',
-                metadata: {
-                  invoiceNumber: invoiceData.invoiceNumber,
-                  journalReference: journalRef,
-                },
+        // Fetch account details to check for bank linking
+        const accountsWithBanksInvoice = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.findUnique({
+              where: { id: line.accountId },
+              select: {
+                balance: true,
+                bankAccount: { select: { id: true } },
               },
             }),
           ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanksInvoice[index];
+            const txData: any = {
+              date: postedAt,
+              description: `Invoice ${invoiceData.invoiceNumber} posted to journal`,
+              reference: journalRef,
+              type: accountWithBank?.bankAccount ? 'BANK' : 'INVOICE_POSTING',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: updatedAccounts[index].balance,
+              entityId: invoiceData.entityId,
+              relatedEntityId: invoiceId,
+              relatedEntityType: 'Invoice',
+              metadata: {
+                invoiceNumber: invoiceData.invoiceNumber,
+                journalReference: journalRef,
+              },
+            };
+
+            if (accountWithBank?.bankAccount) {
+              txData.bankAccountId = accountWithBank.bankAccount.id;
+            }
+
+            return tx.accountTransaction.create({ data: txData });
+          }),
         );
 
         // Mark invoice as successfully posted with reference and timestamp
@@ -695,53 +713,91 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           },
         });
 
-        // Get current account balances and update them
-        const accountBalances = await Promise.all(
+        // Get account details including linked bank accounts
+        const accountsWithBanks = await Promise.all(
           journalLines.map((line) =>
-            tx.account.findUnique({ where: { id: line.accountId }, select: { balance: true } }),
+            tx.account.findUnique({
+              where: { id: line.accountId },
+              select: {
+                balance: true,
+                bankAccount: { select: { id: true } },
+              },
+            }),
           ),
         );
 
+        // Update GL accounts and linked bank accounts
         const updatedAccounts = await Promise.all(
-          journalLines.map((line) =>
-            tx.account.update({
-              where: { id: line.accountId },
-              data: {
-                balance: {
-                  increment: line.debit - line.credit,
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanks[index];
+            const promises: any[] = [];
+
+            // Update GL account
+            promises.push(
+              tx.account.update({
+                where: { id: line.accountId },
+                data: {
+                  balance: {
+                    increment: line.debit - line.credit,
+                  },
                 },
-              },
-              select: { balance: true },
-            }),
-          ),
+                select: { balance: true },
+              }),
+            );
+
+            // If account is linked to a bank, also update bank account balance
+            if (accountWithBank?.bankAccount) {
+              promises.push(
+                tx.bankAccount.update({
+                  where: { id: accountWithBank.bankAccount.id },
+                  data: {
+                    currentBalance: {
+                      increment: line.debit - line.credit,
+                    },
+                  },
+                  select: { currentBalance: true },
+                }),
+              );
+            }
+
+            return Promise.all(promises);
+          }),
         );
 
         // Create account transactions for each journal line with running balance
         await Promise.all(
-          journalLines.map((line, index) =>
-            tx.accountTransaction.create({
-              data: {
-                date: postedAt,
-                description: `Payment ${paymentData.paymentNumber} received and posted to journal`,
-                reference: journalRef,
-                type: 'PAYMENT_RECEIVED_POSTING',
-                status: 'Success',
-                accountId: line.accountId,
-                debitAmount: line.debit,
-                creditAmount: line.credit,
-                runningBalance: updatedAccounts[index].balance,
-                entityId: paymentData.entityId,
-                relatedEntityId: paymentId,
-                relatedEntityType: 'PaymentReceived',
-                bankAccountId: paymentData.bankAccountId,
-                metadata: {
-                  paymentNumber: paymentData.paymentNumber,
-                  journalReference: journalRef,
-                  paymentAmount: paymentData.amount,
-                },
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanks[index];
+            const glAccountUpdate = updatedAccounts[index][0];
+            const bankAccountUpdate = accountsWithBanks[index]?.bankAccount ? updatedAccounts[index][1] : null;
+
+            const txData: any = {
+              date: postedAt,
+              description: `Payment ${paymentData.paymentNumber} received and posted to journal`,
+              reference: journalRef,
+              type: accountWithBank?.bankAccount ? 'BANK' : 'PAYMENT_RECEIVED_POSTING',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: glAccountUpdate.balance,
+              entityId: paymentData.entityId,
+              relatedEntityId: paymentId,
+              relatedEntityType: 'PaymentReceived',
+              metadata: {
+                paymentNumber: paymentData.paymentNumber,
+                journalReference: journalRef,
+                paymentAmount: paymentData.amount,
               },
-            }),
-          ),
+            };
+
+            // If account is linked to a bank, populate bankAccountId
+            if (accountWithBank?.bankAccount) {
+              txData.bankAccountId = accountWithBank.bankAccount.id;
+            }
+
+            return tx.accountTransaction.create({ data: txData });
+          }),
         );
 
         // Update payment record with posting status
@@ -988,30 +1044,48 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           ),
         );
 
-        // Create account transactions for each journal line with running balance
-        await Promise.all(
-          journalLines.map((line, index) =>
-            tx.accountTransaction.create({
-              data: {
-                date: postedAt,
-                description: `Receipt ${receiptData.receiptNumber} posted to journal`,
-                reference: journalRef,
-                type: 'RECEIPT_POSTING',
-                status: 'Success',
-                accountId: line.accountId,
-                debitAmount: line.debit,
-                creditAmount: line.credit,
-                runningBalance: updatedAccounts[index].balance,
-                entityId: receiptData.entityId,
-                relatedEntityId: receiptId,
-                relatedEntityType: 'Receipt',
-                metadata: {
-                  receiptNumber: receiptData.receiptNumber,
-                  journalReference: journalRef,
-                },
+        // Fetch account details to check for bank linking
+        const accountsWithBanksReceipt = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.findUnique({
+              where: { id: line.accountId },
+              select: {
+                balance: true,
+                bankAccount: { select: { id: true } },
               },
             }),
           ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanksReceipt[index];
+            const txData: any = {
+              date: postedAt,
+              description: `Receipt ${receiptData.receiptNumber} posted to journal`,
+              reference: journalRef,
+              type: accountWithBank?.bankAccount ? 'BANK' : 'RECEIPT_POSTING',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: updatedAccounts[index].balance,
+              entityId: receiptData.entityId,
+              relatedEntityId: receiptId,
+              relatedEntityType: 'Receipt',
+              metadata: {
+                receiptNumber: receiptData.receiptNumber,
+                journalReference: journalRef,
+              },
+            };
+
+            if (accountWithBank?.bankAccount) {
+              txData.bankAccountId = accountWithBank.bankAccount.id;
+            }
+
+            return tx.accountTransaction.create({ data: txData });
+          }),
         );
 
         // Mark receipt as successfully posted with reference and timestamp
@@ -1220,30 +1294,48 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           ),
         );
 
-        // Create account transactions for each journal line with running balance
-        await Promise.all(
-          journalLines.map((line, index) =>
-            tx.accountTransaction.create({
-              data: {
-                date: postedAt,
-                description: `Bill ${billData.billNumber} posted to journal`,
-                reference: journalRef,
-                type: 'BILL_POSTING',
-                status: 'Success',
-                accountId: line.accountId,
-                debitAmount: line.debit,
-                creditAmount: line.credit,
-                runningBalance: updatedAccounts[index].balance,
-                entityId: billData.entityId,
-                relatedEntityId: billId,
-                relatedEntityType: 'Bill',
-                metadata: {
-                  billNumber: billData.billNumber,
-                  journalReference: journalRef,
-                },
+        // Fetch account details to check for bank linking
+        const accountsWithBanksBill = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.findUnique({
+              where: { id: line.accountId },
+              select: {
+                balance: true,
+                bankAccount: { select: { id: true } },
               },
             }),
           ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanksBill[index];
+            const txData: any = {
+              date: postedAt,
+              description: `Bill ${billData.billNumber} posted to journal`,
+              reference: journalRef,
+              type: accountWithBank?.bankAccount ? 'BANK' : 'BILL_POSTING',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: updatedAccounts[index].balance,
+              entityId: billData.entityId,
+              relatedEntityId: billId,
+              relatedEntityType: 'Bill',
+              metadata: {
+                billNumber: billData.billNumber,
+                journalReference: journalRef,
+              },
+            };
+
+            if (accountWithBank?.bankAccount) {
+              txData.bankAccountId = accountWithBank.bankAccount.id;
+            }
+
+            return tx.accountTransaction.create({ data: txData });
+          }),
         );
 
         // Mark bill as successfully posted with reference and timestamp
@@ -1422,30 +1514,48 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           ),
         );
 
-        // Create account transactions for each journal line with running balance
-        await Promise.all(
-          journalLines.map((line, index) =>
-            tx.accountTransaction.create({
-              data: {
-                date: postedAt,
-                description: `Expense ${expenseData.reference} posted to journal`,
-                reference: journalRef,
-                type: 'EXPENSE_POSTING',
-                status: 'Success',
-                accountId: line.accountId,
-                debitAmount: line.debit,
-                creditAmount: line.credit,
-                runningBalance: updatedAccounts[index].balance,
-                entityId: expenseData.entityId,
-                relatedEntityId: expenseId,
-                relatedEntityType: 'Expense',
-                metadata: {
-                  reference: expenseData.reference,
-                  journalReference: journalRef,
-                },
+        // Fetch account details to check for bank linking
+        const accountsWithBanksExpense = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.findUnique({
+              where: { id: line.accountId },
+              select: {
+                balance: true,
+                bankAccount: { select: { id: true } },
               },
             }),
           ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanksExpense[index];
+            const txData: any = {
+              date: postedAt,
+              description: `Expense ${expenseData.reference} posted to journal`,
+              reference: journalRef,
+              type: accountWithBank?.bankAccount ? 'BANK' : 'EXPENSE_POSTING',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: updatedAccounts[index].balance,
+              entityId: expenseData.entityId,
+              relatedEntityId: expenseId,
+              relatedEntityType: 'Expense',
+              metadata: {
+                reference: expenseData.reference,
+                journalReference: journalRef,
+              },
+            };
+
+            if (accountWithBank?.bankAccount) {
+              txData.bankAccountId = accountWithBank.bankAccount.id;
+            }
+
+            return tx.accountTransaction.create({ data: txData });
+          }),
         );
 
         // Mark expense as successfully posted with reference and timestamp
@@ -1607,30 +1717,48 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           ),
         );
 
-        // Create account transactions for each journal line with running balance
-        await Promise.all(
-          journalLines.map((line, index) =>
-            tx.accountTransaction.create({
-              data: {
-                date: postedAt,
-                description: `Payment Made ${paymentData.reference} posted to journal`,
-                reference: journalRef,
-                type: 'PAYMENT_MADE_POSTING',
-                status: 'Success',
-                accountId: line.accountId,
-                debitAmount: line.debit,
-                creditAmount: line.credit,
-                runningBalance: updatedAccounts[index].balance,
-                entityId: paymentData.entityId,
-                relatedEntityId: paymentMadeId,
-                relatedEntityType: 'PaymentMade',
-                metadata: {
-                  reference: paymentData.reference,
-                  journalReference: journalRef,
-                },
+        // Fetch account details to check for bank linking
+        const accountsWithBanksPaymentMade = await Promise.all(
+          journalLines.map((line) =>
+            tx.account.findUnique({
+              where: { id: line.accountId },
+              select: {
+                balance: true,
+                bankAccount: { select: { id: true } },
               },
             }),
           ),
+        );
+
+        // Create account transactions for each journal line with running balance
+        await Promise.all(
+          journalLines.map((line, index) => {
+            const accountWithBank = accountsWithBanksPaymentMade[index];
+            const txData: any = {
+              date: postedAt,
+              description: `Payment Made ${paymentData.reference} posted to journal`,
+              reference: journalRef,
+              type: accountWithBank?.bankAccount ? 'BANK' : 'PAYMENT_MADE_POSTING',
+              status: 'Success',
+              accountId: line.accountId,
+              debitAmount: line.debit,
+              creditAmount: line.credit,
+              runningBalance: updatedAccounts[index].balance,
+              entityId: paymentData.entityId,
+              relatedEntityId: paymentMadeId,
+              relatedEntityType: 'PaymentMade',
+              metadata: {
+                reference: paymentData.reference,
+                journalReference: journalRef,
+              },
+            };
+
+            if (accountWithBank?.bankAccount) {
+              txData.bankAccountId = accountWithBank.bankAccount.id;
+            }
+
+            return tx.accountTransaction.create({ data: txData });
+          }),
         );
 
         // Mark payment made as successfully posted with reference and timestamp

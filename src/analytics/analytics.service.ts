@@ -579,4 +579,42 @@ export class AnalyticsService {
       throw error;
     }
   }
+
+  /**
+   * Get banking summary: total bank cash and number of accounts
+   */
+  async getBankingSummary(entityId: string) {
+    try {
+      const bankAccounts = await this.prisma.bankAccount.findMany({
+        where: { entityId },
+        select: {
+          id: true,
+          accountName: true,
+          bankName: true,
+          accountType: true,
+          currency: true,
+          currentBalance: true,
+          status: true,
+        },
+        orderBy: { accountName: 'asc' },
+      });
+
+      const totalBankCash = bankAccounts.reduce(
+        (sum, account) => sum + account.currentBalance,
+        0,
+      );
+      const numberOfBankAccounts = bankAccounts.length;
+
+      return {
+        totalBankCash,
+        numberOfBankAccounts,
+        accounts: bankAccounts,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[Analytics] Error fetching banking summary: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    }
+  }
 }
