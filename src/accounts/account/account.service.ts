@@ -108,27 +108,34 @@ export class AccountService {
     }
   }
 
-  async findAll(entityId: string, subCategory?: string, type?: string, page: number = 1, pageSize: number = 10): Promise<any> {
+  async findAll(
+    entityId: string,
+    subCategory?: string,
+    type?: string,
+    page?: number,
+    pageSize?: number,
+  ): Promise<any> {
     try {
       const where: any = { entityId };
-      
+
       // Filter by subCategory name if provided
       if (subCategory) {
         // Get entity to find its group
         const entity = await this.prisma.entity.findUnique({
           where: { id: entityId },
         });
-        
+
         if (entity) {
           // Find subcategory by name within the entity's group
-          const subCategoryRecord = await this.prisma.accountSubCategory.findFirst({
-            where: {
-              name: subCategory,
-              category: {
-                groupId: entity.groupId,
+          const subCategoryRecord =
+            await this.prisma.accountSubCategory.findFirst({
+              where: {
+                name: subCategory,
+                category: {
+                  groupId: entity.groupId,
+                },
               },
-            },
-          });
+            });
 
           if (subCategoryRecord) {
             where.subCategoryId = subCategoryRecord.id;
@@ -162,17 +169,19 @@ export class AccountService {
 
           if (typeRecord) {
             where.subCategoryId = {
-              in: await this.prisma.accountSubCategory.findMany({
-                where: { category: { typeId: typeRecord.id } },
-                select: { id: true },
-              }).then((subCategories) => subCategories.map((sc) => sc.id)),
+              in: await this.prisma.accountSubCategory
+                .findMany({
+                  where: { category: { typeId: typeRecord.id } },
+                  select: { id: true },
+                })
+                .then((subCategories) => subCategories.map((sc) => sc.id)),
             };
           } else {
             return {
               data: [],
               pagination: {
-                page,
-                pageSize,
+                page: page ?? 1,
+                pageSize: pageSize ?? 1000,
                 total: 0,
                 totalPages: 0,
               },
@@ -180,9 +189,13 @@ export class AccountService {
           }
         }
       }
-
+      let skip = 0;
+      let take = 1000; // default large number to return all if pagination not specified
       // Calculate pagination parameters
-      const skip = (page - 1) * pageSize;
+      if (page !== undefined && pageSize !== undefined) {
+        skip = (page - 1) * pageSize;
+        take = pageSize;
+      }
 
       // Get total count
       const total = await this.prisma.account.count({ where });
@@ -201,7 +214,7 @@ export class AccountService {
           },
         },
         skip,
-        take: pageSize,
+        take,
         orderBy: { createdAt: 'desc' },
       });
 
@@ -219,7 +232,7 @@ export class AccountService {
           page,
           pageSize,
           total,
-          totalPages: Math.ceil(total / pageSize),
+          totalPages: Math.ceil(total / (pageSize ?? 1)),
         },
       };
     } catch (error) {
@@ -284,17 +297,12 @@ export class AccountService {
       });
 
       if (!account) {
-        throw new HttpException(
-          'Account not found',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
       }
 
       // Verify ownership if entityId provided
       if (entityId && account.entityId !== entityId) {
-        throw new UnauthorizedException(
-          'Access denied to this account',
-        );
+        throw new UnauthorizedException('Access denied to this account');
       }
 
       // Add type, category, and subcategory names to response
@@ -320,7 +328,10 @@ export class AccountService {
       const existing = await this.findOne(id, entityId);
 
       // Validate new subcategory if provided
-      if (account.subCategoryId && account.subCategoryId !== existing.subCategoryId) {
+      if (
+        account.subCategoryId &&
+        account.subCategoryId !== existing.subCategoryId
+      ) {
         const newSubCategory = await this.prisma.accountSubCategory.findUnique({
           where: { id: account.subCategoryId },
         });
@@ -331,8 +342,10 @@ export class AccountService {
 
       const updateData: any = {};
       if (account.name !== undefined) updateData.name = account.name;
-      if (account.description !== undefined) updateData.description = account.description;
-      if (account.subCategoryId !== undefined) updateData.subCategoryId = account.subCategoryId;
+      if (account.description !== undefined)
+        updateData.description = account.description;
+      if (account.subCategoryId !== undefined)
+        updateData.subCategoryId = account.subCategoryId;
       if (account.balance !== undefined) updateData.balance = account.balance;
       if (account.code !== undefined) updateData.code = account.code;
 

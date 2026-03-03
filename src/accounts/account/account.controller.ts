@@ -61,13 +61,17 @@ export class AccountController {
 
     @Query('type') type?: string,
     @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
+    @Query('limit') limit?: string,
   ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     
-    const pageNum = page ? Math.max(1, parseInt(page)) : 1;
-    const pageSizeNum = pageSize ? Math.max(1, parseInt(pageSize)) : 10;
+    if (!page || !limit) {
+      return this.accountService.findAll(entityId, subCategory, type);
+    }
+    
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSizeNum = Math.max(1, parseInt(limit));
     
     return this.accountService.findAll(entityId, subCategory, type, pageNum, pageSizeNum);
   }

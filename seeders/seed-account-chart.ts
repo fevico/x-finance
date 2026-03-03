@@ -93,6 +93,7 @@ const defaultChartOfAccounts = {
           { code: '3110', name: 'Capital Stock', description: 'Owner share capital' },
           { code: '3120', name: 'Retained Earnings', description: 'Accumulated profits' },
           { code: '3130', name: 'Dividends', description: 'Distributions to shareholders' },
+          { code: '3140', name: 'Opening Balance', description: 'Opening balances brought forward' },
         ],
       },
     ],

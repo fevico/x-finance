@@ -17,7 +17,7 @@ import { CreateOpeningBalanceDto, UpdateOpeningBalanceDto, GetOpeningBalanceResp
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 
-@Controller('accounts/opening-balance')
+@Controller('account/opening-balances')
 export class OpeningBalanceController {
   constructor(private readonly openingBalanceService: OpeningBalanceService) {}
 

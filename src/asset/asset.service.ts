@@ -26,7 +26,7 @@ export class AssetService {
         where: { id: entityId },
       });
       if (!entity) throw new UnauthorizedException('Access denied!');
-      const assest = await this.prisma.asset.create({
+      const asset = await this.prisma.asset.create({
         data: { ...createAsset, entityId },
       });
       await this.auditService.logAsync({
@@ -35,7 +35,7 @@ export class AssetService {
         req,
       });
 
-      return assest;
+      return asset;
     } catch (error) {
       throw new HttpException(
         `${error instanceof Error ? error.message : String(error)}`,

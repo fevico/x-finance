@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BullmqService } from './bullmq.service';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { BullmqProcessor } from './bullmq.processor';
 import { EmailService } from '@/email/email.service';
+import { OpeningBalanceModule } from '@/accounts/opening-balance/opening-balance.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { EmailService } from '@/email/email.service';
     }),
     BullModule.registerQueue({ name: 'default' }),
     PrismaModule,
+    forwardRef(() => OpeningBalanceModule),
   ],
   providers: [BullmqService, BullmqProcessor, EmailService],
   exports: [BullmqService],
