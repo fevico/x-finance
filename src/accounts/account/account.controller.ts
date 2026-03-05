@@ -58,6 +58,7 @@ export class AccountController {
   async findAll(
     @Req() req: Request,
     @Query('subCategory') subCategory?: string,
+    @Query('search') search?: string,
 
     @Query('type') type?: string,
     @Query('page') page?: string,
@@ -67,13 +68,13 @@ export class AccountController {
     if (!entityId) throw new BadRequestException('Entity ID is required');
     
     if (!page || !limit) {
-      return this.accountService.findAll(entityId, subCategory, type);
+      return this.accountService.findAll(entityId, subCategory, type, search);
     }
     
     const pageNum = Math.max(1, parseInt(page));
     const pageSizeNum = Math.max(1, parseInt(limit));
     
-    return this.accountService.findAll(entityId, subCategory, type, pageNum, pageSizeNum);
+    return this.accountService.findAll(entityId, subCategory, type, search, pageNum, pageSizeNum);
   }
 
   @Post(':entityId/opening-balances')

@@ -112,6 +112,7 @@ export class AccountService {
     entityId: string,
     subCategory?: string,
     type?: string,
+    search?: string,
     page?: number,
     pageSize?: number,
   ): Promise<any> {
@@ -189,6 +190,16 @@ export class AccountService {
           }
         }
       }
+
+      // Filter by search query (name, code, or description)
+      if (search && search.trim()) {
+        where.OR = [
+          { name: { contains: search.trim(), mode: 'insensitive' } },
+          { code: { contains: search.trim(), mode: 'insensitive' } },
+          { description: { contains: search.trim(), mode: 'insensitive' } },
+        ];
+      }
+
       let skip = 0;
       let take = 1000; // default large number to return all if pagination not specified
       // Calculate pagination parameters

@@ -113,20 +113,19 @@ export class AnalyticsService {
 
       const currentBankBalance = bankAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
 
-      // Get previous month bank balance by calculating from transactions
-      const previousMonthBankTransactions = await this.prisma.accountTransaction.aggregate({
+      // Get previous month-end balance from the last transaction on or before previous month end
+      const lastTransactionPreviousMonth = await this.prisma.accountTransaction.findFirst({
         where: {
           entityId,
           type: 'BANK',
-          date: { gte: previousMonth, lte: previousMonthEnd },
+          date: { lte: previousMonthEnd },
         },
-        _sum: { debitAmount: true, creditAmount: true },
+        orderBy: { date: 'desc' },
+        select: { runningBalance: true },
       });
 
-      const previousBankBalance =
-        currentBankBalance -
-        ((previousMonthBankTransactions._sum.debitAmount || 0) -
-          (previousMonthBankTransactions._sum.creditAmount || 0));
+      // If no transactions exist, use 0; otherwise use the running balance from last transaction
+      const previousBankBalance = lastTransactionPreviousMonth?.runningBalance || 0;
 
       const bankBalanceChange = currentBankBalance - previousBankBalance;
       const bankBalanceChangePercent =
@@ -147,7 +146,7 @@ export class AnalyticsService {
         where: {
           entityId,
           status: { in: ['unpaid', 'partial'] },
-          createdAt: { lte: previousMonthEnd },
+          billDate: { lte: previousMonthEnd },
         },
         _sum: { total: true },
       });
@@ -553,7 +552,7 @@ export class AnalyticsService {
   ): Promise<RecentTransactionDto[]> {
     try {
       const transactions = await this.prisma.accountTransaction.findMany({
-        where: { entityId },
+        where: { entityId, type: 'BANK' },
         include: {
           account: { select: { code: true, name: true } },
         },

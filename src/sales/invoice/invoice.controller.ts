@@ -1,3 +1,4 @@
+import { BankingService } from '@/banking/banking.service';
 import {
   Body,
   Controller,
@@ -10,6 +11,7 @@ import {
   Param,
   Delete,
   Patch,
+  Res,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { AuthGuard } from '@/auth/guards/auth.guard';
@@ -19,6 +21,7 @@ import { GetInvoicesQueryDto } from './dto/get-invoices-query.dto';
 import { GetPaidInvoicesQueryDto } from './dto/get-paid-invoices-query.dto';
 import { GetEntityInvoicesResponseDto } from './dto/get-entity-invoices-response.dto';
 import { GetPaidInvoicesResponseDto } from './dto/get-paid-invoices-response.dto';
+import { PdfService } from '@/pdf/pdf.service';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -35,7 +38,11 @@ import {
 @ApiTags('Invoices')
 @Controller('sales/invoices')
 export class InvoiceController {
-  constructor(private invoiceService: InvoiceService) {}
+  constructor(
+    private invoiceService: InvoiceService,
+    private pdfService: PdfService,
+    private bankingService: BankingService, // If you have a service for bank accounts
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -176,5 +183,35 @@ export class InvoiceController {
     return this.invoiceService.deleteInvoice(invoiceId, entityId, userId);
   }
 
- 
+  @Get(':invoiceId/download')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Download invoice as PDF' })
+  @ApiParam({ name: 'invoiceId', description: 'Invoice ID', type: 'string' })
+  async downloadInvoice(@Req() req, @Param('invoiceId') invoiceId: string, @Res() res) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new UnauthorizedException('Access denied!');
+
+    // Fetch invoice with all required relations
+    const invoice = await this.invoiceService.getInvoiceById(invoiceId, entityId);
+    const customer = invoice.customer;
+    const entity = invoice.entity;
+    // Get first bank account for entity
+    const bankAccount = await this.bankingService.getBankAccounts(entityId);
+
+    // Prepare data for template
+    const pdfData = {
+      invoice,
+      customer,
+      entity,
+      bankAccount: bankAccount.data[0],
+    };
+
+    // Generate PDF
+    const pdfBuffer = await this.pdfService.generate('invoice', pdfData);
+
+    // Send PDF as download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=invoice-${invoice.invoiceNumber}.pdf`);
+    res.send(pdfBuffer);
+  }
 }

@@ -681,6 +681,7 @@ export class InvoiceService {
         where: { OR: [{ id: invoiceId }, { invoiceNumber: invoiceId }] },
         include: {
           customer: true,
+          entity: true,
           invoiceItem: {
             include: { item: true },
           },

@@ -324,7 +324,7 @@ model Expenses {
 model Bills {
   id                String               @id @default(cuid())
   billDate          DateTime
-  billNumber        String?
+  billNumber        String               @unique
   vendorId          String
   dueDate           DateTime
   poNumber          String?
@@ -355,6 +355,7 @@ model Bills {
   accountsPayable   Account              @relation(fields: [accountsPayableId], references: [id], onDelete: Restrict)
 
   @@index([billDate, category])
+  @@unique([entityId, billNumber])
 }
 
 model PaymentRecord {

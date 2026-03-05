@@ -28,3 +28,16 @@ export function generateJournalReference(prefix: string = 'JRNL'): string {
   return `${prefix}${datePart}${randomPart}`;
   // Example: JRNL250410K7N4P9
 }
+
+/**
+ * Generates a sequential bill reference (e.g., BILL-0001, BILL-0002)
+ * This function should be called from the bill service with database access
+ * @param nextSequence - The next sequence number to use
+ * @param prefix - Optional prefix for the bill reference (default: "BILL")
+ * @returns A formatted bill reference like "BILL-0001"
+ */
+export function generateBillReference(nextSequence: number, prefix: string = 'BILL'): string {
+  const paddedSequence = String(nextSequence).padStart(4, '0');
+  return `${prefix}-${paddedSequence}`;
+  // Example: BILL-0001, BILL-0002, BILL-0003
+}

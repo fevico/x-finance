@@ -38,11 +38,6 @@ export class CreateBillDto {
   @Type(() => Date)
   billDate: Date;
 
-  @ApiPropertyOptional({ example: 'BILL-001', description: 'Bill number' })
-  @IsOptional()
-  @IsString()
-  billNumber?: string;
-
   @ApiProperty({ example: 'vendor_uuid', description: 'Vendor ID' })
   @IsString()
   vendorId: string;
@@ -134,10 +129,7 @@ export class UpdateBillDto {
   @Type(() => Date)
   billDate?: Date;
 
-  @ApiPropertyOptional({ example: 'BILL-001', description: 'Bill number' })
-  @IsOptional()
-  @IsString()
-  billNumber?: string;
+  
 
   @ApiPropertyOptional({ example: 'vendor_uuid', description: 'Vendor ID' })
   @IsOptional()

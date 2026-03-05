@@ -6,6 +6,7 @@ import { CreateBillDto } from './dto/bill.dto';
 import { GetBillsQueryDto } from './dto/get-bills-query.dto';
 import { GetBillsResponseDto } from './dto/get-bills-response.dto';
 import { BillStatus } from 'prisma/generated/enums';
+import { generateBillReference, generateJournalReference } from '@/auth/utils/helper';
 
 @Injectable()
 export class BillsService {
@@ -45,6 +46,26 @@ export class BillsService {
     // Cast status to BillStatus enum
     const billStatus = (status || 'draft') as BillStatus;
 
+    // Generate sequential bill reference within a transaction to prevent race conditions
+    const billNumber = await this.prisma.$transaction(async (tx) => {
+      // Lock and get the last bill for this entity
+      const lastBill = await tx.bills.findFirst({
+        where: { entityId },
+        orderBy: { createdAt: 'desc' },
+        select: { billNumber: true },
+      });
+
+      let nextSequence = 1;
+      if (lastBill?.billNumber) {
+        const match = lastBill.billNumber.match(/BILL-(\d+)/);
+        if (match) {
+          nextSequence = parseInt(match[1]) + 1;
+        }
+      }
+
+      return generateBillReference(nextSequence);
+    });
+
     // Parse and calculate item totals - NOW with expenseAccountId per item
     let subtotal = 0;
     const billItemsData = (JSON.parse(items as any) || []).map((item, index) => {
@@ -81,6 +102,7 @@ export class BillsService {
       data: {
         ...billData,
         status: billStatus,
+        billNumber,
         accountsPayableId: billData.accountsPayableId ?? undefined,
         entityId,
         subtotal,
@@ -130,8 +152,6 @@ export class BillsService {
         // Don't throw - bill is already created, job will retry
       }
     }
-
-    return bill;
 
     return bill;
   }

@@ -32,26 +32,51 @@ export class CustomerService {
 
   async getAllCustomer(entityId: string) {
     try {
-      const [customersRaw, total, active] = await Promise.all([
-        this.prisma.customer.findMany({
-          where: { entityId },
-          include: { _count: { select: { invoice: true } } },
-        }),
+      // Fetch customers with full invoice and payment data
+      const customersRaw = await this.prisma.customer.findMany({
+        where: { entityId },
+        include: {
+          invoice: {
+            include: {
+              paymentReceived: true,
+            },
+          },
+        },
+      });
+
+      // Calculate metrics for each customer
+      const customersWithMetrics = customersRaw.map((c) => {
+        // Calculate outstanding balance: sum of (invoice.total - payments received) for all invoices
+        const outstandingBalance = c.invoice.reduce((total, invoice) => {
+          const paidAmount = invoice.paymentReceived.reduce((sum, payment) => sum + payment.amount, 0);
+          return total + (invoice.total - paidAmount);
+        }, 0);
+
+        // Return customer without full invoice/payment data
+        const { invoice, ...customerData } = c;
+        return {
+          ...customerData,
+          outstandingBalance,
+          invoiceCount: invoice.length,
+        };
+      });
+
+      // Get total customer counts
+      const [total, active] = await Promise.all([
         this.prisma.customer.count({ where: { entityId } }),
         this.prisma.customer.count({ where: { entityId, isActive: true } }),
       ]);
 
-      const customers = customersRaw.map((c) => ({
-        ...c,
-        invoiceCount: c._count?.invoice ?? 0,
-      }));
+      // Calculate entity-level metrics
+      const totalOutstanding = customersWithMetrics.reduce((sum, c) => sum + c.outstandingBalance, 0);
+      const averageBalance = customersWithMetrics.length > 0 ? totalOutstanding / customersWithMetrics.length : 0;
 
       return {
-        customers,
+        customers: customersWithMetrics,
         total,
         active,
-        averageBalance: 0,
-        outstandingReceivables: 0,
+        averageBalance,
+        outstandingReceivables: totalOutstanding,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
