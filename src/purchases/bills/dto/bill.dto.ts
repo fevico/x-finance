@@ -79,9 +79,6 @@ export class CreateBillDto {
   @Type(() => Number)
   total: number;
 
-  @ApiProperty({ example: 'Office Supplies', description: 'Category' })
-  @IsString()
-  category: string;
 
   @ApiPropertyOptional({ example: 'Payment terms noted', description: 'Notes' })
   @IsOptional()
