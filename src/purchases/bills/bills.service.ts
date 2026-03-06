@@ -160,19 +160,14 @@ export class BillsService {
     entityId: string,
     query: GetBillsQueryDto,
   ): Promise<GetBillsResponseDto & any> {
-    const { page = 1, limit = 10, category, search } = query;
+    const { page = 1, limit = 10, search } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {
       entityId,
     };
 
-    if (category) {
-      where.category = {
-        contains: category,
-        mode: 'insensitive',
-      };
-    }
+   
 
     if (search) {
       where.OR = [

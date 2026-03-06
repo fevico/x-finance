@@ -77,7 +77,6 @@ export class BillsController {
           },
         },
         total: { type: 'number', example: 5000 },
-        category: { type: 'string', example: 'Office Supplies' },
         notes: { type: 'string', example: 'Important notes' },
         attachment: { type: 'string', format: 'binary' },
       },
@@ -88,7 +87,6 @@ export class BillsController {
         'paymentTerms',
         'items',
         'total',
-        'category',
       ],
     },
   })
@@ -117,7 +115,6 @@ export class BillsController {
           },
         },
         total: { type: 'number' },
-        category: { type: 'string' },
         notes: { type: 'string' },
         attachment: { type: 'object' },
         createdAt: { type: 'string', format: 'date-time' },
@@ -146,12 +143,7 @@ export class BillsController {
   @ApiOperation({ summary: 'Get all bills with pagination and filters' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({
-    name: 'category',
-    required: false,
-    type: String,
-    description: 'Filter by category',
-  })
+ 
   @ApiQuery({
     name: 'search',
     required: false,
@@ -217,7 +209,6 @@ export class BillsController {
         },
         removeItemIds: { type: 'array', items: { type: 'string' } },
         total: { type: 'number' },
-        category: { type: 'string' },
         notes: { type: 'string' },
         attachment: { type: 'string', format: 'binary' },
       },

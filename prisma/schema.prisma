@@ -334,7 +334,6 @@ model Bills {
   tax               Int
   discount          Int
   total             Int
-  category          String
   notes             String?
   attachment        Json?
   accountsPayableId String
@@ -354,7 +353,6 @@ model Bills {
   paymentsMade      PaymentMade[]
   accountsPayable   Account              @relation(fields: [accountsPayableId], references: [id], onDelete: Restrict)
 
-  @@index([billDate, category])
   @@unique([entityId, billNumber])
 }
 

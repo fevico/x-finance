@@ -18,13 +18,6 @@ export class GetBillsQueryDto {
   @Max(100)
   limit?: number = 10;
 
-  @ApiPropertyOptional({
-    example: 'Office Supplies',
-    description: 'Filter by category',
-  })
-  @IsOptional()
-  @IsString()
-  category?: string;
 
   @ApiPropertyOptional({
     example: 'Acme',

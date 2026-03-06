@@ -199,10 +199,6 @@ export class UpdateBillDto {
   @Type(() => Number)
   total?: number;
 
-  @ApiPropertyOptional({ example: 'Office Supplies', description: 'Category' })
-  @IsOptional()
-  @IsString()
-  category?: string;
 
   @ApiPropertyOptional({ example: 'Payment terms noted', description: 'Notes' })
   @IsOptional()
