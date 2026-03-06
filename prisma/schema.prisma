@@ -553,6 +553,7 @@ model Account {
   entityId            String
   subCategoryId       String
   balance             Int                  @default(0)
+  linkedType          String?              // Purpose of account: BANK, CASH, LOAN, etc. null for regular GL accounts
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @default(now()) @updatedAt
   entity              Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
@@ -570,6 +571,7 @@ model Account {
 
   @@index([id, entityId])
   @@index([subCategoryId])
+  @@unique([entityId, code])
 }
 
 model Journal {
@@ -721,26 +723,24 @@ model AuditLog {
 }
 
 model BankAccount {
-  id                  String               @id @default(cuid())
-  accountName         String
-  bankName            String
-  accountType         String
-  currency            String
-  accountNumber       String               @unique
-  routingNumber       String?
-  openingBalance      Int                  @default(0)
-  currentBalance      Int                  @default(0)
-  status              BankAccountStatus    @default(active)
-  linkedAccountId     String               @unique
-  entityId            String
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @default(now()) @updatedAt
-  entity              Entity               @relation("BankAccounts", fields: [entityId], references: [id], onDelete: Cascade)
-  linkedAccount       Account              @relation("LinkedBankAccount", fields: [linkedAccountId], references: [id])
-  accountTransactions AccountTransaction[] @relation("BankAccountTransactions")
+  id              String            @id @default(cuid())
+  accountName     String
+  bankName        String
+  accountType     String
+  currency        String
+  accountNumber   String            
+  routingNumber   String?
+  status          BankAccountStatus @default(active)
+  linkedAccountId String            @unique
+  entityId        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  entity          Entity            @relation("BankAccounts", fields: [entityId], references: [id], onDelete: Cascade)
+  linkedAccount   Account           @relation("LinkedBankAccount", fields: [linkedAccountId], references: [id])
 
   @@index([entityId, linkedAccountId])
   @@index([accountNumber])
+  @@unique([entityId, accountNumber])
 }
 
 model AccountTransaction {
@@ -759,13 +759,11 @@ model AccountTransaction {
   entityId          String
   relatedEntityId   String? // ID of invoice, payment, etc.
   relatedEntityType String? // Type: Invoice, PaymentReceived, BankTransaction
-  bankAccountId     String? // If posting to a bank account
   metadata          Json?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @default(now()) @updatedAt
   account           Account                  @relation("AccountTransactions", fields: [accountId], references: [id], onDelete: Restrict)
   entity            Entity                   @relation("EntityAccountTransactions", fields: [entityId], references: [id], onDelete: Cascade)
-  bankAccount       BankAccount?             @relation("BankAccountTransactions", fields: [bankAccountId], references: [id], onDelete: SetNull)
 
   @@index([entityId, accountId, date])
   @@index([date, type])

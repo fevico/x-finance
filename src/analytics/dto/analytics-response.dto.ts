@@ -68,8 +68,8 @@ export class BankAccountSummaryDto {
   bankName: string;
   accountType: string;
   currency: string;
-  currentBalance: number;
   status: string;
+  linkedAccount?: { balance: number };
 }
 
 export class BankingSummaryDto {

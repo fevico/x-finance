@@ -80,8 +80,8 @@ export class AnalyticsService {
       const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      // Revenue (MTD)
-      const currentMTDRevenue = await this.prisma.invoice.aggregate({
+      // Revenue (MTD) - Sum of paid invoices + payments received for partial/overdue invoices + receipts
+      const currentMTDPaidInvoices = await this.prisma.invoice.aggregate({
         where: {
           entityId,
           status: 'Paid',
@@ -90,7 +90,42 @@ export class AnalyticsService {
         _sum: { total: true },
       });
 
-      const previousMTDRevenue = await this.prisma.invoice.aggregate({
+      // Payments received for Partial invoices in current MTD
+      const currentMTDPartialPayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Partial', invoiceDate: { gte: currentMonth, lte: now } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Payments received for Overdue invoices in current MTD
+      const currentMTDOverduePayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Overdue', invoiceDate: { gte: currentMonth, lte: now } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Receipts (direct revenue) in current MTD
+      const currentMTDReceipts = await this.prisma.receipt.aggregate({
+        where: {
+          entityId,
+          status: 'Completed',
+          date: { gte: currentMonth, lte: now },
+        },
+        _sum: { total: true },
+      });
+
+      const revenueMTD =
+        (currentMTDPaidInvoices._sum.total || 0) +
+        (currentMTDPartialPayments._sum.amount || 0) +
+        (currentMTDOverduePayments._sum.amount || 0) +
+        (currentMTDReceipts._sum.total || 0);
+
+      // Previous month revenue
+      const previousMTDPaidInvoices = await this.prisma.invoice.aggregate({
         where: {
           entityId,
           status: 'Paid',
@@ -99,19 +134,51 @@ export class AnalyticsService {
         _sum: { total: true },
       });
 
-      const revenueMTD = currentMTDRevenue._sum.total || 0;
-      const revenuePrevious = previousMTDRevenue._sum.total || 0;
+      // Payments received for Partial invoices in previous month
+      const previousMTDPartialPayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Partial', invoiceDate: { gte: previousMonth, lte: previousMonthEnd } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Payments received for Overdue invoices in previous month
+      const previousMTDOverduePayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Overdue', invoiceDate: { gte: previousMonth, lte: previousMonthEnd } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Receipts (direct revenue) in previous month
+      const previousMTDReceipts = await this.prisma.receipt.aggregate({
+        where: {
+          entityId,
+          status: 'Completed',
+          date: { gte: previousMonth, lte: previousMonthEnd },
+        },
+        _sum: { total: true },
+      });
+
+      const revenuePrevious =
+        (previousMTDPaidInvoices._sum.total || 0) +
+        (previousMTDPartialPayments._sum.amount || 0) +
+        (previousMTDOverduePayments._sum.amount || 0) +
+        (previousMTDReceipts._sum.total || 0);
+
       const revenueChange = revenueMTD - revenuePrevious;
       const revenueChangePercent =
         revenuePrevious > 0 ? (revenueChange / revenuePrevious) * 100 : 100;
 
-      // Bank Balance (Total across all accounts)
+      // Bank Balance (Total across all linked bank accounts)
       const bankAccounts = await this.prisma.bankAccount.findMany({
         where: { entityId },
-        select: { currentBalance: true },
+        include: { linkedAccount: { select: { balance: true } } },
       });
 
-      const currentBankBalance = bankAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
+      const currentBankBalance = bankAccounts.reduce((sum, a) => sum + a.linkedAccount.balance, 0);
 
       // Get previous month-end balance from the last transaction on or before previous month end
       const lastTransactionPreviousMonth = await this.prisma.accountTransaction.findFirst({
@@ -142,11 +209,11 @@ export class AnalyticsService {
 
       const currentLiabilities = unpaidBills._sum.total || 0;
 
+      // Get all unpaid/partial bills as of previous period for consistent comparison
       const previousUnpaidBills = await this.prisma.bills.aggregate({
         where: {
           entityId,
           status: { in: ['unpaid', 'partial'] },
-          billDate: { lte: previousMonthEnd },
         },
         _sum: { total: true },
       });
@@ -239,16 +306,46 @@ export class AnalyticsService {
         const year = start.getFullYear();
         const monthLabel = `${month} '${year.toString().slice(-2)}`;
 
-        // Revenue: Sum of paid invoices
+        // Revenue: Sum of paid invoices + payments received for partial/overdue invoices + receipts
         const endDate = end > dateRange.endDate ? dateRange.endDate : end;
-        const revenue = await this.prisma.invoice.aggregate({
-          where: {
-            entityId,
-            status: 'Paid',
-            invoiceDate: { gte: start, lte: endDate },
-          },
-          _sum: { total: true },
-        });
+        const [paidInvoices, partialPayments, overduePayments, receipts] = await Promise.all([
+          this.prisma.invoice.aggregate({
+            where: {
+              entityId,
+              status: 'Paid',
+              invoiceDate: { gte: start, lte: endDate },
+            },
+            _sum: { total: true },
+          }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Partial', invoiceDate: { gte: start, lte: endDate } },
+            },
+            _sum: { amount: true },
+          }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Overdue', invoiceDate: { gte: start, lte: endDate } },
+            },
+            _sum: { amount: true },
+          }),
+          this.prisma.receipt.aggregate({
+            where: {
+              entityId,
+              status: 'Completed',
+              date: { gte: start, lte: endDate },
+            },
+            _sum: { total: true },
+          }),
+        ]);
+
+        const revenue =
+          (paidInvoices._sum.total || 0) +
+          (partialPayments._sum.amount || 0) +
+          (overduePayments._sum.amount || 0) +
+          (receipts._sum.total || 0);
 
         // Expenses: Sum of approved expenses + paid bills
         const [expenses, bills] = await Promise.all([
@@ -271,7 +368,7 @@ export class AnalyticsService {
 
         monthlyData.push({
           month: monthLabel,
-          revenue: revenue._sum.total || 0,
+          revenue,
           expenses: (expenses._sum?.amount || 0) + (bills._sum?.amount || 0),
         });
 
@@ -321,9 +418,9 @@ export class AnalyticsService {
         const year = start.getFullYear();
         const monthLabel = `${month} '${year.toString().slice(-2)}`;
 
-        // Inflow: Paid invoices + Payment received + Receipts
+        // Inflow: Paid invoices + Payment received for Partial/Overdue invoices + Completed receipts
         const endDateInflow = end > dateRange.endDate ? dateRange.endDate : end;
-        const [invoicesInflow, receiptsInflow] = await Promise.all([
+        const [invoicesInflow, partialPaymentsInflow, overduePaymentsInflow, receiptsInflow] = await Promise.all([
           this.prisma.invoice.aggregate({
             where: {
               entityId,
@@ -332,16 +429,35 @@ export class AnalyticsService {
             },
             _sum: { total: true },
           }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Partial', invoiceDate: { gte: start, lte: endDateInflow } },
+            },
+            _sum: { amount: true },
+          }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Overdue', invoiceDate: { gte: start, lte: endDateInflow } },
+            },
+            _sum: { amount: true },
+          }),
           this.prisma.receipt.aggregate({
             where: {
               entityId,
-              createdAt: { gte: start, lte: endDateInflow },
+              status: 'Completed',
+              date: { gte: start, lte: endDateInflow },
             },
             _sum: { total: true },
           }),
         ]);
 
-        const inflow = (invoicesInflow._sum.total || 0) + (receiptsInflow._sum.total || 0);
+        const inflow =
+          (invoicesInflow._sum.total || 0) +
+          (partialPaymentsInflow._sum.amount || 0) +
+          (overduePaymentsInflow._sum.amount || 0) +
+          (receiptsInflow._sum.total || 0);
 
         // Outflow: Approved expenses + Bill payments
         const endDateOutflow = end > dateRange.endDate ? dateRange.endDate : end;
@@ -384,7 +500,7 @@ export class AnalyticsService {
 
   /**
    * Get top expenses by category with date filtering
-   * Note: Grouping by vendor since Expenses model doesn't have category field
+   * Includes both approved expenses and bill payments categorized by their expense accounts
    * @param entityId The entity ID
    * @param filter Date filter type (THIS_YEAR, THIS_FISCAL_YEAR, LAST_FISCAL_YEAR, LAST_12_MONTHS)
    * @param limit Maximum number of categories to return
@@ -411,8 +527,23 @@ export class AnalyticsService {
         },
       });
 
+      // Fetch bills with their items to extract expense account breakdown
+      const allBillPayments = await this.prisma.paymentMade.findMany({
+        where: {
+          entityId,
+          paymentDate: { gte: dateRange.startDate, lte: dateRange.endDate },
+        },
+        include: {
+          bill: {
+            select: { items: true },
+          },
+        },
+      });
+
       // Group by expense account and sum amounts
       const expensesByAccount = new Map<string, { name: string; accountId: string; total: number }>();
+
+      // Add approved expenses
       allExpenses.forEach((exp) => {
         const accountKey = exp.expenseAccountId;
         const accountName = exp.expenseAccount?.name || 'Uncategorized';
@@ -422,6 +553,41 @@ export class AnalyticsService {
           accountId: accountKey,
           total: (existing?.total || 0) + exp.amount,
         });
+      });
+
+      // Add bill payments by their line item expense accounts
+      allBillPayments.forEach((payment) => {
+        if (payment.bill?.items && Array.isArray(payment.bill.items)) {
+          // Parse bill items to distribute payment across expense accounts
+          const items = payment.bill.items as Array<{
+            expenseAccountId?: string;
+            accountId?: string;
+            name?: string;
+            total?: number;
+          }>;
+
+          // Calculate total amount in bill items for proportional distribution
+          const totalItemAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
+
+          if (totalItemAmount > 0) {
+            // Distribute payment proportionally across items
+            items.forEach((item) => {
+              const expenseAccountId = item.expenseAccountId || item.accountId;
+              if (expenseAccountId) {
+                const proportion = (item.total || 0) / totalItemAmount;
+                const allocatedAmount = Math.round(payment.amount * proportion);
+                const accountKey = expenseAccountId;
+                const accountName = item.name || 'Uncategorized';
+                const existing = expensesByAccount.get(accountKey);
+                expensesByAccount.set(accountKey, {
+                  name: accountName,
+                  accountId: accountKey,
+                  total: (existing?.total || 0) + allocatedAmount,
+                });
+              }
+            });
+          }
+        }
       });
 
       // Sort by amount descending and take limit
@@ -447,6 +613,7 @@ export class AnalyticsService {
 
   /**
    * Get accounts receivable aging (based on invoice aging)
+   * Includes Sent, Overdue, and Partial invoices
    */
   async getReceivableAging(entityId: string): Promise<AgingBucketDto> {
     try {
@@ -455,7 +622,7 @@ export class AnalyticsService {
       const unpaidInvoices = await this.prisma.invoice.findMany({
         where: {
           entityId,
-          status: { in: ['Sent', 'Overdue'] },
+          status: { in: ['Sent', 'Overdue', 'Partial'] },
         },
         select: {
           total: true,
@@ -592,14 +759,18 @@ export class AnalyticsService {
           bankName: true,
           accountType: true,
           currency: true,
-          currentBalance: true,
           status: true,
+          linkedAccount: {
+            select: {
+              balance: true,
+            },
+          },
         },
         orderBy: { accountName: 'asc' },
       });
 
       const totalBankCash = bankAccounts.reduce(
-        (sum, account) => sum + account.currentBalance,
+        (sum, account) => sum + account.linkedAccount.balance,
         0,
       );
       const numberOfBankAccounts = bankAccounts.length;

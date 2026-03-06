@@ -94,34 +94,34 @@ export class AccountTransactionController {
   /**
    * Get transactions for a specific bank account
    */
-  @Get('bank/:bankAccountId')
-  @ApiOperation({
-    summary: 'Get transactions for a specific bank account',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Transactions for the bank account',
-  })
-  @ApiResponse({ status: 404, description: 'Bank account not found' })
-  async getBankAccountTransactions(
-    @Param('bankAccountId') bankAccountId: string,
-    @Req() req: Request,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-  ) {
-    const entityId = getEffectiveEntityId(req);
-    if (!entityId) throw new BadRequestException('Entity ID is required');
+  // @Get('bank/:bankAccountId')
+  // @ApiOperation({
+  //   summary: 'Get transactions for a specific bank account',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Transactions for the bank account',
+  // })
+  // @ApiResponse({ status: 404, description: 'Bank account not found' })
+  // async getBankAccountTransactions(
+  //   @Param('bankAccountId') bankAccountId: string,
+  //   @Req() req: Request,
+  //   @Query('page') page?: string,
+  //   @Query('pageSize') pageSize?: string,
+  // ) {
+  //   const entityId = getEffectiveEntityId(req);
+  //   if (!entityId) throw new BadRequestException('Entity ID is required');
 
-    const pageNum = page ? Math.max(1, parseInt(page)) : 1;
-    const pageSizeNum = pageSize ? Math.max(1, parseInt(pageSize)) : 20;
+  //   const pageNum = page ? Math.max(1, parseInt(page)) : 1;
+  //   const pageSizeNum = pageSize ? Math.max(1, parseInt(pageSize)) : 20;
 
-    return this.transactionService.getBankAccountTransactions(
-      bankAccountId,
-      entityId,
-      pageNum,
-      pageSizeNum,
-    );
-  }
+  //   return this.transactionService.getBankAccountTransactions(
+  //     bankAccountId,
+  //     entityId,
+  //     pageNum,
+  //     pageSizeNum,
+  //   );
+  // }
 
   /**
    * Get a specific transaction by ID
@@ -167,7 +167,6 @@ export class AccountTransactionController {
     return this.transactionService.getTransactionSummary(
       entityId,
       accountId,
-      bankAccountId,
     );
   }
 }

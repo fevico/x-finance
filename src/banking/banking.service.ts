@@ -33,9 +33,12 @@ export class BankingService {
       throw new ForbiddenException('Entity not found');
     }
 
-    // Check if account number already exists
-    const existingAccount = await this.prisma.bankAccount.findUnique({
-      where: { accountNumber: createBankAccountDto.accountNumber },
+    // Check if account number already exists for this entity
+    const existingAccount = await this.prisma.bankAccount.findFirst({
+      where: {
+        accountNumber: createBankAccountDto.accountNumber,
+        entityId: effectiveEntityId,
+      },
     });
 
     if (existingAccount) {
@@ -64,10 +67,11 @@ export class BankingService {
       );
     }
 
-    // Auto-create linked account with balance = 0 (will be set via opening balance posting)
-    const accountCode = this.generateAccountCode(
+    // Auto-create linked account with unique code per entity
+    const accountCode = await this.generateAccountCode(
       cashSubCategory.code,
       createBankAccountDto.accountName,
+      effectiveEntityId,
     );
 
     const linkedAccount = await this.prisma.account.create({
@@ -77,31 +81,42 @@ export class BankingService {
         description: `Bank account: ${createBankAccountDto.bankName} (${createBankAccountDto.accountNumber})`,
         entityId: effectiveEntityId,
         subCategoryId: cashSubCategory.id,
+        linkedType: 'BANK', // Mark this account as linked to a bank
         balance: 0, // Start at 0, will be updated via opening balance posting
       },
     });
 
-    // Create bank account (with opening balance placeholder)
+    // Create bank account (metadata only, balance managed through linked Account)
     const bankAccount = await this.prisma.bankAccount.create({
       data: {
-        ...createBankAccountDto,
+        accountName: createBankAccountDto.accountName,
+        bankName: createBankAccountDto.bankName,
+        accountType: createBankAccountDto.accountType,
+        currency: createBankAccountDto.currency,
+        accountNumber: createBankAccountDto.accountNumber,
+        routingNumber: createBankAccountDto.routingNumber,
         linkedAccountId: linkedAccount.id,
         entityId: effectiveEntityId,
-        currentBalance: 0, // Will be updated after opening balance posts
       },
       include: {
         linkedAccount: true,
       },
     });
 
-    // If opening balance is provided, create opening balance record and post to journal
+    // If opening balance is provided, set Account balance and post to journal
     if (createBankAccountDto.openingBalance > 0) {
+      // Update linked account balance
+      await this.prisma.account.update({
+        where: { id: linkedAccount.id },
+        data: { balance: createBankAccountDto.openingBalance },
+      });
+
       // Create opening balance record with single item (this bank account)
       const openingBalanceRecord = await this.prisma.openingBalance.create({
         data: {
           entityId: effectiveEntityId,
           date: new Date(),
-          fiscalYear: new Date().getFullYear().toString(),
+          // fiscalYear: new Date().getFullYear().toString(),
           totalDebit: createBankAccountDto.openingBalance,
           totalCredit: 0,
           difference: createBankAccountDto.openingBalance,
@@ -153,7 +168,13 @@ export class BankingService {
       });
     }
 
-    return bankAccount;
+    // Fetch fresh bankAccount with updated linkedAccount data
+    return await this.prisma.bankAccount.findUnique({
+      where: { id: bankAccount.id },
+      include: {
+        linkedAccount: true,
+      },
+    });
   }
 
   async getBankAccounts(
@@ -170,10 +191,6 @@ export class BankingService {
         },
         include: {
           linkedAccount: true,
-          accountTransactions: {
-            orderBy: { date: 'desc' },
-            take: 5,
-          },
         },
         skip,
         take: pageSize,
@@ -202,10 +219,6 @@ export class BankingService {
       where: { id },
       include: {
         linkedAccount: true,
-        accountTransactions: {
-          orderBy: { date: 'desc' },
-          take: 20,
-        },
       },
     });
 
@@ -217,7 +230,30 @@ export class BankingService {
       throw new ForbiddenException('Access denied');
     }
 
-    return bankAccount;
+    // Get transaction statistics
+    const transactions = await this.prisma.accountTransaction.findMany({
+      where: {
+        accountId: bankAccount.linkedAccountId,
+        entityId: effectiveEntityId,
+      },
+      select: {
+        creditAmount: true,
+        debitAmount: true,
+        status: true,
+      },
+    });
+
+    const stats = {
+      totalDeposits: transactions.reduce((sum, tx) => sum + tx.creditAmount, 0),
+      totalWithdrawals: transactions.reduce((sum, tx) => sum + tx.debitAmount, 0),
+      pendingCount: transactions.filter((tx) => tx.status === 'Pending').length,
+      transactionsCount: transactions.length,
+    };
+
+    return {
+      ...bankAccount,
+      stats,
+    };
   }
 
   async updateBankAccount(
@@ -237,13 +273,17 @@ export class BankingService {
       throw new ForbiddenException('Access denied');
     }
 
-    // Check if trying to change account number to one that already exists
+    // Check if trying to change account number to one that already exists for this entity
     if (
       updateBankAccountDto.accountNumber &&
       updateBankAccountDto.accountNumber !== bankAccount.accountNumber
     ) {
-      const existingAccount = await this.prisma.bankAccount.findUnique({
-        where: { accountNumber: updateBankAccountDto.accountNumber },
+      const existingAccount = await this.prisma.bankAccount.findFirst({
+        where: {
+          accountNumber: updateBankAccountDto.accountNumber,
+          entityId: effectiveEntityId,
+          NOT: { id }, // Exclude current account from check
+        },
       });
 
       if (existingAccount) {
@@ -266,7 +306,11 @@ export class BankingService {
     const bankAccount = await this.prisma.bankAccount.findUnique({
       where: { id },
       include: {
-        accountTransactions: true,
+        linkedAccount: {
+          include: {
+            accountTransactions: true,
+          },
+        },
       },
     });
 
@@ -278,7 +322,7 @@ export class BankingService {
       throw new ForbiddenException('Access denied');
     }
 
-    if (bankAccount.accountTransactions.length > 0) {
+    if (bankAccount.linkedAccount.accountTransactions.length > 0) {
       throw new BadRequestException(
         'Cannot delete bank account with existing transactions',
       );
@@ -327,14 +371,14 @@ export class BankingService {
       throw new ForbiddenException('Access denied');
     }
 
-    // Calculate new balance
+    // Calculate new balance from linked account
     const balanceChange =
       transactionData.type === 'credit'
         ? transactionData.amount
         : -transactionData.amount;
-    const newBalance = bankAccount.currentBalance + balanceChange;
+    const newBalance = bankAccount.linkedAccount.balance + balanceChange;
 
-    // Create account transaction record
+    // Create account transaction and update linked account balance
     const [accountTransaction] = await Promise.all([
       this.prisma.accountTransaction.create({
         data: {
@@ -350,14 +394,13 @@ export class BankingService {
           payee: transactionData.payee,
           method: transactionData.method,
           entityId: effectiveEntityId,
-          bankAccountId: bankAccountId,
           metadata: transactionData.metadata || {},
         },
       }),
-      this.prisma.bankAccount.update({
-        where: { id: bankAccountId },
+      this.prisma.account.update({
+        where: { id: bankAccount.linkedAccountId },
         data: {
-          currentBalance: newBalance,
+          balance: newBalance,
         },
       }),
     ]);
@@ -385,10 +428,11 @@ export class BankingService {
 
     const skip = (page - 1) * pageSize;
 
+    // Query transactions via the linked account
     const [transactions, total] = await Promise.all([
       this.prisma.accountTransaction.findMany({
         where: {
-          bankAccountId,
+          accountId: bankAccount.linkedAccountId,
           entityId: effectiveEntityId,
         },
         skip,
@@ -406,7 +450,7 @@ export class BankingService {
       }),
       this.prisma.accountTransaction.count({
         where: {
-          bankAccountId,
+          accountId: bankAccount.linkedAccountId,
           entityId: effectiveEntityId,
         },
       }),
@@ -423,16 +467,38 @@ export class BankingService {
     };
   }
 
-  private generateAccountCode(
+  private async generateAccountCode(
     subCategoryCode: string,
     accountName: string,
-  ): string {
-    // Generate a unique code based on subcategory and account name
-    // Format: {subCategoryCode}-{sequence}
+    entityId: string,
+  ): Promise<string> {
     const sanitizedName = accountName
       .replace(/[^a-zA-Z0-9]/g, '')
       .substring(0, 3)
       .toUpperCase();
-    return `${subCategoryCode}-${sanitizedName}-01`;
+
+    let sequence = 1;
+    let codeToCheck = `${subCategoryCode}-${sanitizedName}-${String(sequence).padStart(2, '0')}`;
+
+    // Keep incrementing sequence until we find an unused code for this entity
+    while (true) {
+      const existingAccount = await this.prisma.account.findUnique({
+        where: {
+          entityId_code: {
+            entityId,
+            code: codeToCheck,
+          },
+        },
+      });
+
+      if (!existingAccount) {
+        // Code is unique for this entity
+        return codeToCheck;
+      }
+
+      // Code exists, try next sequence
+      sequence++;
+      codeToCheck = `${subCategoryCode}-${sanitizedName}-${String(sequence).padStart(2, '0')}`;
+    }
   }
 }

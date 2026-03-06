@@ -561,10 +561,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
@@ -745,21 +741,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               }),
             );
 
-            // If account is linked to a bank, also update bank account balance
-            if (accountWithBank?.bankAccount) {
-              promises.push(
-                tx.bankAccount.update({
-                  where: { id: accountWithBank.bankAccount.id },
-                  data: {
-                    currentBalance: {
-                      increment: line.debit - line.credit,
-                    },
-                  },
-                  select: { currentBalance: true },
-                }),
-              );
-            }
-
             return Promise.all(promises);
           }),
         );
@@ -769,7 +750,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           journalLines.map((line, index) => {
             const accountWithBank = accountsWithBanks[index];
             const glAccountUpdate = updatedAccounts[index][0];
-            const bankAccountUpdate = accountsWithBanks[index]?.bankAccount ? updatedAccounts[index][1] : null;
 
             const txData: any = {
               date: postedAt,
@@ -790,11 +770,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
                 paymentAmount: paymentData.amount,
               },
             };
-
-            // If account is linked to a bank, populate bankAccountId
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
 
             return tx.accountTransaction.create({ data: txData });
           }),
@@ -1080,10 +1055,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
@@ -1330,15 +1301,11 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
 
-        // Mark bill as successfully posted with reference and timestamp
+    // Mark bill as successfully posted with reference and timestamp
         this.logger.debug(`[Job ${job.id}] Updating bill ${billId} with postingStatus=Success and reference=${journalRef}`);
         
         const billUpdateResult = await tx.bills.update({
@@ -1550,10 +1517,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
@@ -1752,10 +1715,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
                 journalReference: journalRef,
               },
             };
-
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
 
             return tx.accountTransaction.create({ data: txData });
           }),
