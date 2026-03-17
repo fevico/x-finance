@@ -41,3 +41,23 @@ export function generateBillReference(nextSequence: number, prefix: string = 'BI
   return `${prefix}-${paddedSequence}`;
   // Example: BILL-0001, BILL-0002, BILL-0003
 }
+
+/**
+ * Generates a subdomain-worthy string from a group name
+ * Converts to lowercase, removes special characters, replaces spaces with hyphens
+ * Example: "My Awesome Company" -> "my-awesome-company"
+ * 
+ * @param groupName - The group/company name
+ * @returns A subdomain-safe string (lowercase, alphanumeric + hyphens only)
+ */
+export function generateSubdomain(groupName: string): string {
+  return (
+    groupName
+      .toLowerCase() // Convert to lowercase
+      .trim() // Remove leading/trailing whitespace
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace consecutive hyphens with single hyphen
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+  );
+}

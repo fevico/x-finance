@@ -4,9 +4,8 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { decryptSession } from '../utils/crypto.util';
-import { deleteCookie } from '../utils/cookie.util';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -15,9 +14,8 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();
-    const res = context.switchToHttp().getResponse<Response>();
 
-    // const main session (xf)
+    // Get main session (xf cookie)
     const mainToken: string | undefined = req.cookies?.['xf'] as
       | string
       | undefined;
@@ -27,46 +25,50 @@ export class AuthGuard implements CanActivate {
 
     const mainPayload = await decryptSession(mainToken);
     if (!mainPayload) {
-      // res.setHeader('Set-Cookie', deleteCookie(req, 'xf'));
-      res.setHeader('Set-Cookie', deleteCookie('xf'));
-
       throw new UnauthorizedException();
     }
 
     req.user = mainPayload as Request['user'];
 
-    // Group impersonation
-    const groupToken: string | undefined = req.cookies?.['xf_group'] as
-      | string
-      | undefined;
-    if (groupToken) {
-      const groupPayload = await decryptSession(groupToken);
-      if (groupPayload) {
-        req.groupImpersonation = {
-          groupId: groupPayload.groupId as string,
-          groupName: groupPayload.groupName as string,
-        };
-      } else {
-        // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_group'));
-        res.setHeader('Set-Cookie', deleteCookie('xf_group'));
-      }
+    // Get impersonation headers
+    const impersonateGroupHeader =
+      (req.headers['x-impersonate-group'] as string) || null;
+    const impersonateEntityHeader =
+      (req.headers['x-impersonate-entity'] as string) || null;
+
+    // === VALIDATE IMPERSONATION PERMISSIONS ===
+    // Only superadmin can impersonate groups
+    if (impersonateGroupHeader && mainPayload.systemRole !== 'superadmin') {
+      throw new UnauthorizedException(
+        'Only superadmin can impersonate groups',
+      );
     }
 
-    // Entity impersonation
-    const entityToken: string | undefined = req.cookies?.['xf_entity'] as
-      | string
-      | undefined;
-    if (entityToken) {
-      const entityPayload = await decryptSession(entityToken);
-      if (entityPayload) {
-        req.entityImpersonation = {
-          entityId: entityPayload.entityId as string,
-          entityName: entityPayload.entityName as string,
-        };
-      } else {
-        // res.setHeader('Set-Cookie', deleteCookie(req, 'xf_entity'));
-        res.setHeader('Set-Cookie', deleteCookie('xf_entity'));
-      }
+    // Only superadmin and admin can impersonate entities
+    if (
+      impersonateEntityHeader &&
+      mainPayload.systemRole !== 'superadmin' &&
+      mainPayload.systemRole !== 'admin'
+    ) {
+      throw new UnauthorizedException(
+        'Only superadmin and admin can impersonate entities',
+      );
+    }
+
+    // === PROCESS GROUP IMPERSONATION ===
+    // Header-based only (legacy cookie fallback removed)
+    if (impersonateGroupHeader) {
+      (req as any).groupImpersonation = {
+        groupId: impersonateGroupHeader,
+      };
+    }
+
+    // === PROCESS ENTITY IMPERSONATION ===
+    // Header-based only (legacy cookie fallback removed)
+    if (impersonateEntityHeader) {
+      (req as any).entityImpersonation = {
+        entityId: impersonateEntityHeader,
+      };
     }
 
     return true;

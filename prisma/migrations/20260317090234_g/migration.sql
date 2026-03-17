@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Role" ADD COLUMN     "isSystemRole" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "groupId" DROP NOT NULL;

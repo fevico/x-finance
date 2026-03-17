@@ -5,6 +5,7 @@ import { BullmqService } from '@/bullmq/bullmq.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GetGroupsQueryDto } from './dto/get-groups-query.dto';
+import { generateSubdomain } from '@/auth/utils/helper';
 import 'multer';
 import { Prisma } from 'prisma/generated/client';
 
@@ -35,6 +36,7 @@ export class GroupService {
       const group = await this.prisma.group.create({
         data: {
           ...createGroupDto,
+          subdomain: generateSubdomain(createGroupDto.name),
           logo: logoData,
         },
       });
@@ -200,14 +202,13 @@ export class GroupService {
 
   async remove(id: string) {
     try {
-      const [rolesCount, usersCount, entitiesCount] = await Promise.all([
-        this.prisma.groupRole.count({ where: { groupId: id } }),
+      const [usersCount, entitiesCount] = await Promise.all([
         this.prisma.user.count({ where: { groupId: id } }),
         this.prisma.entity.count({ where: { groupId: id } }),
       ]);
 
       const blockers: string[] = [];
-      if (rolesCount > 0) blockers.push(`group roles (${rolesCount})`);
+      if (usersCount > 0) blockers.push(`users (${usersCount})`);
       if (usersCount > 0) blockers.push(`users (${usersCount})`);
       if (entitiesCount > 0) blockers.push(`entities (${entitiesCount})`);
 

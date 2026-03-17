@@ -6,10 +6,13 @@ import { FileuploadModule } from '@/fileupload/fileupload.module';
 import { JournalModule } from '@/accounts/journal/journal.module';
 import { AuthService } from '@/auth/auth.service';
 import { BullmqModule } from '@/bullmq/bullmq.module';
+import { CacheService } from '@/cache/cache.service';
+import { SubscriptionService } from '@/subscription/subscription.service';
+import { MenuService } from '@/menu/menu.service';
 
 @Module({
   imports: [PrismaModule, FileuploadModule, JournalModule, BullmqModule],
   controllers: [BillsController],
-  providers: [BillsService, AuthService],
+  providers: [BillsService, AuthService, MenuService, SubscriptionService, CacheService],
 })
 export class BillsModule {}

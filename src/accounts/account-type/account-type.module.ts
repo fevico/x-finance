@@ -3,11 +3,14 @@ import { AccountTypeService } from './account-type.service';
 import { AccountTypeController } from './account-type.controller';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { AuthService } from '@/auth/auth.service';
+import { CacheService } from '@/cache/cache.service';
+import { SubscriptionService } from '@/subscription/subscription.service';
+import { MenuService } from '@/menu/menu.service';
 
 @Module({
   imports: [PrismaModule],
   controllers: [AccountTypeController],
-  providers: [AccountTypeService, AuthService],
+  providers: [AccountTypeService, AuthService, MenuService, MenuService, SubscriptionService, CacheService],
   exports: [AccountTypeService],
 })
 export class AccountTypeModule {}

@@ -1,11 +1,16 @@
 import { BankingModule } from './banking/banking.module';
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { GroupModule } from './group/group.module';
 import { EntityModule } from './entity/entity.module';
+import { MultitenancyModule } from './multitenancy/multitenancy.module';
+import { PermissionModule } from './permission/permission.module';
+import { TenantMiddleware } from './multitenancy/tenant.middleware';
+import { RequirePermissionGuard } from './permission/require-permission.guard';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CustomerModule } from './sales/customer/customer.module';
 import { InvoiceModule } from './sales/invoice/invoice.module';
 import { ReceiptModule } from './sales/receipt/receipt.module';
@@ -34,13 +39,22 @@ import { OrganizationModule } from './settings/organization/organization.module'
 import { PaymentMadeModule } from './purchases/payment-made/payment-made.module';
 import { AccountTransactionModule } from './accounts/account-transaction/account-transaction.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { AuditInterceptor } from './log/audit.interceptor';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { CacheModule } from './cache/cache.module';
+import { MenuModule } from './menu/menu.module';
 
 @Module({
   imports: [
     PrismaModule,
+    CacheModule,
+    MultitenancyModule,
+    PermissionModule,
     AuthModule,
     GroupModule,
     EntityModule,
+    MenuModule,
+    SubscriptionModule,
     CustomerModule,
     InvoiceModule,
     ReceiptModule,
@@ -72,6 +86,20 @@ import { AnalyticsModule } from './analytics/analytics.module';
     AnalyticsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: RequirePermissionGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TenantMiddleware).forRoutes('*');
+  }
+}

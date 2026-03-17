@@ -59,13 +59,10 @@ export class EntityService {
         },
       });
 
-      // Enqueue background job to create entity owner user with entityAdmin role
+      // Enqueue background job to seed default accounts for the entity
       await this.bullmqService.addJob('create-entity-user', {
         entityId: entity.id,
         groupId: effectiveGroupId,
-        email: createEntityDto.email,
-        entityName: createEntityDto.name,
-        legalName: createEntityDto.legalName,  
       });
 
       return entity;

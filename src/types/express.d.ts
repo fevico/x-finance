@@ -1,9 +1,13 @@
-import { User as PrismaUser } from 'prisma/generated/client';
-
 declare global {
   namespace Express {
     export interface Request {
-      user?: Omit<PrismaUser, 'password'> & { permissions: string[] };
+      user?: {
+        id: string;
+        groupId: string | null;
+        entityId: string | null;
+        systemRole: string;
+        permissions?: string[];
+      };
       groupImpersonation?: {
         groupId: unknown;
         groupName: unknown;
@@ -15,3 +19,5 @@ declare global {
     }
   }
 }
+
+export {};

@@ -6,13 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAssetDto, UpdateAssetDto } from './dto/asset.dto';
-import { LogService } from '@/log/log.service';
 
 @Injectable()
 export class AssetService {
   constructor(
     private prisma: PrismaService,
-    private auditService: LogService,
   ) {}
 
   async create(
@@ -29,11 +27,7 @@ export class AssetService {
       const asset = await this.prisma.asset.create({
         data: { ...createAsset, entityId },
       });
-      await this.auditService.logAsync({
-        userId,
-        action: 'ASSET CREATED',
-        req,
-      });
+     
 
       return asset;
     } catch (error) {
