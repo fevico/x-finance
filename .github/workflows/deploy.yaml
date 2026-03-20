@@ -2,7 +2,7 @@ name: Deploy Backend (NestJS) Blue-Green
 
 on:
   push:
-    branches: [master]
+    branches: [exp]
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
 
       - name: Create full .env
         run: |
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > build/.env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL_NEW }}" > build/.env
           echo "COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}" >> build/.env
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> build/.env
           echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> build/.env

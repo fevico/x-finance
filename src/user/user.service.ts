@@ -1,3 +1,4 @@
+
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionService } from '../subscription/subscription.service';
@@ -512,5 +513,20 @@ export class UserService {
       password += charset.charAt(Math.floor(Math.random() * charset.length));
     }
     return password;
+  }
+
+    /**
+   * Get user/role/invite stats for a group
+   */
+  async getUserStatsByGroup(groupId: string) {
+    // Total users in group
+    const totalUsers = await this.prisma.user.count({ where: { groupId } });
+    // Active users in group
+    const activeUsers = await this.prisma.user.count({ where: { groupId, isActive: true } });
+    // Roles in group
+    const roles = await this.prisma.role.count({ where: { groupId } });
+    // Pending invites: users with lastLogin == null
+    const pendingInvites = await this.prisma.user.count({ where: { groupId, lastLogin: null } });
+    return { totalUsers, activeUsers, roles, pendingInvites };
   }
 }

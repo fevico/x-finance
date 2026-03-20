@@ -97,6 +97,7 @@ model User {
   emailVerified         DateTime?
   isActive              Boolean               @default(true) // Account activation status
   requirePasswordChange Boolean               @default(true) // Force password change on next login
+  lastLogin             DateTime?             // Last login timestamp, nullable
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
   systemRole            systemRole            @default(user)

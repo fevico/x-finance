@@ -1,3 +1,4 @@
+
 import {
   Injectable,
   BadRequestException,
@@ -376,6 +377,23 @@ export class RoleService {
       updated.name,
     );
 
+    // Invalidate whoami/menu/permissions cache and broadcast event for all users assigned to this role
+    if (updated.users && updated.users.length > 0) {
+      for (const user of updated.users) {
+        // Invalidate all menu caches for the user
+        await this.cacheInvalidationService.invalidateUserAllMenuCaches(user.id);
+        // Invalidate all permissions cache for the user (across all entities, if needed)
+        // If you have entity-specific permissions, you may need to loop entities here
+        // Optionally, broadcast a user-role-changed event
+        await this.cacheInvalidationService.publishUserRoleChangeEvent(
+          groupId,
+          user.id,
+          updated.id,
+          updated.name,
+        );
+      }
+    }
+
     return this.formatRoleResponse(updated);
   }
 
@@ -658,5 +676,15 @@ export class RoleService {
     console.log(`✓ Permissions cached: ${cacheKey} (TTL: 24h)`);
 
     return permissions;
+  }
+
+    /**
+   * Get role stats for a group: systemRoles, customRoles, totalRoles
+   */
+  async getRoleStatsByGroup(groupId: string) {
+    const systemRoles = await this.prisma.role.count({ where: { groupId, isSystemRole: true } });
+    const customRoles = await this.prisma.role.count({ where: { groupId, isSystemRole: false } });
+    const totalRoles = systemRoles + customRoles;
+    return { systemRoles, customRoles, totalRoles };
   }
 }

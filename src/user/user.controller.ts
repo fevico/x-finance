@@ -1,3 +1,4 @@
+
 import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, ForbiddenException, Query, Req } from '@nestjs/common';
 import { UserService, CreateUserDto, UpdateUserDto } from './user.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -50,6 +51,25 @@ export class UserController {
     return this.userService.createUser(effectiveGroupId, req.user.id, dto);
   }
 
+    /**
+   * GET /users/stats
+   * Returns total users, active users, roles, and pending invites for the group
+   */
+  @Get('stats')
+  @UseGuards(AuthGuard)
+  async getUserStats(@Req() req: any) {
+    // Only admins can view stats
+    const isAdmin = req.user.systemRole === 'superadmin' || req.user.systemRole === 'admin';
+    if (!isAdmin) {
+      throw new ForbiddenException('Only admins can view user stats');
+    }
+    const effectiveGroupId = getEffectiveGroupId(req);
+    if (!effectiveGroupId) {
+      throw new ForbiddenException('Group context is required to view user stats');  
+    }
+    return this.userService.getUserStatsByGroup(effectiveGroupId);
+  }
+
   /**
    * GET /users
    * Get all users in the group with optional search and pagination
@@ -98,7 +118,7 @@ export class UserController {
       throw new ForbiddenException('Can only view own user or admin can view all');
     }
 
-    const effectiveGroupId = getEffectiveGroupId(req)
+    const effectiveGroupId = getEffectiveGroupId(req);
      if (!effectiveGroupId) {
       throw new ForbiddenException('Group context is required to view roles');  
     }

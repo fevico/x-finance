@@ -15,6 +15,7 @@ export class AuthService {
   ) {}
 
   async login(email: string, pass: string) {
+
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -27,6 +28,12 @@ export class AuthService {
     if (!passwordMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    // Update lastLogin timestamp
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
 
     // NOTE: Permissions are NO LONGER loaded during login
     // Frontend will fetch them via GET /auth/context endpoint

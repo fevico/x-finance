@@ -84,7 +84,7 @@ export class BullmqProcessor extends WorkerHost {
           where: {
             name: 'administrator',
             isSystemRole: true,
-            // groupId: null, // Global template (no group assigned)
+            groupId: null, // Global template (no group assigned)
             scope: RoleScope.ADMIN,
           },
           include: {
@@ -107,6 +107,8 @@ export class BullmqProcessor extends WorkerHost {
           data: {
             name: 'administrator',
             groupId,
+                        isSystemRole: true,
+
             scope: RoleScope.ADMIN,
             description: 'Group administrator role (cloned from template)',
             rolePermissions: {

@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Post,
@@ -59,6 +60,25 @@ export class RoleController {
     }
 
     return this.roleService.createRole(effectiveGroupId, req.user.id, dto);
+  }
+
+   /**
+   * GET /roles/stats
+   * Returns number of system roles, custom roles, and total roles for the group
+   */
+  @Get('stats')
+  @UseGuards(AuthGuard)
+  async getRoleStats(@Req() req: any) {
+    // Only admins can view stats
+    const isAdmin = req.user.systemRole === 'superadmin' || req.user.systemRole === 'admin';
+    if (!isAdmin) {
+      throw new ForbiddenException('Only admins can view role stats');
+    }
+    const effectiveGroupId = getEffectiveGroupId(req);
+    if (!effectiveGroupId) {
+      throw new ForbiddenException('Group context is required to view role stats');
+    }
+    return this.roleService.getRoleStatsByGroup(effectiveGroupId);
   }
 
   /**
@@ -221,4 +241,6 @@ export class RoleController {
 
     return this.roleService.getAllPermissions(scope);
   }
+
+   
 }
