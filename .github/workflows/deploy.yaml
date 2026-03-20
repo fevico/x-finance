@@ -132,4 +132,3 @@ jobs:
               sudo systemctl reload nginx
 
               pm2 stop $OLD_NAME || true
-            "
