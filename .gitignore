@@ -12,6 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+deploy copy.yaml
+
 # OS
 .DS_Store
 
