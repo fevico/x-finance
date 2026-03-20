@@ -125,7 +125,7 @@ jobs:
                 sleep 2
               done
 
-              sudo sed -i "/location \/backend\//,/}/s|proxy_pass http://127.0.0.1:[0-9][0-9]*;|proxy_pass http://127.0.0.1:$GREEN_PORT;|" /etc/nginx/sites-available/frontend
+              sudo sed -i "/location \/backend\//,/}/s|\(proxy_pass http://127.0.0.1:\)[0-9]\{1,\};|\1$GREEN_PORT;|" /etc/nginx/sites-available/frontend
               echo "NGINX AFTER SWITCH:"
               sudo grep proxy_pass /etc/nginx/sites-available/frontend
               sudo nginx -t
