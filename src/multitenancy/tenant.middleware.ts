@@ -21,7 +21,7 @@ export class TenantMiddleware implements NestMiddleware {
       if (subdomain && subdomain !== 'api' && subdomain !== 'localhost') {
         // Resolve subdomain to group
         const group = await this.prisma.group.findUnique({
-          where: { name: subdomain },
+          where: { subdomain },
         });
 
         if (!group) {
