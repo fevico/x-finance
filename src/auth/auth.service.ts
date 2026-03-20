@@ -150,6 +150,7 @@ export class AuthService {
 
     // Check cache first (include effective group ID for impersonation context separation)
     const cacheKey = CacheService.keys.userContext(userId, effectiveGroupId, effectiveEntityId);
+    
     const cached = await this.cacheService.get(cacheKey);
     if (cached) {
       return cached;

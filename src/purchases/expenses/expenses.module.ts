@@ -8,10 +8,12 @@ import { BullmqModule } from '@/bullmq/bullmq.module';
 import { CacheService } from '@/cache/cache.service';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+
 
 @Module({
   imports: [PrismaModule, FileuploadModule, BullmqModule],
-  providers: [ExpensesService, AuthService, MenuService, SubscriptionService, CacheService],
+  providers: [ExpensesService, AuthService, MenuService, SubscriptionService, CacheService, PubsubService],
   controllers: [ExpensesController],
 })
 export class ExpensesModule {}

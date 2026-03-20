@@ -7,10 +7,13 @@ import { FileuploadModule } from '@/fileupload/fileupload.module';
 import { CacheService } from '@/cache/cache.service';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+import { BullmqModule } from '@/bullmq/bullmq.module';
+
 
 @Module({
-  imports: [PrismaModule, FileuploadModule],
-  providers: [EmployeeService, AuthService, MenuService, SubscriptionService, CacheService],
+  imports: [PrismaModule, FileuploadModule, BullmqModule],
+  providers: [EmployeeService, AuthService, MenuService, SubscriptionService, CacheService, PubsubService],
   controllers: [EmployeeController],
 })
 export class EmployeeModule {}

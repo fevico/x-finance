@@ -6,11 +6,15 @@ import { AuthService } from '@/auth/auth.service';
 import { CacheService } from '@/cache/cache.service';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+
+
+import { BullmqModule } from '@/bullmq/bullmq.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, BullmqModule],
   controllers: [AccountCategoryController],
-  providers: [AccountCategoryService, AuthService, MenuService, MenuService, SubscriptionService, CacheService],
+  providers: [AccountCategoryService, AuthService, MenuService, SubscriptionService, CacheService, PubsubService],
   exports: [AccountCategoryService],
 })
 export class AccountCategoryModule {}

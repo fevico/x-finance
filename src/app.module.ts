@@ -43,17 +43,25 @@ import { AuditInterceptor } from './log/audit.interceptor';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { CacheModule } from './cache/cache.module';
 import { MenuModule } from './menu/menu.module';
+import { GatewayModule } from './gateway/gateway.module';
+import { UserModule } from './user/user.module';
+import { RoleModule } from './role/role.module';
+import { ModuleModule } from './module/module.module';
 
 @Module({
   imports: [
     PrismaModule,
     CacheModule,
+    GatewayModule,
     MultitenancyModule,
     PermissionModule,
     AuthModule,
     GroupModule,
     EntityModule,
     MenuModule,
+    UserModule,
+    RoleModule,
+    ModuleModule,
     SubscriptionModule,
     CustomerModule,
     InvoiceModule,

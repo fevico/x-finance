@@ -27,6 +27,11 @@ export class AuditInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
+    // Skip audit for GET requests (read-only, no mutations)
+    if (request.method === 'GET') {
+      return next.handle();
+    }
+
     // Extract audit context from request
     const auditContext = this.extractAuditContext(request);
 
@@ -44,7 +49,7 @@ export class AuditInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap((responseData) => {
-        // Log successful requests
+        // Log successful requests (only POST/PUT/PATCH/DELETE)
         this.logAudit(
           {
             ...auditContext,
@@ -59,7 +64,7 @@ export class AuditInterceptor implements NestInterceptor {
         });
       }),
       catchError((error) => {
-        // Log failed requests
+        // Log failed requests (only POST/PUT/PATCH/DELETE)
         this.logAudit(
           {
             ...auditContext,
@@ -125,6 +130,9 @@ export class AuditInterceptor implements NestInterceptor {
 
   /**
    * Determine if request should be audited
+   * AUDIT: Everything except GET requests (GET = read-only)
+   * INCLUDES: POST (create), PUT/PATCH (update), DELETE (delete)
+   * INCLUDES: /api/auth/login, /api/auth/logout, etc.
    */
   private shouldSkipAudit(request: any): boolean {
     const skipPatterns = [
@@ -132,8 +140,6 @@ export class AuditInterceptor implements NestInterceptor {
       '/metrics',
       '/docs',
       '/swagger',
-      '/api/auth/me',
-      '/api/auth/whoami',
     ];
 
     return skipPatterns.some((pattern) => request.path.includes(pattern));
@@ -141,6 +147,8 @@ export class AuditInterceptor implements NestInterceptor {
 
   /**
    * Log audit entry to database
+   * Required: userId, groupId, module
+   * Optional: entityId (group-level operations like create group won't have it)
    */
   private async logAudit(
     context: AuditContext,
@@ -149,7 +157,8 @@ export class AuditInterceptor implements NestInterceptor {
     startTime: number,
     statusCode: number,
   ): Promise<void> {
-    // Only log if we have minimum required info
+    // Only log if we have minimum required info (userId, groupId, module)
+    // entityId is optional for group-level operations
     if (!context.userId || !context.groupId || !context.module) {
       return;
     }
@@ -164,8 +173,8 @@ export class AuditInterceptor implements NestInterceptor {
       await this.prisma.auditLog.create({
         data: {
           userId: context.userId,
-          groupId: context.groupId,
-          entityId: context.entityId || '',
+          groupId: context.groupId || null,
+          entityId: context.entityId || null, // ← Allow null for group-level operations
           module: context.module,
           action: context.action || '',
           method: request.method || '',

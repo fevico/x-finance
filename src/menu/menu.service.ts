@@ -1,6 +1,7 @@
+import { CacheService } from '@/cache/cache.service';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ModuleScope, RoleScope } from '../../prisma/generated/enums';
+import { SubscriptionService } from '@/subscription/subscription.service';
 
 export interface MenuItem {
   id: string;
@@ -31,199 +32,18 @@ export interface ComputedMenu {
 
 @Injectable()
 export class MenuService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+    private cacheService: CacheService,
+    private subscriptionService: SubscriptionService,
+  ) {}
 
-  /**
-   * Compute effective menu for a user based on:
-   * - Role scope (ADMIN | USER)
-   * - Permissions (explicit + role permissions)
-   * - Subscription (modules available in their tier)
-   *
-   * Rules:
-   * 1. ADMIN role users see GROUP-scope modules
-   * 2. USER role users see ENTITY-scope modules  
-   * 3. ADMIN role can also see ENTITY modules if assigned to entity
-   * 4. User must have permission for module to see it
-   * 5. Module must be in subscription tier
-   */
-  // async computeMenuForUser(
-  //   userId: string,
-  //   groupId: string,
-  //   entityId?: string,
-  // ): Promise<ComputedMenu> {
-  //   // Fetch user with all relationships
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { id: userId },
-  //     include: {
-  //       role: true,
-  //       explicitPermissions: {
-  //         include: {
-  //           permission: {
-  //             include: {
-  //               action: {
-  //                 include: {
-  //                   module: true,
-  //                 },
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-
-  //   if (!user || user.groupId !== groupId) {
-  //     throw new Error(`User ${userId} not found or unauthorized`);
-  //   }
-
-  //   if (!user.role) {
-  //     throw new Error(`User ${userId} has no role assigned`);
-  //   }
-
-  //   // Get subscription modules
-  //   const subscription = await this.prisma.subscription.findUnique({
-  //     where: { groupId },
-  //     include: {
-  //       tier: {
-  //         include: {
-  //           subscriptionModules: {
-  //             include: {
-  //               module: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-
-  //   const subscriptionModuleKeys = new Set(
-  //     subscription?.tier.subscriptionModules.map((sm) => sm.module.moduleKey) || [],
-  //   );
-
-  //   // Get role permissions
-  //   const rolePermissions = await this.prisma.rolePermission.findMany({
-  //     where: { roleId: user.role.id },
-  //     include: {
-  //       permission: {
-  //         include: {
-  //           action: {
-  //             include: {
-  //               module: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-
-  //   // Determine accessible modules
-  //   const accessibleModulesMap = new Map<string, { scope: ModuleScope; displayName: string }>();
-
-  //   // Add role-based permissions
-  //   rolePermissions.forEach((rp) => {
-  //     const module = rp.permission.action.module;
-  //     const scopeMatches =
-  //       (user.role!.scope === RoleScope.ADMIN && module.scope === ModuleScope.GROUP) ||
-  //       (user.role!.scope === RoleScope.USER && module.scope === ModuleScope.ENTITY) ||
-  //       (user.role!.scope === RoleScope.ADMIN && module.scope === ModuleScope.ENTITY);
-
-  //     // if (scopeMatches && subscriptionModuleKeys.has(module.moduleKey)) {
-  //           if (scopeMatches && subscriptionModuleKeys.has(module.moduleKey)) {
-  
-  //     accessibleModulesMap.set(module.moduleKey, {
-  //         scope: module.scope,
-  //         displayName: module.displayName,
-  //       });
-  //     }
-  //   });
-
-  //   // Add explicit permissions
-  //   user.explicitPermissions.forEach((ep) => {
-  //     accessibleModulesMap.set(ep.permission.action.module.moduleKey, {
-  //       scope: ep.permission.action.module.scope,
-  //       displayName: ep.permission.action.module.displayName,
-  //     });
-  //   });
-
-  //   // Separate by scope
-  //   const adminModuleKeys = Array.from(accessibleModulesMap.entries())
-  //     .filter(([, m]) => m.scope === ModuleScope.GROUP)
-  //     .map(([k]) => k);
-
-  //   const entityModuleKeys = Array.from(accessibleModulesMap.entries())
-  //     .filter(([, m]) => m.scope === ModuleScope.ENTITY)
-  //     .map(([k]) => k);
-
-  //   // Fetch full module details
-  //   const [adminModules, entityModules] = await Promise.all([
-  //     adminModuleKeys.length > 0
-  //       ? this.prisma.module.findMany({
-  //           where: { moduleKey: { in: adminModuleKeys } },
-  //         })
-  //       : Promise.resolve([]),
-  //     entityModuleKeys.length > 0
-  //       ? this.prisma.module.findMany({
-  //           where: { moduleKey: { in: entityModuleKeys } },
-  //         })
-  //       : Promise.resolve([]),
-  //   ]);
-
-  //   return {
-  //     adminMenus:
-  //       adminModules.length > 0
-  //         ? [
-  //             {
-  //               groupName: 'Admin',
-  //               modules: adminModules.map((m) => ({
-  //                 moduleKey: m.moduleKey,
-  //                 displayName: m.displayName,
-  //                 actions: [],
-  //               })),
-  //             },
-  //           ]
-  //         : [],
-  //     entityMenus:
-  //       entityModules.length > 0
-  //         ? [
-  //             {
-  //               groupName: 'Entity',
-  //               modules: entityModules.map((m) => ({
-  //                 moduleKey: m.moduleKey,
-  //                 displayName: m.displayName,
-  //                 actions: [],
-  //               })),
-  //             },
-  //           ]
-  //         : [],
-  //   };
-  // }
-
+ 
   /**
    * Get user's permissions by module
    * Returns map of moduleKey -> actionNames[]
    */
   async getUserPermissions(user: any): Promise<Record<string, string[]>> {
-    // const user = await this.prisma.user.findUnique({
-    //   where: { id: userId },
-    //   include: {
-    //     role: true,
-    //     explicitPermissions: {
-    //       where: entityId ? { entityId } : undefined,
-    //       include: {
-    //         permission: {
-    //           include: {
-    //             action: {
-    //               include: {
-    //                 module: true,
-    //               },
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    // });
-
+   
     if (!user) {
       throw new Error(`User ${user.id} not found`);
     }
@@ -277,20 +97,58 @@ export class MenuService {
   }
 
   /**
-   * Get complete organized menu for a user
+   * Build menu cache key with smart handling of null/undefined values
+   * groupId null → 'system'
+   * entityId null/undefined → 'all'
+   * Examples:
+   * - Superadmin no context: menu:user1:system:all
+   * - Superadmin + group: menu:user1:group1:all
+   * - Superadmin + group + entity: menu:user1:group1:entity1
+   */
+  private buildMenuCacheKey(userId: string, groupId?: string, entityId?: string): string {
+    const g = groupId || 'system';
+    const e = entityId || 'all';
+    return `menu:${userId}:${g}:${e}`;
+  }
+
+  /**
+   * Get complete organized menu for a user with Redis caching
    * Returns hierarchical menu structure with subgroups
+   * 
+   * Cache Strategy:
+   * - Key: menu:{userId}:{groupId||system}:{entityId||all}
+   * - TTL: 5 minutes (300 seconds)
+   * - Invalidated on: permission change, role assignment, subscription change
    */
   async getMenuForUser(user: any, entityId?: string, groupId?: string): Promise<MenuItem[]> {
     if (!user) {
       return [];
     }
 
+    const userId = user.id;
     const isSuperadmin = user.systemRole === 'superadmin';
     const isAdmin = user.systemRole === 'admin';
 
+    // Build cache key
+    const cacheKey = this.buildMenuCacheKey(userId, groupId, entityId);
+
+    // Check Redis cache first
+    const cached = await this.cacheService.get<MenuItem[]>(cacheKey);
+    if (cached) {
+      console.log(`✓ Menu cache HIT: ${cacheKey}`);
+      return cached;
+    }
+
+    console.log(`⚡ Menu cache MISS: ${cacheKey} - Computing menu...`);
+
+    let menus: MenuItem[] = [];
+
     // SUPERADMIN with no group/entity context: show superadmin menu
     if (isSuperadmin && !entityId && !groupId) {
-      return await this.buildSuperAdminMenu(await this.prisma.module.findMany());
+      menus = await this.buildSuperAdminMenu(await this.prisma.module.findMany());
+      // Cache before return
+      await this.cacheService.set(cacheKey, menus, { ttl: 300 });
+      return menus;
     }
 
     // All other contexts require groupId
@@ -298,33 +156,15 @@ export class MenuService {
       return [];
     }
 
-
     // start for subscription enabling
-
-
     // Get available modules from subscription
-    // const subscription = await this.prisma.subscription.findFirst({
-    //   where: { groupId, isActive: true },
-    //   include: {
-    //     tier: {
-    //       include: {
-    //         subscriptionModules: {
-    //           include: {
-    //             module: true,
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    // });
+    const availableModules = await this.subscriptionService.getAvailableModules(groupId);
+      // end for subscription enabling
 
-    // const availableModules = subscription?.tier?.subscriptionModules?.map((sm) => sm.module) || [];
 
-// end for subscription checkiing
-
-// start fir overrride
-    const availableModules = await this.prisma.module.findMany();
-// end for override
+    // start for override
+    // const availableModules = await this.prisma.module.findMany();
+    // end for override
 
     // console.log(availableModules.length, "available modules (subscription bypassed)");
 
@@ -332,35 +172,68 @@ export class MenuService {
     if (isSuperadmin) {
       if (entityId) {
         // SUPERADMIN with entity context: show ENTITY scope modules
-        return await this.buildEntityMenu(availableModules, {});
+        menus = await this.buildEntityMenu(availableModules, {});
       } else {
         // SUPERADMIN with group context: show GROUP scope modules
-        return await this.buildAdminMenu(availableModules, {});
+        menus = await this.buildAdminMenu(availableModules, {});
+      }
+    } else {
+      // For non-superadmin: need permissions check
+      if (!user.role) {
+        return [];
+      }
+
+      // Get user permissions (entity-scoped or admin-scoped based on context)
+      const userPermissions = await this.getUserPermissions(user);
+
+      // Build menu based on role scope and context
+      if (isAdmin) {
+        if (entityId) {
+          // ADMIN with entity context: show ENTITY scope modules
+          menus = await this.buildEntityMenu(availableModules, userPermissions);
+        } else {
+          // ADMIN with group context: show GROUP scope modules
+          menus = await this.buildAdminMenu(availableModules, userPermissions);
+        }
+      } else {
+        // USER scope: show only ENTITY scope modules
+        menus = await this.buildEntityMenu(availableModules, userPermissions);
       }
     }
 
-    // For non-superadmin: need permissions check
-    if (!user.role) {
-      return [];
-    }
+    // Cache for 5 minutes
+    await this.cacheService.set(cacheKey, menus, { ttl: 300 });
+    console.log(`✓ Menu cached: ${cacheKey} (TTL: 300s)`);
 
-    // Get user permissions (entity-scoped or admin-scoped based on context)
-    const userPermissions = await this.getUserPermissions(user);
-
-    // Build menu based on role scope and context
-    if (isAdmin) {
-
-       if (entityId) {
-        // ADMIN with entity context: show ENTITY scope modules
-      return await this.buildEntityMenu(availableModules, userPermissions);
-      } else {
-        // SUPERADMIN with group context: show GROUP scope modules
-      return await this.buildAdminMenu(availableModules, userPermissions);
-      }
-    }     
-          return await this.buildEntityMenu(availableModules, userPermissions);
- 
+    return menus;
   }
+
+  /**
+   * Invalidate menu cache for a user
+   * Used when permissions, roles, or subscriptions change
+   */
+  async invalidateMenuCache(userId: string, groupId?: string, entityId?: string): Promise<void> {
+    const cacheKey = this.buildMenuCacheKey(userId, groupId, entityId);
+    await this.cacheService.delete(cacheKey);
+    console.log(`✓ Menu cache invalidated: ${cacheKey}`);
+  }
+
+  /**
+   * Invalidate all menu cache variations for a user in a group
+   * Useful when group-level changes affect all entities
+   */
+  async invalidateGroupMenuCache(userId: string, groupId: string): Promise<void> {
+    // Invalidate: menu:userId:groupId:all (group context)
+    await this.invalidateMenuCache(userId, groupId);
+    
+    // For entity-specific invalidation, caller should call with entityId
+    // Pattern deletion would be here if CacheService supports it
+  }
+
+  /**
+   * Get complete organized menu for a user
+   * Returns hierarchical menu structure with subgroups (DEPRECATED - use getMenuForUser)
+   * @deprecated Use getMenuForUser() instead which includes caching functionality
 
   /**
    * Build admin menu (GROUP-scope modules)
@@ -476,11 +349,29 @@ export class MenuService {
 
   /**
    * Generate route based on module structure
-   * Single module: /audit-trail
+   * Parses module keys by removing scope prefixes:
+   * - entityDashboard -> dashboard
+   * - entitySettings -> settings
+   * - groupSettings -> settings
+   * - superadminDashboard -> dashboard
+   * - groupDashboard -> dashboard
+   * 
+   * Single module: /audit-trail or /dashboard
    * Grouped modules: /accounting/master-chart-of-accounts
    */
   private generateMenuRoute(module: any, menuCategory?: string): string {
-    const moduleKeySlug = this.convertToKebabCase(module.moduleKey);
+    // Extract route name by removing scope prefix (entity, group, superadmin)
+    let routeName = module.moduleKey;
+    const prefixes = ['superadmin', 'group', 'entity']; // Order matters: longest first
+    
+    for (const prefix of prefixes) {
+      if (routeName.toLowerCase().startsWith(prefix.toLowerCase())) {
+        routeName = routeName.slice(prefix.length);
+        break;
+      }
+    }
+    
+    const moduleKeySlug = this.convertToKebabCase(routeName);
 
     // If no menu category or only one child, use just moduleKey
     if (!menuCategory) {

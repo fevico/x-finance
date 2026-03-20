@@ -16,7 +16,7 @@ async function seedModules() {
     // Define all modules with scope (ADMIN or USER)
     const modules = [
       // USER-level entity modules (business operations)
-            { key: 'dashboard', name: 'Dashboard', menu: 'Dashboard', scope: 'user' },
+            { key: 'entityDashboard', name: 'Dashboard', menu: 'Dashboard', scope: 'user' },
 
       // Income
       { key: 'customers', name: 'Customers', menu: 'Income', scope: 'user' },
@@ -53,11 +53,11 @@ async function seedModules() {
       // Reports
       { key: 'reports', name: 'Reports', menu: 'Reports', scope: 'user' },
       // Entity Settings
-      { key: 'settings', name: 'Settings', menu: 'Settings', scope: 'user' },
+      { key: 'entitySettings', name: 'Settings', menu: 'Settings', scope: 'user' },
 
       // ADMIN-level modules (group administration)
       // Overview
-      { key: 'dashboard', name: 'Overview', menu: 'Dashboard', scope: 'admin' },
+      { key: 'groupDashboard', name: 'Overview', menu: 'Dashboard', scope: 'admin' },
       
       
       // Intercompany
@@ -77,7 +77,7 @@ async function seedModules() {
       { key: 'groupSettings', name: 'Group Settings', menu: 'Admin', scope: 'admin' },
     
           // Superadmin modules
-      { key: 'dashboard', name: 'Dashboard', menu: 'Dashboard', scope: 'superadmin' },
+      { key: 'superadminDashboard', name: 'Dashboard', menu: 'Dashboard', scope: 'superadmin' },
       { key: 'companies', name: 'Companies', menu: 'Companies', scope: 'superadmin' },
       { key: 'subscriptions', name: 'Subscriptions', menu: 'Subscriptions', scope: 'superadmin' },
 

@@ -32,6 +32,8 @@ export class BullmqProcessor extends WorkerHost {
       return this.handleCreateGroupDefaults(job);
     } else if (job.name === 'create-entity-user') {
       return this.handleCreateEntityUser(job);
+    } else if (job.name === 'send-user-welcome-email') {
+      return this.handleSendUserWelcomeEmail(job);
     } else if (job.name === 'post-invoice-journal') {
       return this.handleInvoiceJournalPosting(job);
     } else if (job.name === 'post-payment-journal') {
@@ -48,6 +50,8 @@ export class BullmqProcessor extends WorkerHost {
       return this.handleOpeningBalanceJournalPosting(job);
     } else if (job.name === 'post-manual-journal') {
       return this.handleManualJournalPosting(job);
+    } else if (job.name === 'assign-tier-modules') {
+      return this.handleAssignTierModules(job);
     } else {
       this.logger.warn(`[Job ${job.id}] Unknown job type: ${job.name}`);
     }
@@ -150,6 +154,55 @@ export class BullmqProcessor extends WorkerHost {
 
       this.logger.debug(`[Job ${job.id}] Created group admin user with full entity access`);
 
+      // 3. Create free trial subscription for the group
+      try {
+        // Get subscription settings
+        const settings = await (this.prisma as any).subscriptionSettings.findFirst();
+        const trialDurationDays = settings?.trialDurationDays || 14;
+
+        // Get the free tier
+        const freeTier = await this.prisma.subscriptionTier.findFirst({
+          where: {
+            name: {
+              in: ['Free', 'free'],
+            },
+          },
+        });
+
+        if (freeTier) {
+          const billingEndDate = new Date();
+          billingEndDate.setDate(billingEndDate.getDate() + trialDurationDays);
+
+          // Count active users in the group
+          const userCount = await this.prisma.user.count({
+            where: { groupId, isActive: true },
+          });
+
+          await this.prisma.subscription.create({
+            data: {
+              groupId,
+              subscriptionTierId: freeTier.id,
+              tierName: freeTier.name,
+              maxUsers: freeTier.maxUsers ?? -1,
+              maxEntities: freeTier.maxEntities ?? -1,
+              usedUsers: userCount, // Set to actual count of active users
+              billingStartDate: new Date(),
+              billingEndDate,
+              renewalDate: billingEndDate,
+            },
+          });
+
+          this.logger.log(
+            `[Job ${job.id}] Created free trial subscription for group (${trialDurationDays} days, ${userCount} active users)`,
+          );
+        } else {
+          this.logger.warn(`[Job ${job.id}] Free tier not found, skipping subscription creation`);
+        }
+      } catch (err) {
+        this.logger.error(`[Job ${job.id}] Failed to create subscription: ${err}`);
+        // Don't throw - continue with email send
+      }
+
       // Send welcome email to group admin
       try {
         const htmlContent = this.emailService.renderHtmlTemplate(
@@ -229,6 +282,71 @@ export class BullmqProcessor extends WorkerHost {
         error instanceof Error ? error.stack : '',
       );
       throw error;
+    }
+  }
+
+  /**
+   * Handle user welcome email
+   * Sends welcome email for newly created users (single or bulk)
+   */
+  async handleSendUserWelcomeEmail(job: Job): Promise<any> {
+    const {
+      email,
+      firstName,
+      lastName,
+      password,
+      scope,
+      groupId,
+      customMessage,
+      roleName,
+    } = job.data as {
+      email: string;
+      firstName: string;
+      lastName?: string;
+      password: string;
+      scope: 'ENTITY' | 'GROUP';
+      groupId: string;
+      customMessage?: string;
+      roleName: string;
+    };
+
+    this.logger.log(
+      `[Job ${job.id}] Sending welcome email to ${email} (scope: ${scope})`,
+    );
+
+    try {
+      // Select appropriate template based on scope
+      const templatePath =
+        scope === 'GROUP'
+          ? path.join(process.cwd(), 'src/email/templates/group-admin-welcome.html')
+          : path.join(process.cwd(), 'src/email/templates/entity-user-welcome.html');
+
+      const htmlContent = this.emailService.renderHtmlTemplate(templatePath, {
+        firstName: firstName || 'User',
+        groupName: roleName,
+        entityName: roleName,
+        email,
+        password,
+      });
+
+      const html = this.emailService.wrapWithBaseTemplate(htmlContent, 'Welcome to X-Finance', {
+        year: new Date().getFullYear(),
+      });
+
+      await this.emailService.sendEmail({
+        to: email,
+        subject: 'Welcome to X-Finance',
+        html,
+      });
+
+      this.logger.log(`[Job ${job.id}] ✓ Welcome email sent to ${email}`);
+      return { ok: true };
+    } catch (err) {
+      this.logger.error(
+        `[Job ${job.id}] ✗ Failed to send welcome email to ${email}: ${err}`,
+      );
+      // Don't throw - don't fail the whole job if email fails
+      return { ok: false, error: String(err) };
     }
   }
 
@@ -1922,6 +2040,124 @@ export class BullmqProcessor extends WorkerHost {
 
       // Log the error but don't fail - journal still exists, just balances not updated
       // User can retry posting manually later
+      throw error; // Rethrow to trigger retry
+    }
+  }
+
+  /**
+   * Handle subscription tier module assignment
+   * Assigns modules to a subscription tier
+   * Clears existing modules if clearExisting is true
+   */
+  async handleAssignTierModules(job: Job): Promise<any> {
+    const { tierId, moduleIds, clearExisting } = job.data as {
+      tierId: string;
+      moduleIds: string[];
+      clearExisting: boolean;
+    };
+
+    this.logger.log(
+      `[Job ${job.id}] Assigning modules to subscription tier: ${tierId}`,
+    );
+
+    try {
+      // 1. Verify tier exists
+      const tier = await this.prisma.subscriptionTier.findUnique({
+        where: { id: tierId },
+      });
+
+      if (!tier) {
+        throw new NotFoundException(
+          `Subscription tier with ID "${tierId}" not found`,
+        );
+      }
+
+      // 2. Clear existing modules if requested
+      if (clearExisting) {
+        await this.prisma.subscriptionModule.deleteMany({
+          where: { subscriptionTierId: tierId },
+        });
+        this.logger.debug(
+          `[Job ${job.id}] Cleared existing modules for tier ${tierId}`,
+        );
+      }
+
+      // 3. Verify all modules exist
+      const existingModules = await this.prisma.module.findMany({
+        where: { id: { in: moduleIds } },
+        select: { id: true, displayName: true },
+      });
+
+      if (existingModules.length !== moduleIds.length) {
+        const foundIds = existingModules.map((m) => m.id);
+        const missingIds = moduleIds.filter((id) => !foundIds.includes(id));
+        throw new NotFoundException(
+          `${missingIds.length} module(s) not found: ${missingIds.join(', ')}`,
+        );
+      }
+
+      // 4. Get existing assignments to avoid duplicates
+      const existingAssignments = await this.prisma.subscriptionModule.findMany(
+        {
+          where: { subscriptionTierId: tierId },
+          select: { moduleId: true },
+        },
+      );
+      const existingModuleIds = existingAssignments.map((a) => a.moduleId);
+
+      // 5. Create assignments for new modules only
+      const newModuleIds = moduleIds.filter(
+        (id) => !existingModuleIds.includes(id),
+      );
+
+      if (newModuleIds.length > 0) {
+        await this.prisma.subscriptionModule.createMany({
+          data: newModuleIds.map((moduleId) => ({
+            subscriptionTierId: tierId,
+            moduleId,
+          })),
+        });
+
+        this.logger.debug(
+          `[Job ${job.id}] Created ${newModuleIds.length} module assignments for tier ${tierId}`,
+        );
+      }
+
+      // 6. Fetch updated tier with modules
+      const updatedTier = await this.prisma.subscriptionTier.findUnique({
+        where: { id: tierId },
+        include: {
+          subscriptionModules: {
+            include: {
+              module: {
+                select: {
+                  id: true,
+                  moduleKey: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      this.logger.log(
+        `[Job ${job.id}] ✓ Successfully assigned ${moduleIds.length} modules to tier "${tier.name}"`,
+      );
+
+      return {
+        success: true,
+        tierId,
+        modulesAssigned: moduleIds.length,
+        tier: updatedTier,
+      };
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[Job ${job.id}] ✗ Failed to assign modules to tier ${tierId}: ${errorMsg}`,
+        error instanceof Error ? error.stack : '',
+      );
       throw error; // Rethrow to trigger retry
     }
   }

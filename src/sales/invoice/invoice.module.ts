@@ -12,10 +12,12 @@ import { PdfService } from '@/pdf/pdf.service';
 import { CacheService } from '@/cache/cache.service';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+
 
 @Module({
   imports: [PrismaModule, ScheduleModule.forRoot(), BullmqModule],
-  providers: [InvoiceService, AuthService, BankingService, AccountService, OpeningBalanceService, PdfService, MenuService, SubscriptionService, CacheService],
+  providers: [InvoiceService, AuthService, BankingService, AccountService, OpeningBalanceService, PdfService, MenuService, SubscriptionService, CacheService, PubsubService],
   controllers: [InvoiceController],
   exports: [InvoiceService],
 })

@@ -8,31 +8,32 @@ datasource db {
 }
 
 model Group {
-  id                String            @id @default(cuid())
-  name              String            @unique
-  legalName         String
-  logo              Json
-  taxId             String
-  industry          String
-  address           String
-  city              String
-  province          String
-  postalCode        String
-  country           String
-  email             String
-  phone             String
-  website           String?
-  subdomain         String             @unique
-  subscriptionId    String?
-  billingCycle      BillingCycle?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @default(now()) @updatedAt
-  entities          Entity[]
-  users             User[]
-  accountCategories AccountCategory[]
-  roles             Role[]
-  subscription      Subscription?
-  auditLogs         AuditLog[]
+  id                  String                @id @default(cuid())
+  name                String                @unique
+  legalName           String
+  logo                Json
+  taxId               String
+  industry            String
+  address             String
+  city                String
+  province            String
+  postalCode          String
+  country             String
+  email               String
+  phone               String
+  website             String?
+  subdomain           String                @unique
+  subscriptionId      String?
+  billingCycle        BillingCycle?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @default(now()) @updatedAt
+  entities            Entity[]
+  users               User[]
+  accountCategories   AccountCategory[]
+  roles               Role[]
+  subscription        Subscription?
+  subscriptionHistory SubscriptionHistory[]
+  auditLogs           AuditLog[]
 }
 
 model Entity {
@@ -84,33 +85,36 @@ model Entity {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  email               String               @unique
-  firstName           String?
-  lastName            String?
-  password            String?
-  image               Json?
-  provider            String?
-  providerId          String?
-  emailVerified       DateTime?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  systemRole          systemRole           @default(user)
-  groupId             String?
-  entityId            String?
-  roleId              String?
-  adminEntities       String[]            // For admin users: which entities they can manage (NULL = no entity access)
-  auditLogs           AuditLog[]
-  entity              Entity?              @relation(fields: [entityId], references: [id])
-  group               Group?               @relation(fields: [groupId], references: [id])
-  role                Role?                @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  invoiceActivities   InvoiceActivity[]
-  explicitPermissions ExplicitPermission[]
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  firstName             String?
+  lastName              String?
+  department            String?               // Optional: user department
+  password              String?
+  image                 Json?
+  provider              String?
+  providerId            String?
+  emailVerified         DateTime?
+  isActive              Boolean               @default(true) // Account activation status
+  requirePasswordChange Boolean               @default(true) // Force password change on next login
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  systemRole            systemRole            @default(user)
+  groupId               String?
+  entityId              String?
+  roleId                String?
+  adminEntities         String[] // For admin users: which entities they can manage (NULL = no entity access)
+  auditLogs             AuditLog[]
+  entity                Entity?               @relation(fields: [entityId], references: [id])
+  group                 Group?                @relation(fields: [groupId], references: [id])
+  role                  Role?                 @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  invoiceActivities     InvoiceActivity[]
+  explicitPermissions   ExplicitPermission[]
+  subscriptionHistories SubscriptionHistory[]
 
   @@unique([provider, providerId])
+  @@index([email, groupId, isActive])
 }
-
-
 
 model Customer {
   id           String    @id @default(cuid())
@@ -693,11 +697,11 @@ model Leave {
 
 model Module {
   id                  String               @id @default(cuid())
-  moduleKey           String               
+  moduleKey           String
   displayName         String
   description         String?
-  menu                String                            // Menu category grouping (e.g., "Income", "Expense", "Accounting")
-  scope               ModuleScope          @default(ENTITY)  // ADMIN or ENTITY level module
+  menu                String // Menu category grouping (e.g., "Income", "Expense", "Accounting")
+  scope               ModuleScope          @default(ENTITY) // ADMIN or ENTITY level module
   actions             Action[]
   subscriptionModules SubscriptionModule[]
   createdAt           DateTime             @default(now())
@@ -731,7 +735,7 @@ model Role {
   id              String           @id @default(cuid())
   name            String
   description     String?
-  group           Group?            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group           Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         String?
   isSystemRole    Boolean          @default(false) // True for global template roles (e.g., "administrator") that are not tied to a specific group
   scope           RoleScope
@@ -754,8 +758,6 @@ model RolePermission {
   @@unique([roleId, permissionId])
 }
 
-
-
 model ExplicitPermission {
   id           String     @id @default(cuid())
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -770,15 +772,7 @@ model ExplicitPermission {
   @@unique([userId, permissionId, entityId])
 }
 
-model SubscriptionTier {
-  id                  String               @id @default(cuid())
-  name                String               @unique
-  description         String?
-  subscriptions       Subscription[]
-  subscriptionModules SubscriptionModule[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-}
+
 
 model SubscriptionModule {
   id                 String           @id @default(cuid())
@@ -792,26 +786,137 @@ model SubscriptionModule {
 }
 
 model Subscription {
-  id                 String           @id @default(cuid())
-  group              Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId            String           @unique
+  id      String @id @default(cuid())
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String @unique
+
+  // Current tier
   tier               SubscriptionTier @relation(fields: [subscriptionTierId], references: [id])
   subscriptionTierId String
-  startDate          DateTime         @default(now())
-  endDate            DateTime?
-  isActive           Boolean          @default(true)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+
+  // Cache tier info for quick access
+  tierName             String
+  maxUsers             Int
+  maxEntities          Int
+  maxTransactionsMonth Int?
+  maxStorageGB         Int?
+  maxApiRatePerHour    Int?
+
+  // Dates
+  startDate        DateTime  @default(now())
+  billingStartDate DateTime  @default(now())
+  billingEndDate   DateTime?
+  renewalDate      DateTime?
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Usage tracking (real-time)
+  usedUsers             Int   @default(0)
+  usedEntities          Int   @default(0)
+  usedTransactionsMonth Int?   @default(0)
+  usedStorageGB         Float? @default(0)
+
+  // Relations
+  history SubscriptionHistory[]
+  endDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId, isActive])
+}
+
+model SubscriptionTier {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  monthlyPrice Int?    // Monthly price in cents (e.g., 2999 = $29.99/month), optional
+  yearlyPrice  Int?    // Yearly price in cents (e.g., 29999 = $299.99/year), optional
+
+  // Usage Limits (optional)
+  maxUsers             Int?
+  maxEntities          Int?
+  maxTransactionsMonth Int?
+  maxStorageGB         Int?
+  maxApiRatePerHour    Int?
+
+  // Features (optional)
+  apiAccess       Boolean?
+  webhooks        Boolean?
+  sso             Boolean?
+  customBranding  Boolean?
+  prioritySupport Boolean?
+
+  subscriptions       Subscription[]
+  subscriptionModules SubscriptionModule[]
+
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  subscriptionHistories SubscriptionHistory[]
+
+  // New self-relations for history
+  previousTiers SubscriptionHistory[] @relation("PreviousTier")
+  newTiers      SubscriptionHistory[] @relation("NewTier")
+}
+
+model SubscriptionHistory {
+  id      String @id @default(cuid())
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String
+
+  previousTier     SubscriptionTier? @relation("PreviousTier", fields: [previousTierId], references: [id], onDelete: SetNull)
+  previousTierId   String?
+  previousTierName String?
+
+  newTier     SubscriptionTier @relation("NewTier", fields: [newTierId], references: [id], onDelete: Restrict)
+  newTierId   String
+  newTierName String
+
+  changeReason    String // "upgrade", "downgrade", "cancellation", "renewal", "initial_subscription"
+  changedBy       User?   @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+  changedByUserId String?
+
+  effectiveDate      DateTime
+  createdAt          DateTime          @default(now())
+  subscriptionTier   SubscriptionTier? @relation(fields: [subscriptionTierId], references: [id])
+  subscriptionTierId String?
+  subscription       Subscription?     @relation(fields: [subscriptionId], references: [id])
+  subscriptionId     String?
+
+  @@index([groupId, createdAt])
+}
+
+model SubscriptionSettings {
+  id String @id @default(cuid())
+
+  // Trial period settings
+  trialPeriodEnabled  Boolean @default(true)
+  trialDurationDays   Int     @default(14)
+
+  // Renewal settings
+  autoRenewalEnabled  Boolean @default(true)
+  proratePayments     Boolean @default(true)
+
+  // Reminder & grace period
+  paymentReminders    Boolean @default(true)
+  gracePeriodDays     Int     @default(7)
+
+  // Audit
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([id]) // Only one settings record per platform
 }
 
 model AuditLog {
   id                   String   @id @default(cuid())
   user                 User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId               String?
-  group                Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId              String
-  entity               Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  entityId             String
+  group                Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId              String?
+  entity               Entity?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entityId             String?
   module               String
   method               String
   action               String
@@ -825,6 +930,7 @@ model AuditLog {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
+  @@index([groupId, createdAt])
   @@index([groupId, entityId, createdAt])
   @@index([userId, createdAt])
   @@index([module, action, createdAt])
@@ -915,14 +1021,14 @@ model OpeningBalanceItem {
 }
 
 enum RoleScope {
-  ADMIN   // Role grants admin-level permissions (Users, Roles, Audit, Settings, etc.)
-  USER    // Role grants entity-level/user permissions (Invoices, Bills, Payroll, etc.)
+  ADMIN // Role grants admin-level permissions (Users, Roles, Audit, Settings, etc.)
+  USER // Role grants entity-level/user permissions (Invoices, Bills, Payroll, etc.)
 }
 
 enum ModuleScope {
   SUPERADMIN // Superadmin-level module (Dashboard, Companies, Subscriptions)
-  GROUP   // Admin-level module (Users, Roles, Audit Trail, Settings)
-  ENTITY  // Entity-level/user module (Invoices, Bills, Payroll, etc.)
+  GROUP // Admin-level module (Users, Roles, Audit Trail, Settings)
+  ENTITY // Entity-level/user module (Invoices, Bills, Payroll, etc.)
 }
 
 enum PermissionAction {

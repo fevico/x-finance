@@ -223,6 +223,14 @@ export class PubsubService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Generic publish method for custom events
+   * Allows publishing to any channel with arbitrary event data
+   */
+  async publish(channel: string, event: Record<string, any>): Promise<void> {
+    await this.redis.publish(channel, JSON.stringify(event));
+  }
+
+  /**
    * Register listener for specific invalidation event
    */
   onInvalidation(

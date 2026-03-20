@@ -88,6 +88,28 @@ export class CacheService {
   }
 
   /**
+   * Delete whoami cache for all users in a group
+   * Called when entity is created/updated/deleted to ensure all group members refetch
+   * This ensures all users in the group get fresh data when entity changes
+   */
+  async deleteWhoamiCacheForGroup(groupId: string): Promise<void> {
+    try {
+      // Pattern: ctx:${groupId}:* matches all user context caches in this group
+      const pattern = `ctx:${groupId}:*`;
+      const keys = await this.redis.keys(pattern);
+      
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+      }
+    } catch (error) {
+      console.error(
+        `Cache deleteWhoamiCacheForGroup error for groupId ${groupId}:`,
+        error,
+      );
+    }
+  }
+
+  /**
    * Publish cache invalidation event
    * Used for real-time synchronization across server instances
    */
@@ -195,6 +217,7 @@ export class CacheService {
   /**
    * Invalidate group entities list (when entities added/removed/updated)
    */
+
   async invalidateGroupEntities(groupId: string): Promise<void> {
     await Promise.all([
       this.delete(CacheService.keys.groupEntities(groupId)),

@@ -6,10 +6,14 @@ import { AuthService } from '@/auth/auth.service';
 import { CacheService } from '@/cache/cache.service';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+
+
+import { BullmqModule } from '@/bullmq/bullmq.module';
 
 @Module({
-  imports: [PrismaModule],
-  providers: [AttendanceService, AuthService, MenuService, SubscriptionService, CacheService],
+  imports: [PrismaModule, BullmqModule],
+  providers: [AttendanceService, AuthService, MenuService, SubscriptionService, CacheService, PubsubService],
   controllers: [AttendanceController],
 })
 export class AttendanceModule {}

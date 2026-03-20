@@ -7,10 +7,13 @@ import { LogService } from '@/log/log.service';
 import { CacheService } from '@/cache/cache.service';
 import { SubscriptionService } from '@/subscription/subscription.service';
 import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+
+import { BullmqModule } from '@/bullmq/bullmq.module';
 
 @Module({
-  imports: [PrismaModule],
-  providers: [AssetService, AuthService, MenuService, MenuService, SubscriptionService, CacheService],
+  imports: [PrismaModule, BullmqModule],
+  providers: [AssetService, AuthService, MenuService, SubscriptionService, CacheService, PubsubService],
   controllers: [AssetController],
 })
 export class AssetModule {}
