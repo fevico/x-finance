@@ -34,6 +34,7 @@ import { OrganizationModule } from './settings/organization/organization.module'
 import { PaymentMadeModule } from './purchases/payment-made/payment-made.module';
 import { AccountTransactionModule } from './accounts/account-transaction/account-transaction.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ConfigModule } from './settings/config/config.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     BankingModule,
     AccountTransactionModule,
     AnalyticsModule,
+    ConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

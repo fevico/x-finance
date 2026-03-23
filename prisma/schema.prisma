@@ -73,6 +73,7 @@ model Entity {
   paymentMade         PaymentMade[]
   bankAccounts        BankAccount[]        @relation("BankAccounts")
   openingBalances     OpeningBalance[]
+  settings            Settings[]
   accountTransactions AccountTransaction[] @relation("EntityAccountTransactions")
 
   @@index([name, taxId, email])
@@ -641,6 +642,29 @@ model Employee {
   leave            Leave[]
 
   @@index([employeeId, email, entityId])
+}
+
+model Settings {
+  id               String @id @default(cuid())
+  baseCurrency     String?
+  multiCurrency    Boolean  @default(false)
+  taxCalculation   Boolean  @default(false)
+  dateFormat       DateTime?
+  numberFormat     String?
+  invoicePrefix    String?
+  paymentTerm      String?
+  lateFees         Boolean @default(false)
+  paymentReminders Boolean @default(false)
+  taxRate          Int?
+  billPrefix       String?
+  purchaseOrderPrefix String?
+  approvalRequired   Boolean @default(false)
+  approvedThreshold  Int?
+  match              Boolean @default(false)
+  entityId           String 
+  entity             Entity @relation(fields: [entityId], references: [id])
+  
+  @@index([entityId])
 }
 
 model AttendanceLog {
