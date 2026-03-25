@@ -3,7 +3,7 @@ import { Job } from 'bullmq';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { systemRole } from 'prisma/generated/enums';
+import { ModuleScope, RoleScope, systemRole } from 'prisma/generated/enums';
 import { EmailService } from '@/email/email.service';
 import * as path from 'path';
 import { seedDefaultChartOfAccounts } from '../../seeders/seed-account-chart';
@@ -32,6 +32,8 @@ export class BullmqProcessor extends WorkerHost {
       return this.handleCreateGroupDefaults(job);
     } else if (job.name === 'create-entity-user') {
       return this.handleCreateEntityUser(job);
+    } else if (job.name === 'send-user-welcome-email') {
+      return this.handleSendUserWelcomeEmail(job);
     } else if (job.name === 'post-invoice-journal') {
       return this.handleInvoiceJournalPosting(job);
     } else if (job.name === 'post-payment-journal') {
@@ -48,6 +50,8 @@ export class BullmqProcessor extends WorkerHost {
       return this.handleOpeningBalanceJournalPosting(job);
     } else if (job.name === 'post-manual-journal') {
       return this.handleManualJournalPosting(job);
+    } else if (job.name === 'assign-tier-modules') {
+      return this.handleAssignTierModules(job);
     } else {
       this.logger.warn(`[Job ${job.id}] Unknown job type: ${job.name}`);
     }
@@ -65,29 +69,62 @@ export class BullmqProcessor extends WorkerHost {
     );
 
     try {
-      // 1. Fetch all existing permissions
-      const permissions = await this.prisma.permission.findMany();
-
-      this.logger.debug(
-        `[Job ${job.id}] Fetched ${permissions.length} permissions`,
-      );
-
-      // 2. Create group role 'entityAdmin' with all permissions connected
-      const role = await this.prisma.groupRole.create({
-        data: {
-          name: 'entityAdmin',
+      // 1. Fetch or create 'admin' role for this group (cloned from template)
+      let adminRole = await this.prisma.role.findFirst({
+        where: {
           groupId,
-          permissions: {
-            connect: permissions.map((p) => ({ id: p.id })),
-          },
+          name: 'administrator',
+          scope: RoleScope.ADMIN,
         },
       });
 
-      this.logger.debug(
-        `[Job ${job.id}] Created group role with id: ${role.id}`,
-      );
+      if (!adminRole) {
+        // Fetch template admin role with all permissions pre-loaded
+        const templateAdminRole = await this.prisma.role.findFirst({
+          where: {
+            name: 'administrator',
+            isSystemRole: true,
+            groupId: null, // Global template (no group assigned)
+            scope: RoleScope.ADMIN,
+          },
+          include: {
+            rolePermissions: true,
+          },
+        });
 
-      // 2.5 Seed default chart of accounts for the group
+        if (!templateAdminRole) {
+          throw new Error(
+            'Admin role template not found. Run: ts-node seeders/seed-admin-role-template.ts',
+          );
+        }
+
+        this.logger.debug(
+          `[Job ${job.id}] Fetched template admin role with ${templateAdminRole.rolePermissions.length} permissions`,
+        );
+
+        // Clone template to new group with all pre-loaded permissions
+        adminRole = await this.prisma.role.create({
+          data: {
+            name: 'administrator',
+            groupId,
+                        isSystemRole: true,
+
+            scope: RoleScope.ADMIN,
+            description: 'Group administrator role (cloned from template)',
+            rolePermissions: {
+              create: templateAdminRole.rolePermissions.map((rp) => ({
+                permissionId: rp.permissionId,
+              })),
+            },
+          },
+        });
+
+        this.logger.debug(
+          `[Job ${job.id}] Created admin role for group with id: ${adminRole.id} (cloned from template)`,
+        );
+      }
+
+      // 1.5 Seed default chart of accounts for the group
       try {
         await seedDefaultChartOfAccounts(groupId);
         this.logger.debug(
@@ -100,7 +137,7 @@ export class BullmqProcessor extends WorkerHost {
         // Don't throw - continue with other setup steps
       }
 
-      // 3. Create owner user and attach to the new role
+      // 2. Create group admin user with empty adminEntities (= full access to all entities)
       const password = 'Password123';
       const hashed = await bcrypt.hash(password, 10);
 
@@ -108,15 +145,65 @@ export class BullmqProcessor extends WorkerHost {
         data: {
           email,
           firstName: groupName || 'Group',
-          lastName: 'Admin',
+          lastName: 'Administrator',
           password: hashed,
           groupId,
-          groupRoleId: role.id,
+          roleId: adminRole.id,
           systemRole: systemRole.admin,
+          adminEntities: [], // empty array = full access to all entities in this group
         },
       });
 
-      this.logger.debug(`[Job ${job.id}] Created owner user for group`);
+      this.logger.debug(`[Job ${job.id}] Created group admin user with full entity access`);
+
+      // 3. Create free trial subscription for the group
+      try {
+        // Get subscription settings
+        const settings = await (this.prisma as any).subscriptionSettings.findFirst();
+        const trialDurationDays = settings?.trialDurationDays || 14;
+
+        // Get the free tier
+        const freeTier = await this.prisma.subscriptionTier.findFirst({
+          where: {
+            name: {
+              in: ['Free', 'free'],
+            },
+          },
+        });
+
+        if (freeTier) {
+          const billingEndDate = new Date();
+          billingEndDate.setDate(billingEndDate.getDate() + trialDurationDays);
+
+          // Count active users in the group
+          const userCount = await this.prisma.user.count({
+            where: { groupId, isActive: true },
+          });
+
+          await this.prisma.subscription.create({
+            data: {
+              groupId,
+              subscriptionTierId: freeTier.id,
+              tierName: freeTier.name,
+              maxUsers: freeTier.maxUsers ?? -1,
+              maxEntities: freeTier.maxEntities ?? -1,
+              usedUsers: userCount, // Set to actual count of active users
+              billingStartDate: new Date(),
+              billingEndDate,
+              renewalDate: billingEndDate,
+            },
+          });
+
+          this.logger.log(
+            `[Job ${job.id}] Created free trial subscription for group (${trialDurationDays} days, ${userCount} active users)`,
+          );
+        } else {
+          this.logger.warn(`[Job ${job.id}] Free tier not found, skipping subscription creation`);
+        }
+      } catch (err) {
+        this.logger.error(`[Job ${job.id}] Failed to create subscription: ${err}`);
+        // Don't throw - continue with email send
+      }
 
       // Send welcome email to group admin
       try {
@@ -146,10 +233,8 @@ export class BullmqProcessor extends WorkerHost {
         );
       }
 
-      // Remove job from queue and Redis after successful completion
-      await job.remove();
       this.logger.log(
-        `[Job ${job.id}] ✓ create-group-user completed successfully and removed from queue`,
+        `[Job ${job.id}] ✓ create-group-user completed successfully (BullMQ will clean up)`,
       );
 
       return { ok: true };
@@ -164,64 +249,17 @@ export class BullmqProcessor extends WorkerHost {
   }
 
   async handleCreateEntityUser(job: Job) {
-    const { entityId, groupId, email, entityName, legalName } = job.data as {
+    const { entityId, groupId } = job.data as {
       entityId: string;
       groupId: string;
-      email: string;
-      entityName?: string;
-      legalName?: string;
     };
 
     this.logger.log(
-      `[Job ${job.id}] Running create-entity-user for groupId: ${groupId}, entityId: ${entityId}, email: ${email}, entityName: ${entityName}`,
+      `[Job ${job.id}] Running create-entity-user for groupId: ${groupId}, entityId: ${entityId}`,
     );
 
     try {
-      // 1. Fetch the 'entityAdmin' group role for this group
-      const entityAdminRole = await this.prisma.groupRole.findFirst({
-        where: {
-          groupId,
-          name: 'entityAdmin',
-        },
-      });
-
-      this.logger.debug(
-        `[Job ${job.id}] Fetched entityAdmin role: ${entityAdminRole?.id || 'NOT FOUND'}`,
-      );
-
-      if (!entityAdminRole) {
-        throw new Error(`entityAdmin role not found for group ${groupId}`);
-      }
-
-      // 2. Generate password for entity user
-      const plainPassword = this.generateSimpleEntityPassword(
-        entityName,
-        legalName,
-      );
-      console.log('entity password', plainPassword);
-      const hashed = await bcrypt.hash(plainPassword, 10);
-
-      this.logger.debug(`[Job ${job.id}] Generated password for entity user`);
-
-      // 3. Create user with systemRole 'user' and the entityAdmin groupRoleId
-      await this.prisma.user.create({
-        data: {
-          email,
-          firstName: entityName ? entityName.split(' ')[0] : 'Entity',
-          lastName: 'Admin',
-          password: hashed,
-          entityId,
-          groupId,
-          groupRoleId: entityAdminRole.id,
-          systemRole: systemRole.user,
-        },
-      });
-
-      this.logger.debug(
-        `[Job ${job.id}] Created entity user with email: ${email}`,
-      );
-
-      // 3.5 Seed default accounts for the entity
+      // 1. Seed default accounts for the entity
       try {
         await seedDefaultEntityAccounts(entityId, groupId);
         this.logger.debug(
@@ -234,31 +272,8 @@ export class BullmqProcessor extends WorkerHost {
         // Don't throw - continue with other setup steps
       }
 
-      // Send welcome email to entity user
-try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(process.cwd(), 'src/email/templates/entity-user-welcome.html'), { firstName: entityName ? entityName.split(' ')[0] : 'Entity', entityName: entityName || legalName || 'Entity', email, password: plainPassword,
-          },
-        );
-        const html = this.emailService.wrapWithBaseTemplate(
-          htmlContent,
-          'Welcome to X-Finance',
-          { year: new Date().getFullYear() },
-        );
-        await this.emailService.sendEmail({
-          to: email,
-          subject: 'Welcome to X-Finance',
-          html,
-        });
-        this.logger.log(`[Job ${job.id}] Sent welcome email to entity user`);
-      } catch (err) {
-        this.logger.error(
-          `[Job ${job.id}] Failed to send entity user welcome email: ${err}`,
-        );
-      }
-
-      // Remove job from queue and Redis after successful completion
-      await job.remove();
       this.logger.log(
-        `[Job ${job.id}] ✓ create-entity-user completed successfully and removed from queue`,
+        `[Job ${job.id}] ✓ create-entity-user completed successfully (BullMQ will clean up)`,
       );
 
       return { ok: true };
@@ -272,24 +287,69 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
     }
   }
 
-  private generateSimpleEntityPassword(
-    name?: string,
-    legalName?: string,
-  ): string {
-    const base = (legalName || name || 'Entity').trim();
-    const cleanBase = base
-      .split(/\s+/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join('')
-      .replace(/[^a-zA-Z0-9]/g, '');
+  /**
+   * Handle user welcome email
+   * Sends welcome email for newly created users (single or bulk)
+   */
+  async handleSendUserWelcomeEmail(job: Job): Promise<any> {
+    const {
+      email,
+      firstName,
+      lastName,
+      password,
+      scope,
+      groupId,
+      customMessage,
+      roleName,
+    } = job.data as {
+      email: string;
+      firstName: string;
+      lastName?: string;
+      password: string;
+      scope: 'ENTITY' | 'GROUP';
+      groupId: string;
+      customMessage?: string;
+      roleName: string;
+    };
 
-    const prefix = cleanBase.slice(0, 7);
+    this.logger.log(
+      `[Job ${job.id}] Sending welcome email to ${email} (scope: ${scope})`,
+    );
 
-    const randomNum = Math.floor(10 + Math.random() * 90);
-    const symbols = '!@#$%^&*';
-    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+    try {
+      // Select appropriate template based on scope
+      const templatePath =
+        scope === 'GROUP'
+          ? path.join(process.cwd(), 'src/email/templates/group-admin-welcome.html')
+          : path.join(process.cwd(), 'src/email/templates/entity-user-welcome.html');
 
-    return `${prefix}${symbol}${randomNum}`;
+      const htmlContent = this.emailService.renderHtmlTemplate(templatePath, {
+        firstName: firstName || 'User',
+        groupName: roleName,
+        entityName: roleName,
+        email,
+        password,
+      });
+
+      const html = this.emailService.wrapWithBaseTemplate(htmlContent, 'Welcome to X-Finance', {
+        year: new Date().getFullYear(),
+      });
+
+      await this.emailService.sendEmail({
+        to: email,
+        subject: 'Welcome to X-Finance',
+        html,
+      });
+
+      this.logger.log(`[Job ${job.id}] ✓ Welcome email sent to ${email}`);
+      return { ok: true };
+    } catch (err) {
+      this.logger.error(
+        `[Job ${job.id}] ✗ Failed to send welcome email to ${email}: ${err}`,
+      );
+      // Don't throw - don't fail the whole job if email fails
+      return { ok: false, error: String(err) };
+    }
   }
 
   /**
@@ -561,10 +621,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
@@ -745,21 +801,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               }),
             );
 
-            // If account is linked to a bank, also update bank account balance
-            if (accountWithBank?.bankAccount) {
-              promises.push(
-                tx.bankAccount.update({
-                  where: { id: accountWithBank.bankAccount.id },
-                  data: {
-                    currentBalance: {
-                      increment: line.debit - line.credit,
-                    },
-                  },
-                  select: { currentBalance: true },
-                }),
-              );
-            }
-
             return Promise.all(promises);
           }),
         );
@@ -769,7 +810,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
           journalLines.map((line, index) => {
             const accountWithBank = accountsWithBanks[index];
             const glAccountUpdate = updatedAccounts[index][0];
-            const bankAccountUpdate = accountsWithBanks[index]?.bankAccount ? updatedAccounts[index][1] : null;
 
             const txData: any = {
               date: postedAt,
@@ -790,11 +830,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
                 paymentAmount: paymentData.amount,
               },
             };
-
-            // If account is linked to a bank, populate bankAccountId
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
 
             return tx.accountTransaction.create({ data: txData });
           }),
@@ -1080,10 +1115,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
@@ -1330,15 +1361,11 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
 
-        // Mark bill as successfully posted with reference and timestamp
+    // Mark bill as successfully posted with reference and timestamp
         this.logger.debug(`[Job ${job.id}] Updating bill ${billId} with postingStatus=Success and reference=${journalRef}`);
         
         const billUpdateResult = await tx.bills.update({
@@ -1550,10 +1577,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
               },
             };
 
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
-
             return tx.accountTransaction.create({ data: txData });
           }),
         );
@@ -1752,10 +1775,6 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
                 journalReference: journalRef,
               },
             };
-
-            if (accountWithBank?.bankAccount) {
-              txData.bankAccountId = accountWithBank.bankAccount.id;
-            }
 
             return tx.accountTransaction.create({ data: txData });
           }),
@@ -2023,6 +2042,124 @@ try { const htmlContent = this.emailService.renderHtmlTemplate( path.join(proces
 
       // Log the error but don't fail - journal still exists, just balances not updated
       // User can retry posting manually later
+      throw error; // Rethrow to trigger retry
+    }
+  }
+
+  /**
+   * Handle subscription tier module assignment
+   * Assigns modules to a subscription tier
+   * Clears existing modules if clearExisting is true
+   */
+  async handleAssignTierModules(job: Job): Promise<any> {
+    const { tierId, moduleIds, clearExisting } = job.data as {
+      tierId: string;
+      moduleIds: string[];
+      clearExisting: boolean;
+    };
+
+    this.logger.log(
+      `[Job ${job.id}] Assigning modules to subscription tier: ${tierId}`,
+    );
+
+    try {
+      // 1. Verify tier exists
+      const tier = await this.prisma.subscriptionTier.findUnique({
+        where: { id: tierId },
+      });
+
+      if (!tier) {
+        throw new NotFoundException(
+          `Subscription tier with ID "${tierId}" not found`,
+        );
+      }
+
+      // 2. Clear existing modules if requested
+      if (clearExisting) {
+        await this.prisma.subscriptionModule.deleteMany({
+          where: { subscriptionTierId: tierId },
+        });
+        this.logger.debug(
+          `[Job ${job.id}] Cleared existing modules for tier ${tierId}`,
+        );
+      }
+
+      // 3. Verify all modules exist
+      const existingModules = await this.prisma.module.findMany({
+        where: { id: { in: moduleIds } },
+        select: { id: true, displayName: true },
+      });
+
+      if (existingModules.length !== moduleIds.length) {
+        const foundIds = existingModules.map((m) => m.id);
+        const missingIds = moduleIds.filter((id) => !foundIds.includes(id));
+        throw new NotFoundException(
+          `${missingIds.length} module(s) not found: ${missingIds.join(', ')}`,
+        );
+      }
+
+      // 4. Get existing assignments to avoid duplicates
+      const existingAssignments = await this.prisma.subscriptionModule.findMany(
+        {
+          where: { subscriptionTierId: tierId },
+          select: { moduleId: true },
+        },
+      );
+      const existingModuleIds = existingAssignments.map((a) => a.moduleId);
+
+      // 5. Create assignments for new modules only
+      const newModuleIds = moduleIds.filter(
+        (id) => !existingModuleIds.includes(id),
+      );
+
+      if (newModuleIds.length > 0) {
+        await this.prisma.subscriptionModule.createMany({
+          data: newModuleIds.map((moduleId) => ({
+            subscriptionTierId: tierId,
+            moduleId,
+          })),
+        });
+
+        this.logger.debug(
+          `[Job ${job.id}] Created ${newModuleIds.length} module assignments for tier ${tierId}`,
+        );
+      }
+
+      // 6. Fetch updated tier with modules
+      const updatedTier = await this.prisma.subscriptionTier.findUnique({
+        where: { id: tierId },
+        include: {
+          subscriptionModules: {
+            include: {
+              module: {
+                select: {
+                  id: true,
+                  moduleKey: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      this.logger.log(
+        `[Job ${job.id}] ✓ Successfully assigned ${moduleIds.length} modules to tier "${tier.name}"`,
+      );
+
+      return {
+        success: true,
+        tierId,
+        modulesAssigned: moduleIds.length,
+        tier: updatedTier,
+      };
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[Job ${job.id}] ✗ Failed to assign modules to tier ${tierId}: ${errorMsg}`,
+        error instanceof Error ? error.stack : '',
+      );
       throw error; // Rethrow to trigger retry
     }
   }

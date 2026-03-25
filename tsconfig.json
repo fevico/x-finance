@@ -27,6 +27,6 @@
     }
   },
   
-  "include": ["src", "seeders/*", "prisma.config.ts"],
+  "include": ["src", "seeders/*", "prisma.config.ts", "src/types/index.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,10 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CacheService } from '@/cache/cache.service';
 import { FileuploadService } from '@/fileupload/fileupload.service';
 import { BullmqService } from '@/bullmq/bullmq.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GetGroupsQueryDto } from './dto/get-groups-query.dto';
+import { generateSubdomain } from '@/auth/utils/helper';
 import 'multer';
 import { Prisma } from 'prisma/generated/client';
 
@@ -12,6 +14,7 @@ import { Prisma } from 'prisma/generated/client';
 export class GroupService {
   constructor(
     private prisma: PrismaService,
+    private cacheService: CacheService,
     private fileuploadService: FileuploadService,
     private bullmqService: BullmqService,
   ) {}
@@ -35,6 +38,7 @@ export class GroupService {
       const group = await this.prisma.group.create({
         data: {
           ...createGroupDto,
+          subdomain: generateSubdomain(createGroupDto.name),
           logo: logoData,
         },
       });
@@ -149,12 +153,42 @@ export class GroupService {
         skip,
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: {
+              users: true,
+              entities: true,
+            },
+          },
+          subscription: {
+            select: {
+              isActive: true,
+              tier: {
+                select: {
+                  monthlyPrice: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
       }),
       this.prisma.group.count({ where }),
     ]);
 
+    // Enhance data with user count, entity count, and MRR (monthly recurring revenue)
+    const enrichedGroups = data.map((group: any) => ({
+      ...group,
+      userCount: group._count.users,
+      entityCount: group._count.entities,
+      mrr: group.subscription?.tier?.monthlyPrice ? Math.floor(group.subscription.tier.monthlyPrice) : 0, // Convert from cents to currency
+      subscriptionStatus: group.subscription?.isActive ? 'active' : 'inactive',
+      plan: group.subscription?.tier?.name || 'free',
+      _count: undefined, // Remove the raw count object from response
+    }));
+
     return {
-      groups: data,
+      groups: enrichedGroups,
       pagination: {
         page,
         limit,
@@ -200,14 +234,13 @@ export class GroupService {
 
   async remove(id: string) {
     try {
-      const [rolesCount, usersCount, entitiesCount] = await Promise.all([
-        this.prisma.groupRole.count({ where: { groupId: id } }),
+      const [usersCount, entitiesCount] = await Promise.all([
         this.prisma.user.count({ where: { groupId: id } }),
         this.prisma.entity.count({ where: { groupId: id } }),
       ]);
 
       const blockers: string[] = [];
-      if (rolesCount > 0) blockers.push(`group roles (${rolesCount})`);
+      if (usersCount > 0) blockers.push(`users (${usersCount})`);
       if (usersCount > 0) blockers.push(`users (${usersCount})`);
       if (entitiesCount > 0) blockers.push(`entities (${entitiesCount})`);
 
@@ -249,4 +282,82 @@ export class GroupService {
       );
     }
   }
+
+  /**
+   * Get superadmin dashboard group statistics
+   * Returns: Total groups, Active, Trial, Suspended
+   * Cached for 1 hour
+   */
+  async getSuperadminGroupStats() {
+    const cacheKey = 'groups:superadmin:stats';
+
+    // Try cache first
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+      // Get subscription settings for trial duration
+      const settings = await (this.prisma as any).subscriptionSettings.findFirst();
+      const trialDurationDays = settings?.trialDurationDays || 14;
+      const trialEndDate = new Date(Date.now() - trialDurationDays * 24 * 60 * 60 * 1000);
+
+      // 1. Total groups count
+      const totalGroups = await this.prisma.group.count();
+
+      // 2. Active groups - subscription is active and not in trial
+      const activeGroups = await this.prisma.group.count({
+        where: {
+          subscription: {
+            isActive: true,
+            startDate: {
+              lt: trialEndDate, // Started before trial period
+            },
+          },
+        },
+      });
+
+      // 3. Trial groups - subscription exists but within trial period
+      const trialGroups = await this.prisma.group.count({
+        where: {
+          subscription: {
+            startDate: {
+              gte: trialEndDate, // Started within trial period
+            },
+          },
+        },
+      });
+
+      // 4. Suspended groups - subscription is inactive
+      const suspendedGroups = await this.prisma.group.count({
+        where: {
+          subscription: {
+            isActive: false,
+          },
+        },
+      });
+
+      const stats = {
+        totalGroups,
+        activeGroups,
+        trialGroups,
+        suspendedGroups,
+        timestamp: new Date(),
+      };
+
+      // Cache for 1 hour
+      await this.cacheService.set(cacheKey, stats, { ttl: 3600 });
+
+      console.log(`📊 Group stats generated`);
+      return stats;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Error generating group stats: ${errorMsg}`);
+      throw new HttpException(
+        `Failed to generate group statistics: ${errorMsg}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+ 
 }

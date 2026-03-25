@@ -18,11 +18,13 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:modules": "ts-node seeders/seed-modules.ts",
     "seed:permissions": "ts-node seeders/seed-permissions.ts",
     "seed:superadmin": "ts-node seeders/seed-admin.ts",
     "seed:account-types": "ts-node seeders/seed-account-types.ts"
   },
   "dependencies": {
+    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -31,11 +33,14 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.17",
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/swagger": "^11.2.3",
+    "@nestjs/websockets": "^11.1.17",
     "@prisma/adapter-pg": "7.0.0",
     "@prisma/client": "7.0.0",
     "@types/multer": "^2.0.0",
+    "@types/socket.io": "^3.0.1",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.67.3",
@@ -52,6 +57,7 @@
     "reflect-metadata": "^0.2.2",
     "resend": "^6.9.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

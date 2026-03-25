@@ -1,0 +1,33 @@
+use subscrition in other Services
+
+
+## 🔧 **How to Use in Other Services**
+
+**Check limits before creating resources:**
+```typescript
+// In user.service.ts or entity.service.ts
+async createUser(data: any, groupId: string) {
+  const check = await this.subscriptionService.checkUserLimit(groupId);
+  if (!check.allowed) throw new ForbiddenException(check.message);
+  
+  // ... create user
+  await this.subscriptionService.incrementUserCount(groupId);
+}
+```
+
+**Menu filtering by subscription:**
+```typescript
+// In menu.service.ts
+async getMenuForUser(user, groupId) {
+  const allowedModuleIds = await this.subscriptionService.getAllowedModuleIds(groupId);
+  
+  // Filter menus to only allowed modules
+  return menus.filter(m => allowedModuleIds.includes(m.moduleId));
+}
+```
+
+---
+
+Schema, seeder, service, and controller are all production-ready! 🎉
+
+Made changes.

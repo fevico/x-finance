@@ -21,6 +21,6 @@ import { JournalModule } from '@/accounts/journal/journal.module';
     forwardRef(() => JournalModule),
   ],
   providers: [BullmqService, BullmqProcessor, EmailService],
-  exports: [BullmqService],
+  exports: [BullmqService, BullModule],
 })
 export class BullmqModule {}

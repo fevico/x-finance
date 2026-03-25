@@ -26,9 +26,6 @@ export class BankAccountDto {
   openingBalance: number;
 
   @ApiProperty()
-  currentBalance: number;
-
-  @ApiProperty()
   status: string;
 
   @ApiProperty()

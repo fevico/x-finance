@@ -8,28 +8,32 @@ datasource db {
 }
 
 model Group {
-  id                String            @id @default(cuid())
-  name              String            @unique
-  legalName         String
-  logo              Json
-  taxId             String
-  industry          String
-  address           String
-  city              String
-  province          String
-  postalCode        String
-  country           String
-  email             String
-  phone             String
-  website           String?
-  subscriptionId    String?
-  billingCycle      BillingCycle?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @default(now()) @updatedAt
-  entities          Entity[]
-  groupRoles        GroupRole[]
-  users             User[]
-  accountCategories AccountCategory[]
+  id                  String                @id @default(cuid())
+  name                String                @unique
+  legalName           String
+  logo                Json
+  taxId               String
+  industry            String
+  address             String
+  city                String
+  province            String
+  postalCode          String
+  country             String
+  email               String
+  phone               String
+  website             String?
+  subdomain           String                @unique
+  subscriptionId      String?
+  billingCycle        BillingCycle?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @default(now()) @updatedAt
+  entities            Entity[]
+  users               User[]
+  accountCategories   AccountCategory[]
+  roles               Role[]
+  subscription        Subscription?
+  subscriptionHistory SubscriptionHistory[]
+  auditLogs           AuditLog[]
 }
 
 model Entity {
@@ -75,46 +79,44 @@ model Entity {
   openingBalances     OpeningBalance[]
   settings            Settings[]
   accountTransactions AccountTransaction[] @relation("EntityAccountTransactions")
+  auditLogs           AuditLog[]
+  explicitPermissions ExplicitPermission[]
+  project             Project[]
 
   @@index([name, taxId, email])
 }
 
 model User {
-  id                String            @id @default(cuid())
-  email             String            @unique
-  firstName         String?
-  lastName          String?
-  password          String?
-  image             Json?
-  provider          String?
-  providerId        String?
-  emailVerified     DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  groupRoleId       String?
-  systemRole        systemRole        @default(user)
-  groupId           String?
-  entityId          String?
-  auditLogs         AuditLog[]
-  entity            Entity?           @relation(fields: [entityId], references: [id])
-  group             Group?            @relation(fields: [groupId], references: [id])
-  groupRole         GroupRole?        @relation(fields: [groupRoleId], references: [id])
-  invoiceActivities InvoiceActivity[]
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  firstName             String?
+  lastName              String?
+  department            String?               // Optional: user department
+  password              String?
+  image                 Json?
+  provider              String?
+  providerId            String?
+  emailVerified         DateTime?
+  isActive              Boolean               @default(true) // Account activation status
+  requirePasswordChange Boolean               @default(true) // Force password change on next login
+  lastLogin             DateTime?             // Last login timestamp, nullable
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  systemRole            systemRole            @default(user)
+  groupId               String?
+  entityId              String?
+  roleId                String?
+  adminEntities         String[] // For admin users: which entities they can manage (NULL = no entity access)
+  auditLogs             AuditLog[]
+  entity                Entity?               @relation(fields: [entityId], references: [id])
+  group                 Group?                @relation(fields: [groupId], references: [id])
+  role                  Role?                 @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  invoiceActivities     InvoiceActivity[]
+  explicitPermissions   ExplicitPermission[]
+  subscriptionHistories SubscriptionHistory[]
 
   @@unique([provider, providerId])
-}
-
-model GroupRole {
-  id          String       @id @default(cuid())
-  name        String
-  groupId     String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
-  group       Group        @relation(fields: [groupId], references: [id])
-  users       User[]
-  permissions Permission[] @relation("GroupRoleToPermission")
-
-  @@unique([name, groupId])
+  @@index([email, groupId, isActive])
 }
 
 model Customer {
@@ -139,6 +141,7 @@ model Customer {
   entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
   invoice      Invoice[]
   receipt      Receipt[]
+  project      Project[]
 
   @@index([email, name])
 }
@@ -202,26 +205,26 @@ model InvoiceItem {
 }
 
 model PaymentMade {
-  id                String               @id @default(cuid())
-  vendorId          String
-  vendor            vendor               @relation(fields: [vendorId], references: [id])
-  billId            String?
-  bill              Bills?               @relation(fields: [billId], references: [id], onDelete: SetNull)
-  paymentDate       DateTime
-  amount            Int
-  paymentMethod     PaymentMethod
-  entityId          String
-  entity            Entity               @relation(fields: [entityId], references: [id])
-  accountId         String
-  account           Account              @relation(fields: [accountId], references: [id])
-  reference         String?
-  note              String?
-  status            PaymentMadeStatus    @default(Pending)
-  postingStatus     JournalPostingStatus @default(Pending) // Journal posting status
-  journalReference  String? // Reference to the journal entry
-  postedAt          DateTime? // When successfully posted to journal
-  errorMessage      String? // Error details if posting failed
-  errorCode         String? // Error code for tracking
+  id               String               @id @default(cuid())
+  vendorId         String
+  vendor           vendor               @relation(fields: [vendorId], references: [id])
+  billId           String?
+  bill             Bills?               @relation(fields: [billId], references: [id], onDelete: SetNull)
+  paymentDate      DateTime
+  amount           Int
+  paymentMethod    PaymentMethod
+  entityId         String
+  entity           Entity               @relation(fields: [entityId], references: [id])
+  accountId        String
+  account          Account              @relation(fields: [accountId], references: [id])
+  reference        String?
+  note             String?
+  status           PaymentMadeStatus    @default(Pending)
+  postingStatus    JournalPostingStatus @default(Pending) // Journal posting status
+  journalReference String? // Reference to the journal entry
+  postedAt         DateTime? // When successfully posted to journal
+  errorMessage     String? // Error details if posting failed
+  errorCode        String? // Error code for tracking
 
   @@index([entityId])
   @@index([billId])
@@ -292,31 +295,31 @@ model PaymentReceived {
 }
 
 model Expenses {
-  id                String               @id @default(cuid())
-  date              DateTime
-  reference         String
-  vendorId          String?
-  vendor            vendor?              @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  paymentMethod     PaymentMethod
-  paymentAccountId  String
-  paymentAccount    Account              @relation("PaymentAccount", fields: [paymentAccountId], references: [id], onDelete: Restrict)
-  expenseAccountId  String
-  expenseAccount    Account              @relation("ExpenseAccount", fields: [expenseAccountId], references: [id], onDelete: Restrict)
-  amount            Int
-  tax               String
-  description       String?
-  status            ExpenseStatus        @default(draft)
-  postingStatus     JournalPostingStatus @default(Pending) // Journal posting status
-  journalReference  String? // Reference to the journal entry
-  postedAt          DateTime? // When successfully posted to journal
-  errorMessage      String? // Error details if posting failed
-  errorCode         String? // Error code for tracking
-  tags              String[]
-  attachment        Json?
-  entityId          String
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @default(now()) @updatedAt
-  entity            Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  id               String               @id @default(cuid())
+  date             DateTime
+  reference        String
+  vendorId         String?
+  vendor           vendor?              @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  paymentMethod    PaymentMethod
+  paymentAccountId String
+  paymentAccount   Account              @relation("PaymentAccount", fields: [paymentAccountId], references: [id], onDelete: Restrict)
+  expenseAccountId String
+  expenseAccount   Account              @relation("ExpenseAccount", fields: [expenseAccountId], references: [id], onDelete: Restrict)
+  amount           Int
+  tax              String
+  description      String?
+  status           ExpenseStatus        @default(draft)
+  postingStatus    JournalPostingStatus @default(Pending) // Journal posting status
+  journalReference String? // Reference to the journal entry
+  postedAt         DateTime? // When successfully posted to journal
+  errorMessage     String? // Error details if posting failed
+  errorCode        String? // Error code for tracking
+  tags             String[]
+  attachment       Json?
+  entityId         String
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @default(now()) @updatedAt
+  entity           Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
 
   @@index([reference, paymentAccountId])
   @@index([reference, expenseAccountId])
@@ -335,7 +338,6 @@ model Bills {
   tax               Int
   discount          Int
   total             Int
-  category          String
   notes             String?
   attachment        Json?
   accountsPayableId String
@@ -355,7 +357,6 @@ model Bills {
   paymentsMade      PaymentMade[]
   accountsPayable   Account              @relation(fields: [accountsPayableId], references: [id], onDelete: Restrict)
 
-  @@index([billDate, category])
   @@unique([entityId, billNumber])
 }
 
@@ -395,7 +396,7 @@ model Receipt {
   updatedAt        DateTime             @default(now()) @updatedAt
   customer         Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
   entity           Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  account          Account             @relation(fields: [depositTo], references: [id])
+  account          Account              @relation(fields: [depositTo], references: [id])
 
   receiptItem ReceiptItem[]
 
@@ -554,6 +555,7 @@ model Account {
   entityId            String
   subCategoryId       String
   balance             Int                  @default(0)
+  linkedType          String? // Purpose of account: BANK, CASH, LOAN, etc. null for regular GL accounts
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @default(now()) @updatedAt
   entity              Entity               @relation(fields: [entityId], references: [id], onDelete: Cascade)
@@ -569,8 +571,28 @@ model Account {
   accountTransactions AccountTransaction[] @relation("AccountTransactions")
   receipts            Receipt[]
 
+  @@unique([entityId, code])
   @@index([id, entityId])
   @@index([subCategoryId])
+}
+
+model Project {
+  id                String    @id @default(cuid())
+  name              String 
+  projectId         String 
+  customerId        String 
+  entityId          String 
+  status            ProjectStatus 
+  description       String 
+  startDate         DateTime
+  endDate           DateTime 
+  billingType       String 
+  currency          String 
+  budgetedRevenue   Int
+  budgetedCost      Int
+  projectManager    String
+  customer          Customer @relation(fields: [customerId], references: [id])
+  entity            Entity   @relation(fields: [entityId], references: [id])
 }
 
 model Journal {
@@ -719,50 +741,264 @@ model Leave {
   @@index([employeeId, status])
 }
 
+model Module {
+  id                  String               @id @default(cuid())
+  moduleKey           String
+  displayName         String
+  description         String?
+  menu                String // Menu category grouping (e.g., "Income", "Expense", "Accounting")
+  scope               ModuleScope          @default(ENTITY) // ADMIN or ENTITY level module
+  actions             Action[]
+  subscriptionModules SubscriptionModule[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@unique([moduleKey, scope])
+}
+
+model Action {
+  id          String           @id @default(cuid())
+  actionName  PermissionAction
+  module      Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId    String
+  permissions Permission[]
+  createdAt   DateTime         @default(now())
+
+  @@unique([moduleId, actionName])
+}
+
 model Permission {
-  id          String      @id @default(cuid())
-  name        String      @unique
+  id                      String               @id @default(cuid())
+  action                  Action               @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  actionId                String
+  rolePermissions         RolePermission[]
+  userExplicitPermissions ExplicitPermission[]
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+}
+
+model Role {
+  id              String           @id @default(cuid())
+  name            String
+  description     String?
+  group           Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId         String?
+  isSystemRole    Boolean          @default(false) // True for global template roles (e.g., "administrator") that are not tied to a specific group
+  scope           RoleScope
+  rolePermissions RolePermission[]
+  users           User[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([groupId, name, scope])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+}
+
+model ExplicitPermission {
+  id           String     @id @default(cuid())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  entity       Entity     @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entityId     String
+  allowed      Boolean
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, permissionId, entityId])
+}
+
+
+
+model SubscriptionModule {
+  id                 String           @id @default(cuid())
+  subscriptionTier   SubscriptionTier @relation(fields: [subscriptionTierId], references: [id], onDelete: Cascade)
+  subscriptionTierId String
+  module             Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId           String
+  createdAt          DateTime         @default(now())
+
+  @@unique([subscriptionTierId, moduleId])
+}
+
+model Subscription {
+  id      String @id @default(cuid())
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String @unique
+
+  // Current tier
+  tier               SubscriptionTier @relation(fields: [subscriptionTierId], references: [id])
+  subscriptionTierId String
+
+  // Cache tier info for quick access
+  tierName             String
+  maxUsers             Int
+  maxEntities          Int
+  maxTransactionsMonth Int?
+  maxStorageGB         Int?
+  maxApiRatePerHour    Int?
+
+  // Dates
+  startDate        DateTime  @default(now())
+  billingStartDate DateTime  @default(now())
+  billingEndDate   DateTime?
+  renewalDate      DateTime?
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Usage tracking (real-time)
+  usedUsers             Int   @default(0)
+  usedEntities          Int   @default(0)
+  usedTransactionsMonth Int?   @default(0)
+  usedStorageGB         Float? @default(0)
+
+  // Relations
+  history SubscriptionHistory[]
+  endDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId, isActive])
+}
+
+model SubscriptionTier {
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @default(now()) @updatedAt
-  groupRoles  GroupRole[] @relation("GroupRoleToPermission")
+  monthlyPrice Int?    // Monthly price in cents (e.g., 2999 = $29.99/month), optional
+  yearlyPrice  Int?    // Yearly price in cents (e.g., 29999 = $299.99/year), optional
+
+  // Usage Limits (optional)
+  maxUsers             Int?
+  maxEntities          Int?
+  maxTransactionsMonth Int?
+  maxStorageGB         Int?
+  maxApiRatePerHour    Int?
+
+  // Features (optional)
+  apiAccess       Boolean?
+  webhooks        Boolean?
+  sso             Boolean?
+  customBranding  Boolean?
+  prioritySupport Boolean?
+
+  subscriptions       Subscription[]
+  subscriptionModules SubscriptionModule[]
+
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  subscriptionHistories SubscriptionHistory[]
+
+  // New self-relations for history
+  previousTiers SubscriptionHistory[] @relation("PreviousTier")
+  newTiers      SubscriptionHistory[] @relation("NewTier")
+}
+
+model SubscriptionHistory {
+  id      String @id @default(cuid())
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId String
+
+  previousTier     SubscriptionTier? @relation("PreviousTier", fields: [previousTierId], references: [id], onDelete: SetNull)
+  previousTierId   String?
+  previousTierName String?
+
+  newTier     SubscriptionTier @relation("NewTier", fields: [newTierId], references: [id], onDelete: Restrict)
+  newTierId   String
+  newTierName String
+
+  changeReason    String // "upgrade", "downgrade", "cancellation", "renewal", "initial_subscription"
+  changedBy       User?   @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+  changedByUserId String?
+
+  effectiveDate      DateTime
+  createdAt          DateTime          @default(now())
+  subscriptionTier   SubscriptionTier? @relation(fields: [subscriptionTierId], references: [id])
+  subscriptionTierId String?
+  subscription       Subscription?     @relation(fields: [subscriptionId], references: [id])
+  subscriptionId     String?
+
+  @@index([groupId, createdAt])
+}
+
+model SubscriptionSettings {
+  id String @id @default(cuid())
+
+  // Trial period settings
+  trialPeriodEnabled  Boolean @default(true)
+  trialDurationDays   Int     @default(14)
+
+  // Renewal settings
+  autoRenewalEnabled  Boolean @default(true)
+  proratePayments     Boolean @default(true)
+
+  // Reminder & grace period
+  paymentReminders    Boolean @default(true)
+  gracePeriodDays     Int     @default(7)
+
+  // Audit
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([id]) // Only one settings record per platform
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  ipAddress String?  @map("ip_address")
-  device    String?
-  location  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  id                   String   @id @default(cuid())
+  user                 User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId               String?
+  group                Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId              String?
+  entity               Entity?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entityId             String?
+  module               String
+  method               String
+  action               String
+  resourceType         String
+  resourceId           String
+  changes              Json
+  ipAddress            String?
+  userAgent            String?
+  impersonatedGroupId  String?
+  impersonatedEntityId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
+  @@index([groupId, createdAt])
+  @@index([groupId, entityId, createdAt])
+  @@index([userId, createdAt])
+  @@index([module, action, createdAt])
 }
 
 model BankAccount {
-  id                  String               @id @default(cuid())
-  accountName         String
-  bankName            String
-  accountType         String
-  currency            String
-  accountNumber       String               @unique
-  routingNumber       String?
-  openingBalance      Int                  @default(0)
-  currentBalance      Int                  @default(0)
-  status              BankAccountStatus    @default(active)
-  linkedAccountId     String               @unique
-  entityId            String
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @default(now()) @updatedAt
-  entity              Entity               @relation("BankAccounts", fields: [entityId], references: [id], onDelete: Cascade)
-  linkedAccount       Account              @relation("LinkedBankAccount", fields: [linkedAccountId], references: [id])
-  accountTransactions AccountTransaction[] @relation("BankAccountTransactions")
+  id              String            @id @default(cuid())
+  accountName     String
+  bankName        String
+  accountType     String
+  currency        String
+  accountNumber   String
+  routingNumber   String?
+  status          BankAccountStatus @default(active)
+  linkedAccountId String            @unique
+  entityId        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now()) @updatedAt
+  entity          Entity            @relation("BankAccounts", fields: [entityId], references: [id], onDelete: Cascade)
+  linkedAccount   Account           @relation("LinkedBankAccount", fields: [linkedAccountId], references: [id])
 
+  @@unique([entityId, accountNumber])
   @@index([entityId, linkedAccountId])
   @@index([accountNumber])
 }
@@ -783,13 +1019,11 @@ model AccountTransaction {
   entityId          String
   relatedEntityId   String? // ID of invoice, payment, etc.
   relatedEntityType String? // Type: Invoice, PaymentReceived, BankTransaction
-  bankAccountId     String? // If posting to a bank account
   metadata          Json?
   createdAt         DateTime                 @default(now())
   updatedAt         DateTime                 @default(now()) @updatedAt
   account           Account                  @relation("AccountTransactions", fields: [accountId], references: [id], onDelete: Restrict)
   entity            Entity                   @relation("EntityAccountTransactions", fields: [entityId], references: [id], onDelete: Cascade)
-  bankAccount       BankAccount?             @relation("BankAccountTransactions", fields: [bankAccountId], references: [id], onDelete: SetNull)
 
   @@index([entityId, accountId, date])
   @@index([date, type])
@@ -830,6 +1064,34 @@ model OpeningBalanceItem {
   @@unique([openingBalanceId, accountId])
   @@index([openingBalanceId])
   @@index([accountId])
+}
+
+enum RoleScope {
+  ADMIN // Role grants admin-level permissions (Users, Roles, Audit, Settings, etc.)
+  USER // Role grants entity-level/user permissions (Invoices, Bills, Payroll, etc.)
+}
+
+enum ModuleScope {
+  SUPERADMIN // Superadmin-level module (Dashboard, Companies, Subscriptions)
+  GROUP // Admin-level module (Users, Roles, Audit Trail, Settings)
+  ENTITY // Entity-level/user module (Invoices, Bills, Payroll, etc.)
+}
+
+enum PermissionAction {
+  View
+  Create
+  Edit
+  Delete
+  Approve
+  Export
+  Import
+}
+
+enum ProjectStatus {
+  Completed
+  Planning 
+  In_Progress
+  On_Hold
 }
 
 enum BillingCycle {

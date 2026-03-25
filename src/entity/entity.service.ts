@@ -11,6 +11,9 @@ import { UpdateEntityDto } from './dto/update-entity.dto';
 import { GetEntitiesQueryDto } from './dto/get-entities-query.dto';
 import { BullmqService } from '@/bullmq/bullmq.service';
 import { FileuploadService } from '@/fileupload/fileupload.service';
+import { CacheService } from '@/cache/cache.service';
+import { CacheInvalidationService } from '@/cache/cache-invalidation.service';
+import { PubsubService } from '@/cache/pubsub.service';
 
 @Injectable()
 export class EntityService {
@@ -18,6 +21,9 @@ export class EntityService {
     private prisma: PrismaService,
     private fileuploadService: FileuploadService,
     private bullmqService: BullmqService,
+    private cacheService: CacheService,
+    private cacheInvalidationService: CacheInvalidationService,
+    private pubsubService: PubsubService,
   ) {}
 
   // async create(createEntityDto: CreateEntityDto, effectiveGroupId: string) {
@@ -59,14 +65,28 @@ export class EntityService {
         },
       });
 
-      // Enqueue background job to create entity owner user with entityAdmin role
+      // Enqueue background job to seed default accounts for the entity
       await this.bullmqService.addJob('create-entity-user', {
         entityId: entity.id,
         groupId: effectiveGroupId,
-        email: createEntityDto.email,
-        entityName: createEntityDto.name,
-        legalName: createEntityDto.legalName,  
       });
+
+      // Invalidate whoami/user context caches AND entities caches for all users in the group
+      // When entity is created, users' available entities list changes
+      console.log(`\n⏱️ [ENTITY CREATE] Starting cache invalidation for group: ${effectiveGroupId}`);
+      await this.cacheService.deleteWhoamiCacheForGroup(effectiveGroupId);
+      await this.cacheService.deletePattern(`entities:${effectiveGroupId}:*`);
+      console.log(`✓ [ENTITY CREATE] Cleared whoami + entities caches for group: ${effectiveGroupId}`);
+
+      // Publish pubsub event so WebSocket clients refetch whoami
+      await this.pubsubService.publish(`whoami-invalidate:${effectiveGroupId}`, {
+        type: 'whoami-invalidate',
+        groupId: effectiveGroupId,
+        reason: 'entity-created',
+        entityId: entity.id,
+        timestamp: new Date(),
+      });
+      console.log(`📢 Pubsub event published: whoami-invalidate:${effectiveGroupId} (reason: entity-created, entityId: ${entity.id})`);
 
       return entity;
     } catch (error) {
@@ -134,14 +154,54 @@ export class EntityService {
     effectiveGroupId: string,
   ) {
     await this.findOne(id, effectiveGroupId); // Reuse findOne to check for existence and permission
-    return this.prisma.entity.update({
+    
+    const result = await this.prisma.entity.update({
       where: { id },
       data: updateEntityDto,
     });
+
+    // Invalidate whoami/user context caches AND entities caches for all users in the group
+    // When entity is updated, users' entity details and available entities list may have changed
+    console.log(`\n⏱️ [ENTITY UPDATE] Starting cache invalidation for group: ${effectiveGroupId}`);
+    await this.cacheService.deleteWhoamiCacheForGroup(effectiveGroupId);
+    await this.cacheService.deletePattern(`entities:${effectiveGroupId}:*`);
+    console.log(`✓ [ENTITY UPDATE] Cleared whoami + entities caches for group: ${effectiveGroupId}`);
+
+    // Publish pubsub event so WebSocket clients refetch whoami
+    await this.pubsubService.publish(`whoami-invalidate:${effectiveGroupId}`, {
+      type: 'whoami-invalidate',
+      groupId: effectiveGroupId,
+      reason: 'entity-updated',
+      entityId: id,
+      timestamp: new Date(),
+    });
+    console.log(`📢 Pubsub event published: whoami-invalidate:${effectiveGroupId} (reason: entity-updated, entityId: ${id})`);
+
+    return result;
   }
 
   async remove(id: string, effectiveGroupId: string) {
     await this.findOne(id, effectiveGroupId); // Reuse findOne to check for existence and permission
-    return this.prisma.entity.delete({ where: { id } });
+    
+    const result = await this.prisma.entity.delete({ where: { id } });
+
+    // Invalidate whoami/user context caches AND entities caches for all users in the group
+    // When entity is deleted, users' available entities list changes
+    console.log(`\n⏱️ [ENTITY DELETE] Starting cache invalidation for group: ${effectiveGroupId}`);
+    await this.cacheService.deleteWhoamiCacheForGroup(effectiveGroupId);
+    await this.cacheService.deletePattern(`entities:${effectiveGroupId}:*`);
+    console.log(`✓ [ENTITY DELETE] Cleared whoami + entities caches for group: ${effectiveGroupId}`);
+
+    // Publish pubsub event so WebSocket clients refetch whoami
+    await this.pubsubService.publish(`whoami-invalidate:${effectiveGroupId}`, {
+      type: 'whoami-invalidate',
+      groupId: effectiveGroupId,
+      reason: 'entity-deleted',
+      entityId: id,
+      timestamp: new Date(),
+    });
+    console.log(`📢 Pubsub event published: whoami-invalidate:${effectiveGroupId} (reason: entity-deleted, entityId: ${id})`);
+
+    return result;
   }
 }

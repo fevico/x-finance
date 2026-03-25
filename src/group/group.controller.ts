@@ -118,6 +118,17 @@ export class GroupController {
     return this.groupService.findAll(query);
   }
 
+  @Get('stats/platform')
+  @UseGuards(RolesGuard)
+  @Roles(systemRole.superadmin)
+  @ApiOperation({ summary: 'Get platform-wide group statistics' })
+  @ApiResponse({ status: 200, description: 'Platform group statistics' })
+  getPlatformStats() {
+    return this.groupService.getSuperadminGroupStats();
+  }
+
+ 
+
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles(systemRole.admin, systemRole.superadmin)

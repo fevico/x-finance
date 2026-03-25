@@ -14,15 +14,14 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash('password123!', 10);
 
-  const superadminUser = await prisma.user.upsert({
-    where: { email: 'superadmin@xf.com' },
-    update: {},
-    create: {
+  const superadminUser = await prisma.user.create({
+    data: {
       email: 'superadmin@xf.com',
       password: hashedPassword,
       systemRole: systemRole.superadmin,
       firstName: 'Superadmin',
       lastName: 'User',
+      // roleId: '', // No specific roles needed since superadmin has all permissions by default
     },
   });
 

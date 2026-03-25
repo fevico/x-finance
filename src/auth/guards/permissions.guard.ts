@@ -27,7 +27,7 @@ export class PermissionsGuard implements CanActivate {
     if (!user.permissions || !Array.isArray(user.permissions)) return false;
 
     return requiredPermissions.every((permission) =>
-      user.permissions.includes(permission),
+      user.permissions!.includes(permission),
     );
   }
 }

@@ -2,7 +2,7 @@ name: Deploy Backend (NestJS) Blue-Green
 
 on:
   push:
-    branches: [master]
+    branches: [exp]
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
 
       - name: Create full .env
         run: |
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > build/.env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL_NEW }}" > build/.env
           echo "COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}" >> build/.env
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> build/.env
           echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> build/.env
@@ -125,11 +125,9 @@ jobs:
                 sleep 2
               done
 
-              sudo sed -i \"s|proxy_pass http://127.0.0.1:$OLD_PORT;|proxy_pass http://127.0.0.1:$GREEN_PORT;|\" \
-                /etc/nginx/sites-available/backend
+              sudo sed -i '/location \/backend\//,/}/s|\(proxy_pass http://127.0.0.1:\)[0-9]\+\(/api/v1/\);|\1'"$GREEN_PORT"'\2;|' /etc/nginx/sites-available/frontend
               echo "NGINX AFTER SWITCH:"
-              sudo grep proxy_pass /etc/nginx/sites-available/backend
-
+              sudo grep proxy_pass /etc/nginx/sites-available/frontend
               sudo nginx -t
               sudo systemctl reload nginx
 

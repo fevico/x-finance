@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   KPIDto,
@@ -10,12 +10,18 @@ import {
   DashboardResponseDto,
 } from './dto/analytics-response.dto';
 import { DateFilterEnum, DateFilterHelper, DateRange } from './dto/date-filter.dto';
+import { CacheService } from '@/cache/cache.service';
+import { CacheInvalidationService } from '@/cache/cache-invalidation.service';
 
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheService: CacheService,
+    private readonly cacheInvalidationService: CacheInvalidationService,
+  ) {}
 
   /**
    * Get unified dashboard data with all metrics
@@ -31,6 +37,16 @@ export class AnalyticsService {
     expensesFilter: DateFilterEnum = DateFilterEnum.THIS_YEAR,
   ): Promise<DashboardResponseDto> {
     try {
+      // Build cache key
+      const cacheKey = `dashboard:${entityId}:${monthlyFilter}:${cashFlowFilter}:${expensesFilter}`;
+      
+      // Check cache first
+      const cached = await this.cacheService.get<DashboardResponseDto>(cacheKey);
+      if (cached) {
+        this.logger.debug(`[Analytics] Dashboard cache HIT for entity: ${entityId}`);
+        return cached;
+      }
+
       this.logger.debug(
         `[Analytics] Fetching dashboard data for entity: ${entityId} with filters - monthly=${monthlyFilter}, cashFlow=${cashFlowFilter}, expenses=${expensesFilter}`,
       );
@@ -53,7 +69,7 @@ export class AnalyticsService {
         this.getRecentTransactions(entityId, 5),
       ]);
 
-      return {
+      const result: DashboardResponseDto = {
         kpis,
         monthlyBreakdown,
         cashFlow,
@@ -62,6 +78,12 @@ export class AnalyticsService {
         payableAging,
         recentTransactions,
       };
+
+      // Store in cache with 5-minute TTL
+      await this.cacheService.set(cacheKey, result, { ttl: 300 });
+      this.logger.debug(`[Analytics] Dashboard cached for entity: ${entityId}`);
+
+      return result;
     } catch (error) {
       this.logger.error(
         `[Analytics] Error fetching dashboard data: ${error instanceof Error ? error.message : String(error)}`,
@@ -80,8 +102,8 @@ export class AnalyticsService {
       const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      // Revenue (MTD)
-      const currentMTDRevenue = await this.prisma.invoice.aggregate({
+      // Revenue (MTD) - Sum of paid invoices + payments received for partial/overdue invoices + receipts
+      const currentMTDPaidInvoices = await this.prisma.invoice.aggregate({
         where: {
           entityId,
           status: 'Paid',
@@ -90,7 +112,42 @@ export class AnalyticsService {
         _sum: { total: true },
       });
 
-      const previousMTDRevenue = await this.prisma.invoice.aggregate({
+      // Payments received for Partial invoices in current MTD
+      const currentMTDPartialPayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Partial', invoiceDate: { gte: currentMonth, lte: now } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Payments received for Overdue invoices in current MTD
+      const currentMTDOverduePayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Overdue', invoiceDate: { gte: currentMonth, lte: now } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Receipts (direct revenue) in current MTD
+      const currentMTDReceipts = await this.prisma.receipt.aggregate({
+        where: {
+          entityId,
+          status: 'Completed',
+          date: { gte: currentMonth, lte: now },
+        },
+        _sum: { total: true },
+      });
+
+      const revenueMTD =
+        (currentMTDPaidInvoices._sum.total || 0) +
+        (currentMTDPartialPayments._sum.amount || 0) +
+        (currentMTDOverduePayments._sum.amount || 0) +
+        (currentMTDReceipts._sum.total || 0);
+
+      // Previous month revenue
+      const previousMTDPaidInvoices = await this.prisma.invoice.aggregate({
         where: {
           entityId,
           status: 'Paid',
@@ -99,19 +156,51 @@ export class AnalyticsService {
         _sum: { total: true },
       });
 
-      const revenueMTD = currentMTDRevenue._sum.total || 0;
-      const revenuePrevious = previousMTDRevenue._sum.total || 0;
+      // Payments received for Partial invoices in previous month
+      const previousMTDPartialPayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Partial', invoiceDate: { gte: previousMonth, lte: previousMonthEnd } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Payments received for Overdue invoices in previous month
+      const previousMTDOverduePayments = await this.prisma.paymentReceived.aggregate({
+        where: {
+          entityId,
+          invoice: { status: 'Overdue', invoiceDate: { gte: previousMonth, lte: previousMonthEnd } },
+        },
+        _sum: { amount: true },
+      });
+
+      // Receipts (direct revenue) in previous month
+      const previousMTDReceipts = await this.prisma.receipt.aggregate({
+        where: {
+          entityId,
+          status: 'Completed',
+          date: { gte: previousMonth, lte: previousMonthEnd },
+        },
+        _sum: { total: true },
+      });
+
+      const revenuePrevious =
+        (previousMTDPaidInvoices._sum.total || 0) +
+        (previousMTDPartialPayments._sum.amount || 0) +
+        (previousMTDOverduePayments._sum.amount || 0) +
+        (previousMTDReceipts._sum.total || 0);
+
       const revenueChange = revenueMTD - revenuePrevious;
       const revenueChangePercent =
         revenuePrevious > 0 ? (revenueChange / revenuePrevious) * 100 : 100;
 
-      // Bank Balance (Total across all accounts)
+      // Bank Balance (Total across all linked bank accounts)
       const bankAccounts = await this.prisma.bankAccount.findMany({
         where: { entityId },
-        select: { currentBalance: true },
+        include: { linkedAccount: { select: { balance: true } } },
       });
 
-      const currentBankBalance = bankAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
+      const currentBankBalance = bankAccounts.reduce((sum, a) => sum + a.linkedAccount.balance, 0);
 
       // Get previous month-end balance from the last transaction on or before previous month end
       const lastTransactionPreviousMonth = await this.prisma.accountTransaction.findFirst({
@@ -142,11 +231,11 @@ export class AnalyticsService {
 
       const currentLiabilities = unpaidBills._sum.total || 0;
 
+      // Get all unpaid/partial bills as of previous period for consistent comparison
       const previousUnpaidBills = await this.prisma.bills.aggregate({
         where: {
           entityId,
           status: { in: ['unpaid', 'partial'] },
-          billDate: { lte: previousMonthEnd },
         },
         _sum: { total: true },
       });
@@ -180,24 +269,24 @@ export class AnalyticsService {
 
       return {
         revenue: {
-          mtd: revenueMTD,
-          change: revenueChange,
-          changePercent: revenueChangePercent,
+          mtd: Number(revenueMTD.toFixed(2)),
+          change: Number(revenueChange.toFixed(2)),
+          changePercent: Number(revenueChangePercent.toFixed(2)),
         },
         bankBalance: {
-          total: currentBankBalance,
-          change: bankBalanceChange,
-          changePercent: bankBalanceChangePercent,
+          total: Number(currentBankBalance.toFixed(2)),
+          change: Number(bankBalanceChange.toFixed(2)),
+          changePercent: Number(bankBalanceChangePercent.toFixed(2)),
         },
         liabilities: {
-          total: currentLiabilities,
-          change: liabilitiesChange,
-          changePercent: liabilitiesChangePercent,
+          total: Number(currentLiabilities.toFixed(2)),
+          change: Number(liabilitiesChange.toFixed(2)),
+          changePercent: Number(liabilitiesChangePercent.toFixed(2)),
         },
         activeCustomers: {
           count: activeCustomers,
-          change: customersChange,
-          changePercent: customersChangePercent,
+          change: Number(customersChange.toFixed(2)),
+          changePercent: Number(customersChangePercent.toFixed(2)),
         },
       };
     } catch (error) {
@@ -239,16 +328,46 @@ export class AnalyticsService {
         const year = start.getFullYear();
         const monthLabel = `${month} '${year.toString().slice(-2)}`;
 
-        // Revenue: Sum of paid invoices
+        // Revenue: Sum of paid invoices + payments received for partial/overdue invoices + receipts
         const endDate = end > dateRange.endDate ? dateRange.endDate : end;
-        const revenue = await this.prisma.invoice.aggregate({
-          where: {
-            entityId,
-            status: 'Paid',
-            invoiceDate: { gte: start, lte: endDate },
-          },
-          _sum: { total: true },
-        });
+        const [paidInvoices, partialPayments, overduePayments, receipts] = await Promise.all([
+          this.prisma.invoice.aggregate({
+            where: {
+              entityId,
+              status: 'Paid',
+              invoiceDate: { gte: start, lte: endDate },
+            },
+            _sum: { total: true },
+          }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Partial', invoiceDate: { gte: start, lte: endDate } },
+            },
+            _sum: { amount: true },
+          }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Overdue', invoiceDate: { gte: start, lte: endDate } },
+            },
+            _sum: { amount: true },
+          }),
+          this.prisma.receipt.aggregate({
+            where: {
+              entityId,
+              status: 'Completed',
+              date: { gte: start, lte: endDate },
+            },
+            _sum: { total: true },
+          }),
+        ]);
+
+        const revenue =
+          (paidInvoices._sum.total || 0) +
+          (partialPayments._sum.amount || 0) +
+          (overduePayments._sum.amount || 0) +
+          (receipts._sum.total || 0);
 
         // Expenses: Sum of approved expenses + paid bills
         const [expenses, bills] = await Promise.all([
@@ -271,7 +390,7 @@ export class AnalyticsService {
 
         monthlyData.push({
           month: monthLabel,
-          revenue: revenue._sum.total || 0,
+          revenue,
           expenses: (expenses._sum?.amount || 0) + (bills._sum?.amount || 0),
         });
 
@@ -321,9 +440,9 @@ export class AnalyticsService {
         const year = start.getFullYear();
         const monthLabel = `${month} '${year.toString().slice(-2)}`;
 
-        // Inflow: Paid invoices + Payment received + Receipts
+        // Inflow: Paid invoices + Payment received for Partial/Overdue invoices + Completed receipts
         const endDateInflow = end > dateRange.endDate ? dateRange.endDate : end;
-        const [invoicesInflow, receiptsInflow] = await Promise.all([
+        const [invoicesInflow, partialPaymentsInflow, overduePaymentsInflow, receiptsInflow] = await Promise.all([
           this.prisma.invoice.aggregate({
             where: {
               entityId,
@@ -332,16 +451,35 @@ export class AnalyticsService {
             },
             _sum: { total: true },
           }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Partial', invoiceDate: { gte: start, lte: endDateInflow } },
+            },
+            _sum: { amount: true },
+          }),
+          this.prisma.paymentReceived.aggregate({
+            where: {
+              entityId,
+              invoice: { status: 'Overdue', invoiceDate: { gte: start, lte: endDateInflow } },
+            },
+            _sum: { amount: true },
+          }),
           this.prisma.receipt.aggregate({
             where: {
               entityId,
-              createdAt: { gte: start, lte: endDateInflow },
+              status: 'Completed',
+              date: { gte: start, lte: endDateInflow },
             },
             _sum: { total: true },
           }),
         ]);
 
-        const inflow = (invoicesInflow._sum.total || 0) + (receiptsInflow._sum.total || 0);
+        const inflow =
+          (invoicesInflow._sum.total || 0) +
+          (partialPaymentsInflow._sum.amount || 0) +
+          (overduePaymentsInflow._sum.amount || 0) +
+          (receiptsInflow._sum.total || 0);
 
         // Outflow: Approved expenses + Bill payments
         const endDateOutflow = end > dateRange.endDate ? dateRange.endDate : end;
@@ -384,7 +522,7 @@ export class AnalyticsService {
 
   /**
    * Get top expenses by category with date filtering
-   * Note: Grouping by vendor since Expenses model doesn't have category field
+   * Includes both approved expenses and bill payments categorized by their expense accounts
    * @param entityId The entity ID
    * @param filter Date filter type (THIS_YEAR, THIS_FISCAL_YEAR, LAST_FISCAL_YEAR, LAST_12_MONTHS)
    * @param limit Maximum number of categories to return
@@ -411,8 +549,23 @@ export class AnalyticsService {
         },
       });
 
+      // Fetch bills with their items to extract expense account breakdown
+      const allBillPayments = await this.prisma.paymentMade.findMany({
+        where: {
+          entityId,
+          paymentDate: { gte: dateRange.startDate, lte: dateRange.endDate },
+        },
+        include: {
+          bill: {
+            select: { items: true },
+          },
+        },
+      });
+
       // Group by expense account and sum amounts
       const expensesByAccount = new Map<string, { name: string; accountId: string; total: number }>();
+
+      // Add approved expenses
       allExpenses.forEach((exp) => {
         const accountKey = exp.expenseAccountId;
         const accountName = exp.expenseAccount?.name || 'Uncategorized';
@@ -422,6 +575,41 @@ export class AnalyticsService {
           accountId: accountKey,
           total: (existing?.total || 0) + exp.amount,
         });
+      });
+
+      // Add bill payments by their line item expense accounts
+      allBillPayments.forEach((payment) => {
+        if (payment.bill?.items && Array.isArray(payment.bill.items)) {
+          // Parse bill items to distribute payment across expense accounts
+          const items = payment.bill.items as Array<{
+            expenseAccountId?: string;
+            accountId?: string;
+            name?: string;
+            total?: number;
+          }>;
+
+          // Calculate total amount in bill items for proportional distribution
+          const totalItemAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
+
+          if (totalItemAmount > 0) {
+            // Distribute payment proportionally across items
+            items.forEach((item) => {
+              const expenseAccountId = item.expenseAccountId || item.accountId;
+              if (expenseAccountId) {
+                const proportion = (item.total || 0) / totalItemAmount;
+                const allocatedAmount = Math.round(payment.amount * proportion);
+                const accountKey = expenseAccountId;
+                const accountName = item.name || 'Uncategorized';
+                const existing = expensesByAccount.get(accountKey);
+                expensesByAccount.set(accountKey, {
+                  name: accountName,
+                  accountId: accountKey,
+                  total: (existing?.total || 0) + allocatedAmount,
+                });
+              }
+            });
+          }
+        }
       });
 
       // Sort by amount descending and take limit
@@ -447,6 +635,7 @@ export class AnalyticsService {
 
   /**
    * Get accounts receivable aging (based on invoice aging)
+   * Includes Sent, Overdue, and Partial invoices
    */
   async getReceivableAging(entityId: string): Promise<AgingBucketDto> {
     try {
@@ -455,7 +644,7 @@ export class AnalyticsService {
       const unpaidInvoices = await this.prisma.invoice.findMany({
         where: {
           entityId,
-          status: { in: ['Sent', 'Overdue'] },
+          status: { in: ['Sent', 'Overdue', 'Partial'] },
         },
         select: {
           total: true,
@@ -592,14 +781,18 @@ export class AnalyticsService {
           bankName: true,
           accountType: true,
           currency: true,
-          currentBalance: true,
           status: true,
+          linkedAccount: {
+            select: {
+              balance: true,
+            },
+          },
         },
         orderBy: { accountName: 'asc' },
       });
 
       const totalBankCash = bankAccounts.reduce(
-        (sum, account) => sum + account.currentBalance,
+        (sum, account) => sum + account.linkedAccount.balance,
         0,
       );
       const numberOfBankAccounts = bankAccounts.length;
@@ -614,6 +807,366 @@ export class AnalyticsService {
         `[Analytics] Error fetching banking summary: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
+    }
+  }
+
+  /**
+   * Invalidate all dashboard caches for an entity
+   * Called when any financial data changes (invoices, payments, expenses, bills, etc.)
+   * 
+   * Supported filter combinations are invalidated:
+   * - getKPIs: Daily basis
+   * - getMonthlyBreakdown: THIS_YEAR, THIS_FISCAL_YEAR, LAST_FISCAL_YEAR, LAST_12_MONTHS
+   * - getCashFlow: THIS_YEAR, THIS_FISCAL_YEAR, LAST_FISCAL_YEAR, LAST_12_MONTHS
+   * - getTopExpenses: THIS_YEAR, THIS_FISCAL_YEAR, LAST_FISCAL_YEAR, LAST_12_MONTHS
+   * - getReceivableAging: Daily basis
+   * - getPayableAging: Daily basis
+   * - getRecentTransactions: Static
+   */
+  async invalidateDashboardCache(entityId: string): Promise<void> {
+    try {
+      // Invalidate all possible dashboard filter combinations
+      const filterCombinations = [
+        // monthlyFilter, cashFlowFilter, expensesFilter
+        [DateFilterEnum.THIS_YEAR, DateFilterEnum.LAST_12_MONTHS, DateFilterEnum.THIS_YEAR],
+        [DateFilterEnum.THIS_YEAR, DateFilterEnum.THIS_YEAR, DateFilterEnum.THIS_YEAR],
+        [DateFilterEnum.THIS_FISCAL_YEAR, DateFilterEnum.THIS_FISCAL_YEAR, DateFilterEnum.THIS_FISCAL_YEAR],
+        [DateFilterEnum.LAST_FISCAL_YEAR, DateFilterEnum.LAST_FISCAL_YEAR, DateFilterEnum.LAST_FISCAL_YEAR],
+        [DateFilterEnum.LAST_12_MONTHS, DateFilterEnum.LAST_12_MONTHS, DateFilterEnum.LAST_12_MONTHS],
+      ];
+
+      const cacheKeys = filterCombinations.map(
+        ([monthly, cashFlow, expenses]) =>
+          `dashboard:${entityId}:${monthly}:${cashFlow}:${expenses}`,
+      );
+
+      // Delete all dashboard cache keys
+      for (const key of cacheKeys) {
+        await this.cacheService.delete(key);
+      }
+
+      this.logger.log(`✓ Dashboard cache invalidated for entity: ${entityId}`);
+    } catch (error) {
+      this.logger.error(
+        `[Analytics] Error invalidating dashboard cache: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    }
+  }
+
+
+   /**
+   * Get comprehensive superadmin dashboard stats
+   * Returns all metrics for dashboard cards and graphs
+   * Includes: Total companies, Active users, MRR, Churn, Growth, Plan distribution, Recent signups
+   * Cached for 30 minutes
+   */
+  async getDashboardStats() {
+    const cacheKey = 'dashboard:superadmin:stats';
+
+    // Try cache first
+    const cached = await this.cacheService.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+      // Parallel queries for all metrics
+      const [
+        totalGroupsData,
+        activeUsersData,
+        totalMRRData,
+        planDistributionData,
+        recentSignupsData,
+        groupsLast30DaysData,
+        groupsLast60DaysData,
+        churned30DaysData,
+      ] = await Promise.all([
+        // Total companies
+        this.prisma.group.count(),
+
+        // Active users across all groups
+        this.prisma.user.count({
+          where: { isActive: true },
+        }),
+
+        // Total MRR (sum of all subscription tier prices) - fetch with tier then sum manually
+        this.prisma.subscription.findMany({
+          where: { isActive: true },
+          select: {
+            tier: {
+              select: { monthlyPrice: true },
+            },
+          },
+        }),
+
+        // Plan distribution (count by subscription tier)
+        (this.prisma as any).subscription.groupBy({
+          by: ['subscriptionTierId'],
+          where: { isActive: true },
+          _count: true,
+        }),
+
+        // Recent signups (last 7 days)
+        this.prisma.group.findMany({
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            },
+          },
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            _count: {
+              select: { users: true },
+            },
+            subscription: {
+              select: {
+                isActive: true,
+                tier: {
+                  select: {
+                    name: true,
+                    monthlyPrice: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+
+        // Groups created in last 30 days
+        this.prisma.group.count({
+          where: {
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+
+        // Groups created in last 60 days
+        this.prisma.group.count({
+          where: {
+            createdAt: { gte: sixtyDaysAgo },
+          },
+        }),
+
+        // Churned groups (were active, now inactive) in last 30 days
+        (this.prisma as any).subscriptionHistory.findMany({
+          where: {
+            createdAt: { gte: thirtyDaysAgo },
+          },
+          select: {
+            id: true,
+            previousTierName: true,
+            newTierName: true,
+            createdAt: true,
+          },
+        }),
+      ]);
+
+      // Calculate MRR from fetched subscription data (convert from cents to currency)
+      const totalMRR = totalMRRData.reduce((sum: number, sub: any) => {
+        return sum + (sub.tier?.monthlyPrice || 0);
+      }, 0);
+
+      // Get tier information with names
+      const tiersWithNames = await Promise.all(
+        planDistributionData.map(async (plan: any) => {
+          const tier = await this.prisma.subscriptionTier.findUnique({
+            where: { id: plan.subscriptionTierId },
+            select: { name: true },
+          });
+          return {
+            name: tier?.name || 'Unknown',
+            count: plan._count,
+          };
+        }),
+      );
+
+      // Calculate growth metrics
+      const prevMonthGroups = await this.prisma.group.count({
+        where: {
+          createdAt: {
+            gte: startOfLastMonth,
+            lt: startOfMonth,
+          },
+        },
+      });
+
+      const currentMonthGroups = await this.prisma.group.count({
+        where: {
+          createdAt: {
+            gte: startOfMonth,
+          },
+        },
+      });
+
+      const groupsGrowth =
+        prevMonthGroups > 0
+          ? Math.round(((currentMonthGroups - prevMonthGroups) / prevMonthGroups) * 100)
+          : 0;
+
+      const usersGrowth30Days =
+        groupsLast60DaysData > 0
+          ? Math.round(
+              ((groupsLast30DaysData - (groupsLast60DaysData - groupsLast30DaysData)) /
+                (groupsLast60DaysData - groupsLast30DaysData)) *
+                100,
+            )
+          : 0;
+
+      // Calculate churn rate (churned / total active)
+      const totalActive = await this.prisma.subscription.count({
+        where: { isActive: true },
+      });
+      // Count only subscription history records where previousTierName exists (meaning they were active before)
+      const churnedCount = churned30DaysData.filter((record: any) => record.previousTierName).length;
+      const churnRate = totalActive > 0 ? Math.round((churnedCount / totalActive) * 100 * 10) / 10 : 0;
+
+      // Revenue growth - fetch previous month subscriptions and sum their tier prices
+      const prevMonthSubscriptions = await this.prisma.subscription.findMany({
+        where: {
+          isActive: true,
+          startDate: {
+            gte: startOfLastMonth,
+            lt: startOfMonth,
+          },
+        },
+        select: {
+          tier: {
+            select: { monthlyPrice: true },
+          },
+        },
+      });
+
+      const prevMonthMRR = prevMonthSubscriptions.reduce((sum: number, sub: any) => {
+        return sum + (sub.tier?.monthlyPrice || 0);
+      }, 0);
+
+      const revenueGrowth =
+        prevMonthMRR > 0
+          ? Math.round(
+              (((totalMRR / 100 - prevMonthMRR / 100) /
+                (prevMonthMRR / 100)) *
+                100),
+            )
+          : 0;
+
+      // Get monthly revenue trend for last 12 months
+      const monthlyRevenueTrend: { month: string; revenue: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const monthDate = new Date(now);
+        monthDate.setMonth(monthDate.getMonth() - i);
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        const monthSubscriptions = await this.prisma.subscription.findMany({
+          where: {
+            isActive: true,
+            startDate: { lte: monthEnd },
+          },
+          select: {
+            tier: { select: { monthlyPrice: true } },
+          },
+        });
+
+        const monthMRR = monthSubscriptions.reduce(
+          (sum: number, sub: any) => sum + (sub.tier?.monthlyPrice || 0),
+          0,
+        );
+
+        const month = monthStart.toLocaleString('default', { month: 'short' });
+        const year = monthStart.getFullYear();
+        monthlyRevenueTrend.push({
+          month: `${month} '${year.toString().slice(-2)}`,
+          revenue: Math.floor(monthMRR / 100),
+        });
+      }
+
+      // Get monthly subscription growth for last 12 months
+      const monthlySubcriptionGrowth: { month: string; count: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const monthDate = new Date(now);
+        monthDate.setMonth(monthDate.getMonth() - i);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        const activeSubCount = await this.prisma.subscription.count({
+          where: {
+            isActive: true,
+            startDate: { lte: monthEnd },
+          },
+        });
+
+        const month = monthDate.toLocaleString('default', { month: 'short' });
+        const year = monthDate.getFullYear();
+        monthlySubcriptionGrowth.push({
+          month: `${month} '${year.toString().slice(-2)}`,
+          count: activeSubCount,
+        });
+      }
+
+      const dashboardStats = {
+        cards: {
+          totalCompanies: {
+            value: totalGroupsData,
+            growth: groupsGrowth,
+            icon: 'building',
+          },
+          activeUsers: {
+            value: activeUsersData,
+            growth: usersGrowth30Days,
+            icon: 'users',
+          },
+          monthlyRevenue: {
+            value: Math.floor(totalMRR / 100), // Convert from cents
+            growth: revenueGrowth,
+            icon: 'dollar',
+            currency: '₦',
+          },
+          churnRate: {
+            value: churnRate,
+            growth: churnRate > 2.5 ? -10 : 0, // Negative if high churn
+            icon: 'trending-down',
+            unit: '%',
+          },
+        },
+        planDistribution: tiersWithNames.map((tier: any) => ({
+          name: tier.name,
+          value: tier.count,
+        })),
+        revenueGrowth: monthlyRevenueTrend,
+        subscriptionGrowth: monthlySubcriptionGrowth,
+        recentSignups: recentSignupsData.map((group: any) => ({
+          id: group.id,
+          name: group.name,
+          createdAt: group.createdAt,
+          userCount: group._count.users,
+          mrr: group.subscription?.tier?.monthlyPrice
+            ? Math.floor(group.subscription.tier.monthlyPrice / 100)
+            : 0,
+          plan: group.subscription?.tier?.name || 'Free',
+          status: group.subscription?.isActive ? 'Active' : 'Trial',
+        })),
+        timestamp: new Date(),
+      };
+
+      // Cache for 30 minutes
+      await this.cacheService.set(cacheKey, dashboardStats, { ttl: 1800 });
+
+      console.log(`📊 Dashboard stats generated`);
+      return dashboardStats;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Error generating dashboard stats: ${errorMsg}`);
+      throw new HttpException(
+        `Failed to generate dashboard statistics: ${errorMsg}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

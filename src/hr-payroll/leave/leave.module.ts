@@ -3,10 +3,17 @@ import { LeaveService } from './leave.service';
 import { LeaveController } from './leave.controller';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { AuthService } from '@/auth/auth.service';
+import { CacheService } from '@/cache/cache.service';
+import { SubscriptionService } from '@/subscription/subscription.service';
+import { MenuService } from '@/menu/menu.service';
+import { PubsubService } from '@/cache/pubsub.service';
+
+
+import { BullmqModule } from '@/bullmq/bullmq.module';
 
 @Module({
-  imports: [PrismaModule],
-  providers: [LeaveService, AuthService],
+  imports: [PrismaModule, BullmqModule],
+  providers: [LeaveService, AuthService, MenuService, SubscriptionService, CacheService, PubsubService],
   controllers: [LeaveController],
 })
 export class LeaveModule {}

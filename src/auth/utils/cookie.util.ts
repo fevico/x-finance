@@ -12,7 +12,10 @@ export function createCookie(
   const parts = [`${name}=${value}`, 'HttpOnly', 'Path=/', `Max-Age=${maxAge}`];
 
   if (isProduction) {
-    parts.push('SameSite=None', 'Secure', `Domain=${DOMAIN}`);
+        parts.push('SameSite=Lax');
+        parts.push('Secure');
+
+    // parts.push('SameSite=Lax', 'Secure', `Domain=${DOMAIN}`);
   } else {
     parts.push('SameSite=Lax');
   }

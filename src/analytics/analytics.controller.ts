@@ -15,12 +15,16 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
   ApiQuery,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@/auth/guards/auth.guard';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 import { AnalyticsService } from './analytics.service';
 import { DashboardResponseDto } from './dto/analytics-response.dto';
 import { DateFilterEnum, DateFilterHelper } from './dto/date-filter.dto';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { systemRole } from 'prisma/generated/enums';
 
 @ApiTags('Analytics')
 @Controller('analytics')
@@ -230,4 +234,13 @@ export class AnalyticsController {
 
     return this.analyticsService.getBankingSummary(entityId);
   }
+
+   @Get('superadmin/dashboard')
+    @UseGuards(RolesGuard)
+    @Roles(systemRole.superadmin)
+    @ApiOperation({ summary: 'Get superadmin dashboard stats with all metrics' })
+    @ApiResponse({ status: 200, description: 'Comprehensive dashboard statistics' })
+    getDashboardStats() {
+      return this.analyticsService.getDashboardStats();
+    }
 }

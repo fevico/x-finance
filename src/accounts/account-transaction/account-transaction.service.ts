@@ -32,19 +32,6 @@ export class AccountTransactionService {
       throw new BadRequestException('Account does not belong to this entity');
     }
 
-    // Validate bank account if provided
-    if (createDto.bankAccountId) {
-      const bankAccount = await this.prisma.bankAccount.findUnique({
-        where: { id: createDto.bankAccountId },
-      });
-
-      if (!bankAccount || bankAccount.entityId !== createDto.entityId) {
-        throw new BadRequestException(
-          'Bank account not found or does not belong to this entity',
-        );
-      }
-    }
-
     // Validate amounts
     if (createDto.debitAmount < 0 || createDto.creditAmount < 0) {
       throw new BadRequestException(
@@ -81,7 +68,6 @@ export class AccountTransactionService {
         entityId: createDto.entityId,
         relatedEntityId: createDto.relatedEntityId,
         relatedEntityType: createDto.relatedEntityType,
-        bankAccountId: createDto.bankAccountId,
         metadata: createDto.metadata,
       },
       include: {
@@ -109,7 +95,6 @@ export class AccountTransactionService {
       accountId,
       type,
       status,
-      bankAccountId,
       fromDate,
       toDate,
       search,
@@ -136,10 +121,6 @@ export class AccountTransactionService {
 
     if (status) {
       where.status = status;
-    }
-
-    if (bankAccountId) {
-      where.bankAccountId = bankAccountId;
     }
 
     if (relatedEntityType) {
@@ -307,66 +288,66 @@ export class AccountTransactionService {
   /**
    * Get transactions for a specific bank account
    */
-  async getBankAccountTransactions(
-    bankAccountId: string,
-    entityId: string,
-    page: number = 1,
-    pageSize: number = 20,
-  ) {
-    // Validate bank account exists and belongs to entity
-    const bankAccount = await this.prisma.bankAccount.findUnique({
-      where: { id: bankAccountId },
-    });
+  // async getBankAccountTransactions(
+  //   bankAccountId: string,
+  //   entityId: string,
+  //   page: number = 1,
+  //   pageSize: number = 20,
+  // ) {
+  //   // Validate bank account exists and belongs to entity
+  //   const bankAccount = await this.prisma.bankAccount.findUnique({
+  //     where: { id: bankAccountId },
+  //   });
 
-    if (!bankAccount) {
-      throw new NotFoundException('Bank account not found');
-    }
+  //   if (!bankAccount) {
+  //     throw new NotFoundException('Bank account not found');
+  //   }
 
-    if (bankAccount.entityId !== entityId) {
-      throw new BadRequestException('Access denied');
-    }
+  //   if (bankAccount.entityId !== entityId) {
+  //     throw new BadRequestException('Access denied');
+  //   }
 
-    const skip = (Math.max(1, page) - 1) * pageSize;
+  //   const skip = (Math.max(1, page) - 1) * pageSize;
 
-    const [transactions, total] = await Promise.all([
-      this.prisma.accountTransaction.findMany({
-        where: {
-          bankAccountId,
-          entityId,
-        },
-        include: {
-          account: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-        orderBy: {
-          date: 'desc',
-        },
-        skip,
-        take: pageSize,
-      }),
-      this.prisma.accountTransaction.count({
-        where: {
-          bankAccountId,
-          entityId,
-        },
-      }),
-    ]);
+  //   const [transactions, total] = await Promise.all([
+  //     this.prisma.accountTransaction.findMany({
+  //       where: {
+  //         bankAccountId,
+  //         entityId,
+  //       },
+  //       include: {
+  //         account: {
+  //           select: {
+  //             id: true,
+  //             name: true,
+  //             code: true,
+  //           },
+  //         },
+  //       },
+  //       orderBy: {
+  //         date: 'desc',
+  //       },
+  //       skip,
+  //       take: pageSize,
+  //     }),
+  //     this.prisma.accountTransaction.count({
+  //       where: {
+  //         bankAccountId,
+  //         entityId,
+  //       },
+  //     }),
+  //   ]);
 
-    return {
-      data: transactions,
-      pagination: {
-        page,
-        pageSize,
-        total,
-        totalPages: Math.ceil(total / pageSize),
-      },
-    };
-  }
+  //   return {
+  //     data: transactions,
+  //     pagination: {
+  //       page,
+  //       pageSize,
+  //       total,
+  //       totalPages: Math.ceil(total / pageSize),
+  //     },
+  //   };
+  // }
 
   /**
    * Get transaction by ID
@@ -383,13 +364,7 @@ export class AccountTransactionService {
             subCategory: true,
           },
         },
-        bankAccount: {
-          select: {
-            id: true,
-            accountName: true,
-            bankName: true,
-          },
-        },
+       
       },
     });
 
@@ -410,7 +385,6 @@ export class AccountTransactionService {
   async getTransactionSummary(
     entityId: string,
     accountId?: string,
-    bankAccountId?: string,
   ) {
     const where: AccountTransactionWhereInput = { entityId };
 
@@ -418,9 +392,7 @@ export class AccountTransactionService {
       where.accountId = accountId;
     }
 
-    if (bankAccountId) {
-      where.bankAccountId = bankAccountId;
-    }
+    
 
     // Get aggregates
     const [totalDebits, totalCredits, transactionCount, typeBreakdown] =
@@ -434,7 +406,7 @@ export class AccountTransactionService {
           _sum: { creditAmount: true },
         }),
         this.prisma.accountTransaction.count({ where }),
-        this.getTransactionBreakdownByType(entityId, accountId, bankAccountId),
+        this.getTransactionBreakdownByType(entityId, accountId),
       ]);
 
     return {
@@ -451,7 +423,6 @@ export class AccountTransactionService {
   private async getTransactionBreakdownByType(
     entityId: string,
     accountId?: string,
-    bankAccountId?: string,
   ) {
     const where: AccountTransactionWhereInput = { entityId };
 
@@ -459,9 +430,7 @@ export class AccountTransactionService {
       where.accountId = accountId;
     }
 
-    if (bankAccountId) {
-      where.bankAccountId = bankAccountId;
-    }
+   
 
     const breakdown = await this.prisma.accountTransaction.groupBy({
       by: ['type'],
