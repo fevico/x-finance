@@ -582,7 +582,7 @@ model Project {
   projectId         String 
   customerId        String 
   entityId          String 
-  status            ProjectStatus 
+  status            ProjectStatus @default(In_Progress)
   description       String 
   startDate         DateTime
   endDate           DateTime 
@@ -593,6 +593,9 @@ model Project {
   projectManager    String
   customer          Customer @relation(fields: [customerId], references: [id])
   entity            Entity   @relation(fields: [entityId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@index([entityId, id])
 }
 
 model Journal {
