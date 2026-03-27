@@ -479,10 +479,12 @@ model CollectionItem {
 
 model Asset {
   id                 String      @id @default(cuid())
+  serialNumber       String      @unique
   name               String
   type               String
   department         String
-  assigned           String
+  assignedId         String
+  assigned           Employee    @relation(fields: [assignedId], references: [id], onDelete: SetNull)
   description        String
   purchaseDate       DateTime
   purchaseCost       Int
@@ -640,7 +642,8 @@ model Employee {
   attendance       Attendance[]
   entity           Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
   leave            Leave[]
-
+  asset            Asset[]
+  
   @@index([employeeId, email, entityId])
 }
 

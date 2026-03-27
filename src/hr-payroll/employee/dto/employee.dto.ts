@@ -8,6 +8,7 @@ import {
   IsObject,
   IsEmail,
   Min,
+  IsJSON,
 } from 'class-validator';
 
 class AddressInfoDto {
@@ -83,10 +84,6 @@ export class CreateEmployeeDto {
   @IsNotEmpty()
   dateOfBirth: string;
 
-  @ApiProperty({ example: 'EMP001', description: 'Employee ID' })
-  @IsString()
-  @IsNotEmpty()
-  employeeId: string;
 
   @ApiProperty({ example: 'Engineering', description: 'Department' })
   @IsString()
@@ -114,18 +111,15 @@ export class CreateEmployeeDto {
   reportingManager: string;
 
   @ApiProperty({ example: 25, description: 'Annual leave days' })
-  @IsInt()
-  @Min(0)
+  @IsString()
   anualLeave: number;
 
   @ApiProperty({ example: 50000, description: 'Salary amount' })
-  @IsInt()
-  @Min(0)
+  @IsString()
   salary: number;
 
   @ApiProperty({ example: 5000, description: 'Allowances' })
-  @IsInt()
-  @Min(0)
+  @IsString()
   allowances: number;
 
   @ApiProperty({ example: 'Monthly', description: 'Pay frequency' })
@@ -159,7 +153,7 @@ export class CreateEmployeeDto {
   routingNumber: string;
 
   @ApiProperty({ type: AddressInfoDto, description: 'Address information' })
-  @IsObject()
+  @IsJSON()
   @IsOptional()
   addressInfo?: AddressInfoDto;
 
@@ -167,7 +161,7 @@ export class CreateEmployeeDto {
     type: EmergencyContactDto,
     description: 'Emergency contact information',
   })
-  @IsObject()
+  @IsJSON()
   @IsOptional()
   emergencyContact?: EmergencyContactDto;
 
@@ -201,9 +195,6 @@ export class EmployeeResponseDto {
   @ApiProperty({ description: 'Date of birth' })
   dateOfBirth: Date;
 
-  @ApiProperty({ example: 'EMP001', description: 'Employee ID' })
-  employeeId: string;
-
   @ApiProperty({ example: 'Engineering', description: 'Department' })
   department: string;
 
@@ -222,14 +213,14 @@ export class EmployeeResponseDto {
   @ApiProperty({ example: 'Manager Name', description: 'Reporting manager' })
   reportingManager: string;
 
-  @ApiProperty({ example: 25, description: 'Annual leave days' })
-  anualLeave: number;
+  @ApiProperty({ example: '25', description: 'Annual leave days' })
+  anualLeave: string;
 
-  @ApiProperty({ example: 50000, description: 'Salary amount' })
-  salary: number;
+  @ApiProperty({ example: '50000', description: 'Salary amount' })
+  salary: string;
 
-  @ApiProperty({ example: 5000, description: 'Allowances' })
-  allowances: number;
+  @ApiProperty({ example: '5000', description: 'Allowances' })
+  allowances: string;
 
   @ApiProperty({ example: 'Monthly', description: 'Pay frequency' })
   perFrequency: string;

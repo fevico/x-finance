@@ -36,34 +36,45 @@ export class AssetController {
   @ApiOperation({ summary: 'Create a new asset' })
   @ApiBody({ type: CreateAssetDto })
   @ApiResponse({ status: 201, description: 'Asset created' })
-  async create(@Body() createAsset: CreateAssetDto, @Req() req: Request) {
+  async create(@Body() createAssetDto: CreateAssetDto, @Req() req: any) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     const userId = req.user?.id as string;
-    return this.assetsService.create(createAsset, entityId, userId, req);
+    // assignedId is employee id, serialNumber is auto-generated in service
+    return this.assetsService.create(createAssetDto, entityId, userId, req);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a journal entry' })
+  @ApiOperation({ summary: 'Update asset' })
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateAssetDto })
   @ApiResponse({ status: 200, description: 'Asset updated' })
   async update(
     @Param('id') id: string,
-    @Body() updateAsset: UpdateAssetDto,
+    @Body() updateAssetDto: UpdateAssetDto,
     @Req() req: Request,
   ) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.assetsService.update(id, updateAsset, entityId);
+    return this.assetsService.update(id, updateAssetDto, entityId);
+  }
+  @Get()
+  @ApiOperation({ summary: 'Get all assets' })
+  @ApiResponse({ status: 200, description: 'List of assets' })
+  async findAll(@Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.assetsService.findAll(entityId);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a single asset by ID' })
+  @ApiOperation({ summary: 'Get asset by id' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'Asset found' })
   @ApiResponse({ status: 404, description: 'Asset not found' })
-  async findOne(@Param('id') id: string) {
-    return this.assetsService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.assetsService.findOne(id, entityId);
   }
 }

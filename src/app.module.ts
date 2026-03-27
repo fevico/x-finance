@@ -21,7 +21,7 @@ import { BillsModule } from './purchases/bills/bills.module';
 import { ItemsModule } from './product/items/items.module';
 import { CollectionsModule } from './product/collections/collections.module';
 import { InventoryModule } from './product/inventory/inventory.module';
-import { AssetModule } from './asset/asset.module';
+import { AssetModule } from './assets-inventory/asset/asset.module';
 import { AccountModule } from './accounts/account/account.module';
 import { AccountTypeModule } from './accounts/account-type/account-type.module';
 import { AccountCategoryModule } from './accounts/account-category/account-category.module';

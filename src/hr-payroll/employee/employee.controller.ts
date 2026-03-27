@@ -2,7 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  Patch,
   Post,
   Req,
   UploadedFile,
@@ -60,6 +63,8 @@ export class EmployeeController {
     return this.employeeService.create(employeeData, profileImage, entityId);
   }
 
+ 
+
   @Get()
   @ApiOperation({ summary: 'Get all employees for the entity with stats' })
   @ApiResponse({
@@ -82,5 +87,43 @@ export class EmployeeController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     return this.employeeService.findAll(entityId);
+  }
+
+   @Get(':id')
+  @ApiOperation({ summary: 'Get employee by id' })
+  @ApiResponse({ status: 200, description: 'Employee found', type: EmployeeResponseDto })
+  async findOne(@Req() req: Request, @Param('id') id: string): Promise<EmployeeResponseDto> {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.employeeService.findOne(id, entityId);
+  }
+
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('profileImage'))
+  @ApiOperation({ summary: 'Update employee' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Employee update data with optional profile image',
+    type: CreateEmployeeDto,
+  })
+  @ApiResponse({ status: 200, description: 'Employee updated', type: EmployeeResponseDto })
+  async update(
+    @Req() req: Request,
+    @Body() updateData: Partial<CreateEmployeeDto>,
+    @UploadedFile() profileImage: Express.Multer.File,
+    @Param('id') id: string,
+  ): Promise<EmployeeResponseDto> {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.employeeService.update(id, entityId, updateData, profileImage);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete employee' })
+  @ApiResponse({ status: 200, description: 'Employee deleted' })
+  async remove(@Req() req: Request, @Param('id') id: string): Promise<{ deleted: boolean }> {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.employeeService.remove(id, entityId);
   }
 }
