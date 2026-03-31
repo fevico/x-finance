@@ -1,0 +1,83 @@
+import { PrismaService } from '@/prisma/prisma.service';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { CreateAssetDto, UpdateAssetDto } from './dto/asset.dto';
+
+@Injectable()
+export class AssetService {
+  constructor(
+    private prisma: PrismaService,
+  ) {}
+
+  async create(
+    createAsset: CreateAssetDto,
+    entityId: string,
+    userId: string,
+    req: any,
+  ) {
+    try {
+      const entity = await this.prisma.entity.findUnique({
+        where: { id: entityId },
+      });
+      if (!entity) throw new UnauthorizedException('Access denied!');
+      const asset = await this.prisma.asset.create({
+        data: { ...createAsset, entityId },
+      });
+     
+
+      return asset;
+    } catch (error) {
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findAll(entityId: string) {
+    try {
+      const result = await this.prisma.$transaction([
+        this.prisma.asset.count({ where: { entityId } }),
+        this.prisma.asset.count({ where: { entityId, status: 'in_use' } }),
+        this.prisma.asset.count({ where: { entityId, status: 'in_storage' } }),
+        this.prisma.asset.aggregate({
+          where: { entityId, trackDepreciation: true },
+          _sum: { currentValue: true },
+        }),
+        this.prisma.asset.findMany({
+          where: { entityId },
+          orderBy: { createdAt: 'desc' },
+        }),
+      ]);
+
+      const [total, inUse, inStorage, depreciableAgg, assets] = result;
+
+      return {
+        success: true,
+        data: {
+          summary: {
+            total,
+            inUse,
+            inStorage,
+            depreciableValue: depreciableAgg._sum.currentValue ?? 0,
+          },
+          assets,
+        },
+      };
+    } catch (error) {
+      console.error('Asset overview failed:', error);
+      throw new HttpException(
+        `${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async update(id: string, updateAsset: UpdateAssetDto, entityId: string) {}
+
+  async findOne(id: string) {}
+}

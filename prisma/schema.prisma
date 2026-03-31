@@ -79,12 +79,19 @@ model Entity {
   paymentMade         PaymentMade[]
   bankAccounts        BankAccount[]        @relation("BankAccounts")
   openingBalances     OpeningBalance[]
+  settings            Settings[]
   accountTransactions AccountTransaction[] @relation("EntityAccountTransactions")
   auditLogs           AuditLog[]
   explicitPermissions ExplicitPermission[]
+<<<<<<< HEAD
+  project             Project[]
+  milestones          Milestone[]
+  teamMembers         TeamMember[]
+=======
   supplyIssueHistory  SupplyIssueHistory[]
   supplyRestockHistory SupplyRestockHistory[]
   storeSupply           StoreSupply[]
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 
   @@index([name, taxId, email])
 }
@@ -117,8 +124,11 @@ model User {
   invoiceActivities     InvoiceActivity[]
   explicitPermissions   ExplicitPermission[]
   subscriptionHistories SubscriptionHistory[]
+<<<<<<< HEAD
+=======
   supplyIssueHistoriesIssued SupplyIssueHistory[] @relation("IssuedBy")
   supplyIssueHistoriesUpdated SupplyIssueHistory[] @relation("UpdatedBy")
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 
   @@unique([provider, providerId])
   @@index([email, groupId, isActive])
@@ -146,6 +156,7 @@ model Customer {
   entity       Entity    @relation(fields: [entityId], references: [id], onDelete: Cascade)
   invoice      Invoice[]
   receipt      Receipt[]
+  project      Project[]
 
   @@index([email, name])
 }
@@ -604,6 +615,67 @@ model Account {
   @@index([subCategoryId])
 }
 
+model Project {
+  id                String    @id @default(cuid())
+  name              String
+  projectId         String
+  customerId        String
+  entityId          String
+  status            ProjectStatus @default(In_Progress)
+  description       String
+  startDate         DateTime
+  endDate           DateTime
+  billingType       String
+  currency          String
+  budgetedRevenue   Int
+  budgetedCost      Int
+  projectManager    String
+  customer          Customer     @relation(fields: [customerId], references: [id])
+  entity            Entity       @relation(fields: [entityId], references: [id])
+  milestones        Milestone[]
+  teamMember        TeamMember[]
+  createdAt         DateTime @default(now())
+
+  @@index([entityId, id])
+}
+
+model Milestone {
+  id          String          @id @default(cuid())
+  projectId   String
+  entityId    String
+  name        String
+  description String
+  budget      Float
+  dueDate     DateTime
+  status      MilestoneStatus @default(Upcoming)
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entity      Entity          @relation(fields: [entityId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+
+  @@index([entityId, projectId])
+}
+
+model TeamMember {
+  id              String  @id @default(cuid())
+  name            String 
+  email           String
+  projectId         String
+  project         Project  @relation(fields: [projectId], references: [id])
+  entityId        String
+  entity          Entity  @relation(fields: [entityId], references: [id])
+  cost            Int 
+  estimatedMonth  Int
+  createdAt       DateTime @default(now())
+}
+
+enum MilestoneStatus {
+  Upcoming
+  In_Progress
+  Completed
+  On_Hold
+}
+
 model Journal {
   id          String        @id @default(cuid())
   description String
@@ -677,6 +749,29 @@ model Employee {
   @@index([employeeId, email, entityId])
 }
 
+model Settings {
+  id               String @id @default(cuid())
+  baseCurrency     String?
+  multiCurrency    Boolean  @default(false)
+  taxCalculation   Boolean  @default(false)
+  dateFormat       DateTime?
+  numberFormat     String?
+  invoicePrefix    String?
+  paymentTerm      String?
+  lateFees         Boolean @default(false)
+  paymentReminders Boolean @default(false)
+  taxRate          Int?
+  billPrefix       String?
+  purchaseOrderPrefix String?
+  approvalRequired   Boolean @default(false)
+  approvedThreshold  Int?
+  match              Boolean @default(false)
+  entityId           String 
+  entity             Entity @relation(fields: [entityId], references: [id])
+  
+  @@index([entityId])
+}
+
 model AttendanceLog {
   id          String       @id @default(cuid())
   date        DateTime
@@ -735,8 +830,11 @@ model Module {
   displayName         String
   description         String?
   menu                String // Menu category grouping (e.g., "Income", "Expense", "Accounting")
+<<<<<<< HEAD
+=======
   menuSortOrder           Int                  @default(0) // For ordering menu groups
   moduleSortOrder           Int                  @default(0) // For ordering modules within menu groups
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
   scope               ModuleScope          @default(ENTITY) // ADMIN or ENTITY level module
   actions             Action[]
   subscriptionModules SubscriptionModule[]
@@ -1056,6 +1154,8 @@ model OpeningBalanceItem {
   @@index([accountId])
 }
 
+<<<<<<< HEAD
+=======
 
 model SupplyIssueHistory {
   id         String   @id @default(cuid())
@@ -1121,6 +1221,7 @@ model StoreSupply {
   @@index([entityId])
 }
 
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 enum RoleScope {
   ADMIN // Role grants admin-level permissions (Users, Roles, Audit, Settings, etc.)
   USER // Role grants entity-level/user permissions (Invoices, Bills, Payroll, etc.)
@@ -1142,6 +1243,16 @@ enum PermissionAction {
   Import
 }
 
+<<<<<<< HEAD
+enum ProjectStatus {
+  Completed
+  Planning 
+  In_Progress
+  On_Hold
+}
+
+=======
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 enum BillingCycle {
   Monthly
   Annual

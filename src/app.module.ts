@@ -1,5 +1,5 @@
 import { BankingModule } from './banking/banking.module';
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';

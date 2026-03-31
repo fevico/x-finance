@@ -68,7 +68,7 @@ export class OrganizationController {
 
     return this.organizationService.updateEntityConfiguration(
       entityId,
-      body,
+      body,   
       file,
     );
   }
