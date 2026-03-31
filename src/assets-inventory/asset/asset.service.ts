@@ -21,11 +21,11 @@ export class AssetService {
   ) {
     try {
       // Ensure entity exists and belongs to user
-      const entity = await this.prisma.entity.findFirst({
-        where: { id: entityId, users: { some: { id: userId } } },
-      });
+      // const entity = await this.prisma.entity.findFirst({
+      //   where: { id: entityId },
+      // });
        
-      if (!entity) throw new UnauthorizedException('Access denied!');
+      // if (!entity) throw new UnauthorizedException('Access denied!');
 
       // Auto-generate serialNumber
       const serialNumber = `ASSET${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -61,7 +61,7 @@ export class AssetService {
 
   async findAll(entityId: string) {
     try {
-      const result = await this.prisma.$transaction([
+      const [total, inUse, inStorage, depreciableAgg, assets] = await Promise.all([
         this.prisma.asset.count({ where: { entityId } }),
         this.prisma.asset.count({ where: { entityId, status: 'in_use' } }),
         this.prisma.asset.count({ where: { entityId, status: 'in_storage' } }),
@@ -74,8 +74,6 @@ export class AssetService {
           orderBy: { createdAt: 'desc' },
         }),
       ]);
-
-      const [total, inUse, inStorage, depreciableAgg, assets] = result;
 
       return {
         success: true,

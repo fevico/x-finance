@@ -52,6 +52,7 @@ export class SubscriptionService {
    * Cached: 5 minutes
    */
   async getCurrentSubscription(groupId: string) {
+    console.log(`Fetching subscription for group ${groupId}...`);
     const cacheKey = `sub:${groupId}:tier`;
     const cached = await this.cacheService.get(cacheKey);
     if (cached) return cached;
@@ -496,59 +497,91 @@ export class SubscriptionService {
    * Check if user can create a new user based on subscription limit
    */
   async checkUserLimit(groupId: string, newUserCount = 1) {
-    const sub: any = await this.getCurrentSubscription(groupId);
-    if (sub.usage.users + newUserCount > sub.usage.maxUsers) {
+    try {
+      const sub: any = await this.getCurrentSubscription(groupId);
+      if (sub.usage.users + newUserCount > sub.usage.maxUsers) {
+        return {
+          allowed: false,
+          message: `User limit (${sub.usage.maxUsers}) reached for ${sub.tierName} plan. Upgrade to add more users.`,
+        };
+      }
+      return { allowed: true };
+    } catch (error) {
+      // If no subscription found, don't allow creating users
       return {
         allowed: false,
-        message: `User limit (${sub.usage.maxUsers}) reached for ${sub.tierName} plan. Upgrade to add more users.`,
+        message: 'No active subscription found. Please subscribe to a plan to create users.',
       };
     }
-    return { allowed: true };
   }
 
   /**
    * Check if entity can be created based on subscription limit
    */
   async checkEntityLimit(groupId: string, newEntityCount = 1) {
-    const sub: any = await this.getCurrentSubscription(groupId);
-    if (sub.usage.entities + newEntityCount > sub.usage.maxEntities) {
+    try {
+      const sub: any = await this.getCurrentSubscription(groupId);
+      if (sub.usage.entities + newEntityCount > sub.usage.maxEntities) {
+        return {
+          allowed: false,
+          message: `Entity limit (${sub.usage.maxEntities}) reached for ${sub.tierName} plan.`,
+        };
+      }
+      return { allowed: true };
+    } catch (error) {
+      // If no subscription found, don't allow creating entities
       return {
         allowed: false,
-        message: `Entity limit (${sub.usage.maxEntities}) reached for ${sub.tierName} plan.`,
+        message: 'No active subscription found. Please subscribe to a plan to create entities.',
       };
     }
-    return { allowed: true };
   }
 
   /**
    * Check if transaction limit exceeded for current month
    */
   async checkTransactionLimit(groupId: string, newTransactions = 1) {
-    const sub: any = await this.getCurrentSubscription(groupId);
-    if (
-      sub.usage.transactionsMonth + newTransactions >
-      sub.usage.maxTransactionsMonth
-    ) {
+    try {
+      const sub: any = await this.getCurrentSubscription(groupId);
+      if (
+        sub.usage.transactionsMonth + newTransactions >
+        sub.usage.maxTransactionsMonth
+      ) {
+        return {
+          allowed: false,
+          message: `Monthly transaction limit (${sub.usage.maxTransactionsMonth}) reached for ${sub.tierName} plan.`,
+        };
+      }
+      return { allowed: true };
+    } catch (error) {
+      // If no subscription found, don't allow transactions
       return {
         allowed: false,
-        message: `Monthly transaction limit (${sub.usage.maxTransactionsMonth}) reached for ${sub.tierName} plan.`,
+        message: 'No active subscription found. Please subscribe to a plan.',
       };
     }
-    return { allowed: true };
   }
 
   /**
    * Check if storage limit exceeded
    */
   async checkStorageLimit(groupId: string, additionalStorageGB = 1) {
-    const sub: any = await this.getCurrentSubscription(groupId);
-    if (sub.usage.storageGB + additionalStorageGB > sub.usage.maxStorageGB) {
+    try {
+      const sub: any = await this.getCurrentSubscription(groupId);
+      if (sub.usage.storageGB + additionalStorageGB > sub.usage.maxStorageGB) {
+        return {
+          allowed: false,
+          message: `Storage limit (${sub.usage.maxStorageGB}GB) reached for ${sub.tierName} plan.`,
+        };
+      }
+      return { allowed: true };
+    } catch (error) {
+      // If no subscription found, don't allow storage
       return {
         allowed: false,
-        message: `Storage limit (${sub.usage.maxStorageGB}GB) reached for ${sub.tierName} plan.`,
+        message: 'No active subscription found. Please subscribe to a plan.',
       };
     }
-    return { allowed: true };
   }
 
   // ============================================

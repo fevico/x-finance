@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "./generated"
@@ -80,6 +81,9 @@ model Entity {
   accountTransactions AccountTransaction[] @relation("EntityAccountTransactions")
   auditLogs           AuditLog[]
   explicitPermissions ExplicitPermission[]
+  supplyIssueHistory  SupplyIssueHistory[]
+  supplyRestockHistory SupplyRestockHistory[]
+  storeSupply           StoreSupply[]
 
   @@index([name, taxId, email])
 }
@@ -112,6 +116,8 @@ model User {
   invoiceActivities     InvoiceActivity[]
   explicitPermissions   ExplicitPermission[]
   subscriptionHistories SubscriptionHistory[]
+  supplyIssueHistoriesIssued SupplyIssueHistory[] @relation("IssuedBy")
+  supplyIssueHistoriesUpdated SupplyIssueHistory[] @relation("UpdatedBy")
 
   @@unique([provider, providerId])
   @@index([email, groupId, isActive])
@@ -643,6 +649,7 @@ model Employee {
   entity           Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
   leave            Leave[]
   asset            Asset[]
+  supplyIssueHistory SupplyIssueHistory[]
   
   @@index([employeeId, email, entityId])
 }
@@ -1022,6 +1029,71 @@ model OpeningBalanceItem {
   @@unique([openingBalanceId, accountId])
   @@index([openingBalanceId])
   @@index([accountId])
+}
+
+
+model SupplyIssueHistory {
+  id         String   @id @default(cuid())
+  supplyId   String
+  quantity   Int
+  issuedTo   String
+  type       String
+  purpose    String
+  issuedById String
+  updatedById String?
+  notes      String?
+  issueDate  DateTime
+  entityId   String
+  employeeId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  supply     StoreSupply @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  entity     Entity      @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  employee   Employee?   @relation(fields: [employeeId], references: [id])
+  issuedBy   User        @relation("IssuedBy", fields: [issuedById], references: [id])
+  updatedBy  User?       @relation("UpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([entityId])
+  @@index([supplyId])
+}
+
+model SupplyRestockHistory {
+  id          String   @id @default(cuid())
+  supplyId    String
+  quantity    Int
+  unitPrice   Float
+  totalCost   Float
+  supplier    String
+  restockedBy String
+  notes       String?
+  restockDate DateTime
+  entityId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  supply      StoreSupply @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  entity      Entity      @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
+  @@index([supplyId])
+}
+model StoreSupply {
+  id           String   @id @default(cuid())
+  name         String
+  category     String
+  sku          String?
+  description  String?
+  unitPrice    Float
+  quantity     Int
+  minQuantity  Int
+  location     String?
+  supplier     String?
+  entityId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  entity       Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  supplyIssueHistory SupplyIssueHistory[]
+  supplyRestockHistory SupplyRestockHistory[]
+  @@index([entityId])
 }
 
 enum RoleScope {

@@ -47,6 +47,9 @@ import { GatewayModule } from './gateway/gateway.module';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { ModuleModule } from './module/module.module';
+import { StoreInventoryModule } from './assets-inventory/store-inventory/store-inventory.module';
+import { IssueHistoryModule } from './assets-inventory/store-inventory/issue-history/issue-history.module';
+import { RestockHistoryModule } from './assets-inventory/store-inventory/restock-history/restock-history.module';
 
 @Module({
   imports: [
@@ -92,6 +95,10 @@ import { ModuleModule } from './module/module.module';
     BankingModule,
     AccountTransactionModule,
     AnalyticsModule,
+    IssueHistoryModule,
+    RestockHistoryModule,
+    StoreInventoryModule,
+
   ],
   controllers: [AppController],
   providers: [

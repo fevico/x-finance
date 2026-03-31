@@ -189,6 +189,32 @@ export class UserController {
     return this.userService.deactivateUser(id, effectiveGroupId);
   }
 
+
+  /** DELETE /users/:id
+   * Permanently delete a user 
+   * Only admins allowed
+   * Decrements subscription user count
+   * 
+   * Note: This is a destructive action and should be used with caution. Consider using deactivate instead for most cases.
+   * This endpoint is provided for cases where permanent deletion is necessary (e.g. GDPR requests) but is not intended for regular user management.
+   */
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  async deleteUser(@Req() req: any, @Param('id') id: string) {
+    const isAdmin = req.user.systemRole === 'superadmin' || req.user.systemRole === 'admin';
+    if (!isAdmin) {
+      throw new ForbiddenException('Only admins can delete users');
+    }
+
+    const effectiveGroupId = getEffectiveGroupId(req);
+    if (!effectiveGroupId) {
+      throw new ForbiddenException('Group context is required to delete users');  
+    }
+
+    return this.userService.deleteUser(id, effectiveGroupId);
+  }
+
+
   /**
    * POST /users/:id/reactivate
    * Reactivate a deactivated user

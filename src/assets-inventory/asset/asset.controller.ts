@@ -33,12 +33,14 @@ export class AssetController {
   constructor(private assetsService: AssetService) {}
 
   @Post()
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Create a new asset' })
   @ApiBody({ type: CreateAssetDto })
   @ApiResponse({ status: 201, description: 'Asset created' })
-  async create(@Body() createAssetDto: CreateAssetDto, @Req() req: any) {
+  async create(@Body() createAssetDto: CreateAssetDto, @Req() req) {
+    // console.log("hrllo", req?.groupImpersonation?.groupId)
     const entityId = getEffectiveEntityId(req);
-    if (!entityId) throw new BadRequestException('Entity ID is required');
+    if (!entityId) throw new BadRequestException('Entity ID is required to continue');
     const userId = req.user?.id as string;
     // assignedId is employee id, serialNumber is auto-generated in service
     return this.assetsService.create(createAssetDto, entityId, userId, req);
@@ -63,7 +65,8 @@ export class AssetController {
   @ApiResponse({ status: 200, description: 'List of assets' })
   async findAll(@Req() req: Request) {
     const entityId = getEffectiveEntityId(req);
-    if (!entityId) throw new BadRequestException('Entity ID is required');
+    if (!entityId) throw new BadRequestException('Entity ID is required here');
+    console.log(entityId, "jjjj")
     return this.assetsService.findAll(entityId);
   }
 
