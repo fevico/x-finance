@@ -12,6 +12,8 @@ export interface MenuItem {
   module?: string;
   menu?: string; // Menu category from Module model (e.g., "Income", "Accounting")
   actions?: string[];
+  menuSortOrder?: number; // For ordering within the same menu category
+  moduleSortOrder?: number; // For ordering modules when no menu category is defined
 }
 
 export interface ModuleMenu {
@@ -410,6 +412,8 @@ export class MenuService {
       route: this.generateMenuRoute(module, menuCategory),
       module: module.moduleKey,
       menu: module.menu,
+      menuSortOrder: module.menuSortOrder,
+      moduleSortOrder: module.moduleSortOrder,
       actions,
     };
   }
@@ -433,6 +437,9 @@ export class MenuService {
     // Convert map to organized menu structure
     const organized: MenuItem[] = [];
     for (const [groupName, groupItems] of menuGroups) {
+      // Sort items within the group by moduleSortOrder
+      groupItems.sort((a, b) => (a.moduleSortOrder || 0) - (b.moduleSortOrder || 0));
+
       // If only one item in this group, use single route; otherwise use grouped route
       if (groupItems.length === 1) {
         // Single item: use just the moduleKey route
@@ -452,10 +459,14 @@ export class MenuService {
         organized.push({
           id: groupName,
           label: groupName,
+          menuSortOrder: groupItems[0].menuSortOrder, // Sort groups by the first module's sort order
           children: updatedItems,
         });
       }
     }
+
+    // Sort the organized menu groups by menuSortOrder
+    organized.sort((a, b) => (a.menuSortOrder || 0) - (b.menuSortOrder || 0));
 
     return organized;
   }
@@ -479,6 +490,9 @@ export class MenuService {
     // Convert map to organized menu structure
     const organized: MenuItem[] = [];
     for (const [groupName, groupItems] of menuGroups) {
+      // Sort items within the group by moduleSortOrder
+      groupItems.sort((a, b) => (a.moduleSortOrder || 0) - (b.moduleSortOrder || 0));
+
       // If only one item in this group, use single route; otherwise use grouped route
       if (groupItems.length === 1) {
         // Single item: use just the moduleKey route
@@ -498,10 +512,14 @@ export class MenuService {
         organized.push({
           id: groupName,
           label: groupName,
+          menuSortOrder: groupItems[0].menuSortOrder, // Sort groups by the first module's sort order
           children: updatedItems,
         });
       }
     }
+
+    // Sort the organized menu groups by menuSortOrder
+    organized.sort((a, b) => (a.menuSortOrder || 0) - (b.menuSortOrder || 0));
 
     return organized;
   }

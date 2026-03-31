@@ -712,6 +712,8 @@ model Module {
   displayName         String
   description         String?
   menu                String // Menu category grouping (e.g., "Income", "Expense", "Accounting")
+  menuSortOrder           Int                  @default(0) // For ordering menu groups
+  moduleSortOrder           Int                  @default(0) // For ordering modules within menu groups
   scope               ModuleScope          @default(ENTITY) // ADMIN or ENTITY level module
   actions             Action[]
   subscriptionModules SubscriptionModule[]

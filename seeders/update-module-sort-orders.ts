@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../prisma/generated/client';
 import 'dotenv/config';
-import { ModuleScope, PermissionAction } from '../prisma/generated/enums';
+import { ModuleScope } from '../prisma/generated/enums';
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL as string,
@@ -9,12 +9,12 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter });
 
-async function seedModules() {
+async function updateModuleSortOrders() {
   try {
-    console.log('Seeding modules and actions...');
+    console.log('Updating module sort orders...');
 
-    // Define all modules with scope (ADMIN or USER)
-    const modules = [
+    // Define all modules with their sort orders
+    const modulesWithSort = [
       // USER-level entity modules (business operations)
       { key: 'entityDashboard', name: 'Dashboard', menu: 'Dashboard', scope: 'user', menuSortOrder: 0, moduleSortOrder: 0 },
 
@@ -80,66 +80,42 @@ async function seedModules() {
       { key: 'subscriptions', name: 'Subscriptions', menu: 'Subscriptions', scope: 'superadmin', menuSortOrder: 2, moduleSortOrder: 0 },
     ];
 
-    // All actions
-    const actions = [
-      PermissionAction.View,
-      PermissionAction.Create,
-      PermissionAction.Edit,
-      PermissionAction.Delete,
-      PermissionAction.Approve,
-      PermissionAction.Export,
-      PermissionAction.Import,
-    ];
-
-    // Seed modules and their actions
-    for (const module of modules) {
+    // Update each module with sort orders
+    for (const module of modulesWithSort) {
       const moduleScope = module.scope.toUpperCase() === 'USER' ? ModuleScope.ENTITY : module.scope.toUpperCase() === 'SUPERADMIN' ? ModuleScope.SUPERADMIN : ModuleScope.GROUP;
-      
-      let createdModule = await prisma.module.findFirst({
-        where: { 
+
+      const updatedModule = await prisma.module.updateMany({
+        where: {
           moduleKey: module.key,
           scope: moduleScope,
         },
+        data: {
+          menuSortOrder: module.menuSortOrder,
+          moduleSortOrder: module.moduleSortOrder,
+        },
       });
 
-      if (!createdModule) {
-        createdModule = await prisma.module.create({
-          data: {
-            moduleKey: module.key,
-            displayName: module.name,
-            menu: module.menu,
-            menuSortOrder: module.menuSortOrder,
-            moduleSortOrder: module.moduleSortOrder,
-            scope: moduleScope,
-            ...(module.scope !== 'superadmin' && {
-              actions: {
-                create: actions.map((action) => ({
-                  actionName: action,
-                })),
-              },
-            }),
-          },
-        });
-        console.log(`✓ Created module: ${module.name} [${module.scope.toUpperCase()}]`);
+      if (updatedModule.count > 0) {
+        console.log(`✓ Updated sort orders for: ${module.name} [${module.scope.toUpperCase()}]`);
       } else {
-        console.log(`✓ Module already exists: ${module.name}`);
+        console.log(`⚠ Module not found: ${module.name} [${module.scope.toUpperCase()}]`);
       }
     }
 
-    console.log('✓ Modules and actions seeding complete!');
+    console.log('✓ Module sort orders update complete!');
   } catch (error) {
-    console.error('Error seeding modules:', error);
+    console.error('Error updating module sort orders:', error);
     throw error;
   }
 }
 
 async function main() {
   try {
-    console.log('🌱 Starting modules seed...\n');
-    await seedModules();
-    console.log('✅ Seeding completed successfully');
+    console.log('🌱 Starting module sort orders update...\n');
+    await updateModuleSortOrders();
+    console.log('✅ Update completed successfully');
   } catch (error) {
-    console.error('❌ Seeding failed:', error);
+    console.error('❌ Update failed:', error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();
@@ -147,5 +123,3 @@ async function main() {
 }
 
 main();
-
-
