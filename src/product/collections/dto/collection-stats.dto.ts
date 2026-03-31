@@ -20,10 +20,10 @@ export class CollectionStatsDto {
   totalItems?: number;
 
   @ApiProperty({
-    example: '$245K',
+    example: 245000,
     description: 'Total collection value',
   })
-  totalValue?: string;
+  totalValue?: Number;
 
   @ApiProperty({
     example: 'Best Sellers',

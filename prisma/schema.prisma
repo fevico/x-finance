@@ -69,6 +69,7 @@ model Entity {
   expenses            Expenses[]
   invoice             Invoice[]
   items               Items[]
+  storeItems          StoreItems[]
   journal             Journal[]
   leave               Leave[]
   paymentReceived     PaymentReceived[]
@@ -423,7 +424,7 @@ model ReceiptItem {
   @@index([itemId])
 }
 
-model Items {
+model StoreItems {
   id             String           @id @default(cuid())
   name           String
   category       String
@@ -436,16 +437,37 @@ model Items {
   taxable        Boolean          @default(false)
   currentStock   Int?
   lowStock       Int?
-  type           ItemsType        @default(product)
+  type           StoreItemsType        @default(product)
   trackInventory Boolean          @default(false)
   sellOnline     Boolean          @default(false)
   entityId       String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @default(now()) @updatedAt
   entity         Entity           @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  collections    CollectionStoreItem[]
+
+  @@index([entityId, type])
+}
+
+model Items {
+  id             String           @id @default(cuid())
+  name           String
+  category       String
+  code            String          @unique
+  description    String
+  unitPrice   Int?
+  isTaxable        Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  type           ItemsType        @default(goods)
+  entityId       String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  entity         Entity           @relation(fields: [entityId], references: [id], onDelete: Cascade)
   invoiceItem    InvoiceItem[]
   receiptItems   ReceiptItem[]
-  collections    CollectionItem[]
+  incomeAccountId      String
+  incomeAccount          Account              @relation(fields: [incomeAccountId], references: [id], onDelete: Restrict)
+
 
   @@index([entityId, type])
 }
@@ -462,25 +484,25 @@ model Collection {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @default(now()) @updatedAt
   entity      Entity           @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  items       CollectionItem[]
+  items       CollectionStoreItem[]
 
   @@unique([slug, entityId])
   @@index([entityId])
 }
 
-model CollectionItem {
+model CollectionStoreItem {
   id           String     @id @default(cuid())
   collectionId String
-  itemId       String
+  storeItemId       String
   sortOrder    Int        @default(0)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  item         Items      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  storeItems         StoreItems      @relation(fields: [storeItemId], references: [id], onDelete: Cascade)
 
-  @@unique([collectionId, itemId])
+  @@unique([collectionId, storeItemId])
   @@index([collectionId])
-  @@index([itemId])
+  @@index([storeItemId])
 }
 
 model Asset {
@@ -575,6 +597,7 @@ model Account {
   openingBalanceItems OpeningBalanceItem[]
   accountTransactions AccountTransaction[] @relation("AccountTransactions")
   receipts            Receipt[]
+  items               Items[]
 
   @@unique([entityId, code])
   @@index([id, entityId])
@@ -1157,8 +1180,13 @@ enum paymentRecordStatus {
   cleared
 }
 
-enum ItemsType {
+enum StoreItemsType {
   product
+  service
+}
+
+enum ItemsType {
+  goods
   service
 }
 

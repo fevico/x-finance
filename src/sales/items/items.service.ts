@@ -52,6 +52,9 @@ export class ItemsService {
     const [items, total] = await Promise.all([
       this.prisma.items.findMany({
         where,
+        include:{
+          incomeAccount: { select: { id: true, name: true, code: true } },
+        },
         orderBy: { name: 'asc' },
         skip,
         take: Number(limit),
@@ -61,21 +64,28 @@ export class ItemsService {
 
     const mappedItems = items.map((item) => this.mapItemToDto(item));
 
-    // Calculate in-stock and out-of-stock counts
-    const totalInStock = mappedItems.filter(
-      (i) => i.status === 'in_stock',
-    ).length;
-    const totalOutOfStock = mappedItems.filter(
-      (i) => i.status === 'out_of_stock',
-    ).length;
-
+  
     const totalPages = Math.ceil(total / limit);
+
+    const activeItems = mappedItems.filter((i) => i.isActive).length;
+    const serviceItems = mappedItems.filter((i) => i.type === 'service').length;
+    const goodsItems = mappedItems.filter((i) => i.type === 'goods').length;
+    const prices = mappedItems
+      .map((i) => Number(i.unitPrice ?? 0))
+      .filter((price) => price > 0);
+    const avgPrice = prices.length
+      ? Math.round(prices.reduce((sum, p) => sum + p, 0) / prices.length)
+      : 0;
 
     return {
       items: mappedItems,
       total,
-      totalInStock,
-      totalOutOfStock,
+      // totalInStock,
+      // totalOutOfStock,
+      totalItems: activeItems,
+      serviceItems,
+      goodsItems,
+      avgPrice,
       currentPage: page,
       pageSize: limit,
       totalPages,
@@ -83,21 +93,20 @@ export class ItemsService {
   }
 
   private mapItemToDto(item: any) {
-    const currentStock = item.currentStock ?? 0;
-    const lowStock = item.lowStock ?? 0;
+    // const currentStock = item.currentStock ?? 0;
+    // const lowStock = item.lowStock ?? 0;
 
     // Status: in_stock if currentStock > lowStock, else out_of_stock. If currentStock is 0, then low_stock
-    const status =
-      currentStock === 0
-        ? 'out_of_stock'
-        : currentStock > 0 && currentStock > lowStock
-          ? 'in_stock'
-          : 'low_stock';
+    // const status =
+    //   currentStock === 0
+    //     ? 'out_of_stock'
+    //     : currentStock > 0 && currentStock > lowStock
+    //       ? 'in_stock'
+    //       : 'low_stock';
 
     return {
       ...item,
-      status,
-      unitPrice: item.sellingPrice,
+      unitPrice: item.unitPrice,
     };
   }
 }

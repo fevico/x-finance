@@ -335,10 +335,10 @@ export class InvoiceService {
               },
               select: {
                 id: true,
-                taxable: true,
-                costPrice: true,
+                isTaxable: true,
+                // costPrice: true,
                 type: true,
-                trackInventory: true,
+                // trackInventory: true,
               },
             })
           : [];
@@ -350,7 +350,7 @@ export class InvoiceService {
         const itemDetail = itemDetails.find((i) => i.id === item.itemId);
         const total = item.rate * item.quantity;
         subtotal += total;
-        if (itemDetail?.taxable) {
+        if (itemDetail?.isTaxable) {
           hasTaxableItems = true;
         }
         return {
@@ -773,10 +773,10 @@ export class InvoiceService {
           },
           select: {
             id: true,
-            taxable: true,
-            costPrice: true,
+            isTaxable: true,
+            // costPrice: true,
             type: true,
-            trackInventory: true,
+            // trackInventory: true,
           },
         });
 
@@ -787,7 +787,7 @@ export class InvoiceService {
           const itemDetail = itemDetails.find((i) => i.id === item.itemId);
           const total = item.rate * item.quantity;
           subtotal += total;
-          if (itemDetail?.taxable) {
+          if (itemDetail?.isTaxable) {
             hasTaxableItems = true;
           }
           return {

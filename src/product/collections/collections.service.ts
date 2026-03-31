@@ -67,7 +67,7 @@ export class CollectionsService {
         include: {
           items: {
             include: {
-              item: true,
+              storeItems: true,
             },
             orderBy: {
               sortOrder: 'asc',
@@ -81,11 +81,11 @@ export class CollectionsService {
       // Add items to collection if provided
       if (body.itemIds && body.itemIds.length > 0) {
         await Promise.all(
-          JSON.parse(body.itemIds).map((itemId, index) =>
-            this.prisma.collectionItem.create({
+          JSON.parse(body.itemIds).map(( itemId, index) =>
+            this.prisma.collectionStoreItem.create({
               data: {
                 collectionId: collection.id,
-                itemId,
+                storeItemId:  itemId,
                 sortOrder: index,
               },
             }),
@@ -98,7 +98,7 @@ export class CollectionsService {
           include: {
             items: {
               include: {
-                item: true,
+                storeItems: true,
               },
               orderBy: {
                 sortOrder: 'asc',
@@ -135,14 +135,21 @@ export class CollectionsService {
       });
 
       // Get total items across all collections
-      const collectionItems = await this.prisma.collectionItem.findMany({
+      const collectionItems = await this.prisma.collectionStoreItem.findMany({
         where: {
           collection: {
             entityId,
           },
         },
+        include: {
+          storeItems: true,
+        },
       });
       const totalItems = collectionItems.length;
+      const totalValue = collectionItems.reduce((sum, item) => {
+        const price = item.storeItems?.sellingPrice || 0;
+        return sum + price;
+      }, 0);
 
       // Find most popular collection (with most items)
       const allCollectionsWithItems = await this.prisma.collection.findMany({
@@ -167,7 +174,7 @@ export class CollectionsService {
         totalCollections,
         activeCollections,
         totalItems,
-        totalValue: '245000', // Placeholder value
+        totalValue: Number(totalValue.toFixed(2)),
         mostPopularCollection,
         mostPopularItemCount,
       };
@@ -177,7 +184,7 @@ export class CollectionsService {
         totalCollections: 0,
         activeCollections: 0,
         totalItems: 0,
-        totalValue: '0',
+        totalValue: 0,
         mostPopularCollection: 'Best Sellers',
         mostPopularItemCount: 0,
       };
@@ -194,6 +201,8 @@ export class CollectionsService {
     const { page = 1, limit = 10, search } = query;
     const skip = (page - 1) * limit;
 
+    console.log(query, 'query in service', entityId); // Debug log
+
     const where: any = { entityId };
     if (search) {
       where.OR = [
@@ -209,7 +218,7 @@ export class CollectionsService {
         include: {
           items: {
             include: {
-              item: true,
+              storeItems: true,
             },
             orderBy: {
               sortOrder: 'asc',
@@ -249,7 +258,7 @@ export class CollectionsService {
       include: {
         items: {
           include: {
-            item: true,
+            storeItems: true,
           },
           orderBy: {
             sortOrder: 'asc',
@@ -277,7 +286,7 @@ export class CollectionsService {
       include: {
         items: {
           include: {
-            item: true,
+            storeItems: true,
           },
           orderBy: {
             sortOrder: 'asc',
@@ -368,7 +377,7 @@ export class CollectionsService {
         include: {
           items: {
             include: {
-              item: true,
+              storeItems: true,
             },
             orderBy: {
               sortOrder: 'asc',
@@ -380,18 +389,18 @@ export class CollectionsService {
       // Update items if provided
       if (body.itemIds !== undefined) {
         // Delete existing items
-        await this.prisma.collectionItem.deleteMany({
+        await this.prisma.collectionStoreItem.deleteMany({
           where: { collectionId },
         });
 
         // Add new items
         if (body.itemIds.length > 0) {
           await Promise.all(
-            JSON.parse(body.itemIds).map((itemId, index) =>
-              this.prisma.collectionItem.create({
+            JSON.parse(body.itemIds).map(( itemId, index) =>
+              this.prisma.collectionStoreItem.create({
                 data: {
                   collectionId,
-                  itemId,
+                  storeItemId: itemId,
                   sortOrder: index,
                 },
               }),
@@ -405,7 +414,7 @@ export class CollectionsService {
           include: {
             items: {
               include: {
-                item: true,
+                storeItems: true,
               },
               orderBy: {
                 sortOrder: 'asc',
@@ -472,7 +481,7 @@ export class CollectionsService {
       }
 
       // Get current items count for sort order
-      const currentItems = await this.prisma.collectionItem.findMany({
+      const currentItems = await this.prisma.collectionStoreItem.findMany({
         where: { collectionId },
         orderBy: { sortOrder: 'desc' },
         take: 1,
@@ -483,10 +492,10 @@ export class CollectionsService {
       // Add items
       await Promise.all(
         itemIds.map((itemId) =>
-          this.prisma.collectionItem.create({
+          this.prisma.collectionStoreItem.create({
             data: {
               collectionId,
-              itemId,
+              storeItemId: itemId,
               sortOrder: sortOrder++,
             },
           }),
@@ -499,7 +508,7 @@ export class CollectionsService {
         include: {
           items: {
             include: {
-              item: true,
+              storeItems: true,
             },
             orderBy: {
               sortOrder: 'asc',
@@ -533,10 +542,10 @@ export class CollectionsService {
       }
 
       // Remove items
-      await this.prisma.collectionItem.deleteMany({
+      await this.prisma.collectionStoreItem.deleteMany({
         where: {
           collectionId,
-          itemId: { in: itemIds },
+          storeItemId: { in: itemIds },
         },
       });
 
@@ -546,7 +555,7 @@ export class CollectionsService {
         include: {
           items: {
             include: {
-              item: true,
+              storeItems: true,
             },
             orderBy: {
               sortOrder: 'asc',
@@ -566,6 +575,7 @@ export class CollectionsService {
    * Format collection data for response
    */
   private formatCollection(collection: any): CollectionDto & { totalValue: number; totalItems: number } {
+    // console.log(collection, 'collection in formatCollection'); // Debug log
     const items = collection.items.map((ci: any) => this.formatCollectionItem(ci));
     const totalValue = items.reduce((sum, item) => sum + (item.sellingPrice || 0), 0);
     const totalItems = items.length;
@@ -597,16 +607,17 @@ export class CollectionsService {
    * Format collection item for response
    */
   private formatCollectionItem(collectionItem: any): CollectionItemDto {
+    // console.log(collectionItem, 'collection item in formatCollectionItem'); // Debug log
     return {
-      id: collectionItem.item.id,
-      name: collectionItem.item.name,
-      category: collectionItem.item.category,
-      sellingPrice: collectionItem.item.sellingPrice,
+      id: collectionItem.storeItems.id,
+      name: collectionItem.storeItems.name,
+      category: collectionItem.storeItems.category,
+      sellingPrice: collectionItem.storeItems.sellingPrice,
       sortOrder: collectionItem.sortOrder,
       createdAt:
-        collectionItem.item.createdAt instanceof Date
-          ? collectionItem.item.createdAt.toISOString()
-          : collectionItem.item.createdAt,
+        collectionItem.storeItems.createdAt instanceof Date
+          ? collectionItem.storeItems.createdAt.toISOString()
+          : collectionItem.storeItems.createdAt,
     };
   }
 }

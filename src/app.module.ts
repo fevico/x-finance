@@ -18,7 +18,7 @@ import { VendorModule } from './purchases/vendor/vendor.module';
 import { ExpensesModule } from './purchases/expenses/expenses.module';
 import { FileuploadModule } from './fileupload/fileupload.module';
 import { BillsModule } from './purchases/bills/bills.module';
-import { ItemsModule } from './product/items/items.module';
+import { StoreItemsModule } from './product/store-items/store-items.module';
 import { CollectionsModule } from './product/collections/collections.module';
 import { InventoryModule } from './product/inventory/inventory.module';
 import { AssetModule } from './assets-inventory/asset/asset.module';
@@ -50,6 +50,7 @@ import { ModuleModule } from './module/module.module';
 import { StoreInventoryModule } from './assets-inventory/store-inventory/store-inventory.module';
 import { IssueHistoryModule } from './assets-inventory/store-inventory/issue-history/issue-history.module';
 import { RestockHistoryModule } from './assets-inventory/store-inventory/restock-history/restock-history.module';
+import { ItemsModule } from './sales/items/items.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { RestockHistoryModule } from './assets-inventory/store-inventory/restock
     FileuploadModule,
     BillsModule,
     ItemsModule,
+    StoreItemsModule,
     CollectionsModule,
     InventoryModule,
     AssetModule,

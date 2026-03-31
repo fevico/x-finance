@@ -7,9 +7,9 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ItemsType } from 'prisma/generated/enums';
+import { StoreItemsType } from 'prisma/generated/enums';
 
-export class CreateItemDto {
+export class CreateStoreItemDto {
   @ApiProperty({ example: 'Office Chair', description: 'Item name' })
   @IsString()
   name: string = '';
@@ -77,13 +77,13 @@ export class CreateItemDto {
   lowStock?: number;
 
   @ApiPropertyOptional({
-    enum: ItemsType,
+    enum: StoreItemsType,
     example: 'product',
     description: 'Item type',
   })
   @IsOptional()
-  @IsEnum(ItemsType)
-  type?: ItemsType;
+  @IsEnum(StoreItemsType)
+  type?: StoreItemsType;
 
   @ApiPropertyOptional({
     example: true,
@@ -102,7 +102,7 @@ export class CreateItemDto {
   trackInventory?: boolean;
 }
 
-export class ItemDto extends CreateItemDto {
+export class StoreItemDto extends CreateStoreItemDto {
   @ApiProperty({ example: 'item_uuid' })
   id: string = '';
 

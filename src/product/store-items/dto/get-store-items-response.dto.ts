@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ItemDto } from './create-item.dto';
+import { StoreItemDto } from './create-store-item.dto';
 
-export class GetItemsResponseDto {
+export class GetStoreItemsResponseDto {
   @ApiProperty({
-    type: [ItemDto],
+    type: [StoreItemDto],
     description: 'List of items with stock status and unit price',
   })
-  items: ItemDto[];
+  items: StoreItemDto[];
 
   @ApiProperty({ example: 50, description: 'Total number of items' })
   total: number;

@@ -35,7 +35,7 @@ export class ReceiptService {
               },
               select: {
                 id: true,
-                taxable: true,
+                isTaxable: true,
                 type: true,
               },
             })
@@ -48,7 +48,7 @@ export class ReceiptService {
         const itemDetail = itemDetails.find((i) => i.id === item.itemId);
         const total = item.rate * item.quantity;
         subtotal += total;
-        if (itemDetail?.taxable) {
+        if (itemDetail?.isTaxable) {
           hasTaxableItems = true;
         }
         return {

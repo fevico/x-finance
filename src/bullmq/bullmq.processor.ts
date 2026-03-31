@@ -399,8 +399,8 @@ export class BullmqProcessor extends WorkerHost {
         select: {
           id: true,
           type: true,
-          trackInventory: true,
-          costPrice: true,
+          // trackInventory: true,
+          unitPrice: true,
         },
       });
 
@@ -415,13 +415,13 @@ export class BullmqProcessor extends WorkerHost {
 
         const netAmount = item.total;
 
-        if (itemDetail.type === ItemsType.product) {
+        if (itemDetail.type === ItemsType.goods) {
           productNetTotal += netAmount;
 
-          if (itemDetail.trackInventory && itemDetail.costPrice) {
-            const itemCogs = itemDetail.costPrice * item.quantity;
-            cogsTotal += itemCogs;
-          }
+          // if (itemDetail.trackInventory && itemDetail.costPrice) {
+          //   const itemCogs = itemDetail.costPrice * item.quantity;
+          //   cogsTotal += itemCogs;
+          // }
         } else if (itemDetail.type === ItemsType.service) {
           serviceNetTotal += netAmount;
         }
@@ -433,8 +433,8 @@ export class BullmqProcessor extends WorkerHost {
         productRevenueAccount,
         serviceRevenueAccount,
         vatAccount,
-        cogsAccount,
-        inventoryAccount,
+        // cogsAccount,
+        // inventoryAccount,
       ] = await Promise.all([
         this.prisma.account.findFirst({
           where: {
@@ -464,20 +464,20 @@ export class BullmqProcessor extends WorkerHost {
           },
           select: { id: true },
         }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '5110-01',
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
-        this.prisma.account.findFirst({
-          where: {
-            code: '1130-01',
-            entityId: invoiceData.entityId,
-          },
-          select: { id: true },
-        }),
+        // this.prisma.account.findFirst({
+        //   where: {
+        //     code: '5110-01',
+        //     entityId: invoiceData.entityId,
+        //   },
+        //   select: { id: true },
+        // }),
+        // this.prisma.account.findFirst({
+        //   where: {
+        //     code: '1130-01',
+        //     entityId: invoiceData.entityId,
+        //   },
+        //   select: { id: true },
+        // }),
       ]);
 
       if (!arAccount) {
@@ -523,19 +523,19 @@ export class BullmqProcessor extends WorkerHost {
         });
       }
 
-      if (cogsTotal > 0 && cogsAccount && inventoryAccount) {
-        journalLines.push({
-          accountId: cogsAccount.id,
-          debit: cogsTotal,
-          credit: 0,
-        });
+      // if (cogsTotal > 0 && cogsAccount && inventoryAccount) {
+      //   journalLines.push({
+      //     accountId: cogsAccount.id,
+      //     debit: cogsTotal,
+      //     credit: 0,
+      //   });
 
-        journalLines.push({
-          accountId: inventoryAccount.id,
-          debit: 0,
-          credit: cogsTotal,
-        });
-      }
+        // journalLines.push({
+        //   accountId: inventoryAccount.id,
+        //   debit: 0,
+        //   credit: cogsTotal,
+        // });
+      // }
 
       // Validate journal balances
       const totalDebit = journalLines.reduce(
@@ -945,7 +945,7 @@ export class BullmqProcessor extends WorkerHost {
 
         const netAmount = item.total;
 
-        if (itemDetail.type === 'product') {
+        if (itemDetail.type === 'goods') {
           productNetTotal += netAmount;
         } else if (itemDetail.type === 'service') {
           serviceNetTotal += netAmount;
