@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { GetEntityProjectsDto, Projects } from './dto/projects.dto';
+import { CreateMilestoneDto, CreateTeamMemberDto, GetEntityMilestonesDto, GetEntityProjectsDto, GetProjectTeamMembersDto, Projects } from './dto/projects.dto';
 import { getEffectiveEntityId } from '@/auth/utils/context.util';
 import { Request } from 'express';
 import { AuthGuard } from '@/auth/guards/auth.guard';
@@ -23,7 +23,7 @@ export class ProjectsController {
   async create(@Body() project: Projects, @Req() req: Request) {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
-    return this.projectService.createProject(project, entityId)
+    return this.projectService.createProject(project, entityId);
   }
 
   @Get('entity')
@@ -34,5 +34,39 @@ export class ProjectsController {
     const entityId = getEffectiveEntityId(req);
     if (!entityId) throw new BadRequestException('Entity ID is required');
     return this.projectService.getEntityProjects(entityId, dto);
+  }
+
+  @Post('milestones')
+  async createMilestone(@Body() dto: CreateMilestoneDto, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.projectService.createMilestone(dto, entityId);
+  }
+
+  @Get('milestones/entity')
+  async getEntityMilestones(
+    @Req() req: Request,
+    @Query() dto: GetEntityMilestonesDto,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.projectService.getEntityMilestones(entityId, dto);
+  }
+
+  @Post('team-members')
+  async createTeamMember(@Body() dto: CreateTeamMemberDto, @Req() req: Request) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.projectService.createTeamMember(dto, entityId);
+  }
+
+  @Get('team-members')
+  async getProjectTeamMembers(
+    @Req() req: Request,
+    @Query() dto: GetProjectTeamMembersDto,
+  ) {
+    const entityId = getEffectiveEntityId(req);
+    if (!entityId) throw new BadRequestException('Entity ID is required');
+    return this.projectService.getProjectTeamMembers(entityId, dto);
   }
 }

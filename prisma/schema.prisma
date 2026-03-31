@@ -82,6 +82,8 @@ model Entity {
   auditLogs           AuditLog[]
   explicitPermissions ExplicitPermission[]
   project             Project[]
+  milestones          Milestone[]
+  teamMembers         TeamMember[]
 
   @@index([name, taxId, email])
 }
@@ -578,24 +580,63 @@ model Account {
 
 model Project {
   id                String    @id @default(cuid())
-  name              String 
-  projectId         String 
-  customerId        String 
-  entityId          String 
+  name              String
+  projectId         String
+  customerId        String
+  entityId          String
   status            ProjectStatus @default(In_Progress)
-  description       String 
+  description       String
   startDate         DateTime
-  endDate           DateTime 
-  billingType       String 
-  currency          String 
+  endDate           DateTime
+  billingType       String
+  currency          String
   budgetedRevenue   Int
   budgetedCost      Int
   projectManager    String
-  customer          Customer @relation(fields: [customerId], references: [id])
-  entity            Entity   @relation(fields: [entityId], references: [id])
+  customer          Customer     @relation(fields: [customerId], references: [id])
+  entity            Entity       @relation(fields: [entityId], references: [id])
+  milestones        Milestone[]
+  teamMember        TeamMember[]
   createdAt         DateTime @default(now())
 
   @@index([entityId, id])
+}
+
+model Milestone {
+  id          String          @id @default(cuid())
+  projectId   String
+  entityId    String
+  name        String
+  description String
+  budget      Float
+  dueDate     DateTime
+  status      MilestoneStatus @default(Upcoming)
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entity      Entity          @relation(fields: [entityId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+
+  @@index([entityId, projectId])
+}
+
+model TeamMember {
+  id              String  @id @default(cuid())
+  name            String 
+  email           String
+  projectId         String
+  project         Project  @relation(fields: [projectId], references: [id])
+  entityId        String
+  entity          Entity  @relation(fields: [entityId], references: [id])
+  cost            Int 
+  estimatedMonth  Int
+  createdAt       DateTime @default(now())
+}
+
+enum MilestoneStatus {
+  Upcoming
+  In_Progress
+  Completed
+  On_Hold
 }
 
 model Journal {

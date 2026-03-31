@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { GetEntityProjectsDto, Projects } from './dto/projects.dto';
+import { CreateMilestoneDto, CreateTeamMemberDto, GetEntityMilestonesDto, GetEntityProjectsDto, GetProjectTeamMembersDto, Projects } from './dto/projects.dto';
 import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 import { ProjectStatus } from 'prisma/generated/enums';
 
@@ -85,6 +85,111 @@ export class ProjectsService {
     } catch (error) {
       throw new HttpException(
         `Failed to fetch projects: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createMilestone(dto: CreateMilestoneDto, entityId: string) {
+    try {
+      return await this.prisma.milestone.create({
+        data: {
+          ...dto,
+          entityId,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getEntityMilestones(entityId: string, dto: GetEntityMilestonesDto) {
+    try {
+      const { projectId, status, search, page = 1, limit = 10 } = dto;
+      const skip = (page - 1) * limit;
+
+      const where: any = { entityId };
+
+      if (projectId) where.projectId = projectId;
+      if (status) where.status = status;
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const [milestones, total] = await Promise.all([
+        this.prisma.milestone.findMany({
+          where,
+          include: { project: true },
+          orderBy: { dueDate: 'asc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.milestone.count({ where }),
+      ]);
+
+      return {
+        data: milestones,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch milestones: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createTeamMember(dto: CreateTeamMemberDto, entityId: string) {
+    try {
+      return await this.prisma.teamMember.create({
+        data: {
+          ...dto,
+          entityId,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(`${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getProjectTeamMembers(entityId: string, dto: GetProjectTeamMembersDto) {
+    try {
+      const { projectId, page = 1, limit = 10 } = dto;
+      const skip = (page - 1) * limit;
+
+      const where = { entityId, projectId };
+
+      const [members, total] = await Promise.all([
+        this.prisma.teamMember.findMany({
+          where,
+          include: { project: true },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.teamMember.count({ where }),
+      ]);
+
+      return {
+        data: members,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch team members: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
