@@ -300,7 +300,9 @@ export class BullmqProcessor extends WorkerHost {
       scope,
       groupId,
       customMessage,
-      roleName,
+      groupName,
+      entityName,
+      groupSlug,
     } = job.data as {
       email: string;
       firstName: string;
@@ -309,7 +311,9 @@ export class BullmqProcessor extends WorkerHost {
       scope: 'ENTITY' | 'GROUP';
       groupId: string;
       customMessage?: string;
-      roleName: string;
+      groupName: string;
+      groupSlug: string;
+      entityName?: string;
     };
 
     this.logger.log(
@@ -325,10 +329,11 @@ export class BullmqProcessor extends WorkerHost {
 
       const htmlContent = this.emailService.renderHtmlTemplate(templatePath, {
         firstName: firstName || 'User',
-        groupName: roleName,
-        entityName: roleName,
+        groupName: groupName,
+        entityName: entityName || '',
         email,
         password,
+        loginUrl: `https://${groupSlug}.fevico.com.ng/auth/login`,
       });
 
       const html = this.emailService.wrapWithBaseTemplate(htmlContent, 'Welcome to X-Finance', {

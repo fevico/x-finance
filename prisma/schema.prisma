@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "./generated"
@@ -81,9 +82,15 @@ model Entity {
   accountTransactions AccountTransaction[] @relation("EntityAccountTransactions")
   auditLogs           AuditLog[]
   explicitPermissions ExplicitPermission[]
+<<<<<<< HEAD
   project             Project[]
   milestones          Milestone[]
   teamMembers         TeamMember[]
+=======
+  supplyIssueHistory  SupplyIssueHistory[]
+  supplyRestockHistory SupplyRestockHistory[]
+  storeSupply           StoreSupply[]
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 
   @@index([name, taxId, email])
 }
@@ -116,6 +123,11 @@ model User {
   invoiceActivities     InvoiceActivity[]
   explicitPermissions   ExplicitPermission[]
   subscriptionHistories SubscriptionHistory[]
+<<<<<<< HEAD
+=======
+  supplyIssueHistoriesIssued SupplyIssueHistory[] @relation("IssuedBy")
+  supplyIssueHistoriesUpdated SupplyIssueHistory[] @relation("UpdatedBy")
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 
   @@unique([provider, providerId])
   @@index([email, groupId, isActive])
@@ -484,10 +496,12 @@ model CollectionItem {
 
 model Asset {
   id                 String      @id @default(cuid())
+  serialNumber       String      @unique
   name               String
   type               String
   department         String
-  assigned           String
+  assignedId         String
+  assigned           Employee    @relation(fields: [assignedId], references: [id], onDelete: SetNull)
   description        String
   purchaseDate       DateTime
   purchaseCost       Int
@@ -706,7 +720,9 @@ model Employee {
   attendance       Attendance[]
   entity           Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
   leave            Leave[]
-
+  asset            Asset[]
+  supplyIssueHistory SupplyIssueHistory[]
+  
   @@index([employeeId, email, entityId])
 }
 
@@ -791,6 +807,11 @@ model Module {
   displayName         String
   description         String?
   menu                String // Menu category grouping (e.g., "Income", "Expense", "Accounting")
+<<<<<<< HEAD
+=======
+  menuSortOrder           Int                  @default(0) // For ordering menu groups
+  moduleSortOrder           Int                  @default(0) // For ordering modules within menu groups
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
   scope               ModuleScope          @default(ENTITY) // ADMIN or ENTITY level module
   actions             Action[]
   subscriptionModules SubscriptionModule[]
@@ -1110,6 +1131,74 @@ model OpeningBalanceItem {
   @@index([accountId])
 }
 
+<<<<<<< HEAD
+=======
+
+model SupplyIssueHistory {
+  id         String   @id @default(cuid())
+  supplyId   String
+  quantity   Int
+  issuedTo   String
+  type       String
+  purpose    String
+  issuedById String
+  updatedById String?
+  notes      String?
+  issueDate  DateTime
+  entityId   String
+  employeeId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  supply     StoreSupply @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  entity     Entity      @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  employee   Employee?   @relation(fields: [employeeId], references: [id])
+  issuedBy   User        @relation("IssuedBy", fields: [issuedById], references: [id])
+  updatedBy  User?       @relation("UpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([entityId])
+  @@index([supplyId])
+}
+
+model SupplyRestockHistory {
+  id          String   @id @default(cuid())
+  supplyId    String
+  quantity    Int
+  unitPrice   Float
+  totalCost   Float
+  supplier    String
+  restockedBy String
+  notes       String?
+  restockDate DateTime
+  entityId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  supply      StoreSupply @relation(fields: [supplyId], references: [id], onDelete: Cascade)
+  entity      Entity      @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
+  @@index([supplyId])
+}
+model StoreSupply {
+  id           String   @id @default(cuid())
+  name         String
+  category     String
+  sku          String?
+  description  String?
+  unitPrice    Float
+  quantity     Int
+  minQuantity  Int
+  location     String?
+  supplier     String?
+  entityId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  entity       Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  supplyIssueHistory SupplyIssueHistory[]
+  supplyRestockHistory SupplyRestockHistory[]
+  @@index([entityId])
+}
+
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 enum RoleScope {
   ADMIN // Role grants admin-level permissions (Users, Roles, Audit, Settings, etc.)
   USER // Role grants entity-level/user permissions (Invoices, Bills, Payroll, etc.)
@@ -1131,6 +1220,7 @@ enum PermissionAction {
   Import
 }
 
+<<<<<<< HEAD
 enum ProjectStatus {
   Completed
   Planning 
@@ -1138,6 +1228,8 @@ enum ProjectStatus {
   On_Hold
 }
 
+=======
+>>>>>>> ac763597b847337545f7783c301c992c3a237ecf
 enum BillingCycle {
   Monthly
   Annual

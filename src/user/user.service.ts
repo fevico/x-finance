@@ -60,9 +60,24 @@ export class UserService {
     // Verify group exists
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
-      select: { id: true, name: true },
+      select: { id: true, name: true, subdomain: true },
     });
     if (!group) throw new NotFoundException('Group not found');
+
+    // If ENTITY scope, verify entity exists and belongs to group
+    let entity: { id: string; name: string; groupId: string } | null = null;
+    if (dto.scope === 'ENTITY') {
+      if (!dto.entityId) {
+        throw new BadRequestException('entityId is required for ENTITY scope');
+      }
+      entity = await this.prisma.entity.findUnique({
+        where: { id: dto.entityId },
+        select: { id: true, name: true, groupId: true },
+      });
+      if (!entity || entity.groupId !== groupId) {
+        throw new BadRequestException('Entity not found or does not belong to this group');
+      }
+    }
 
     // Verify role exists and belongs to this group
     const role = await this.prisma.role.findUnique({
@@ -81,7 +96,7 @@ export class UserService {
         firstName: dto.firstName || 'User',
         lastName: dto.lastName || '',
         department: dto.department,
-          ...(dto.entityId ? { entityId: dto.entityId } : {}), // Handle entityId
+          ...(entity ? { entityId: entity.id } : {}), // Handle entityId
           
         roleId: dto.roleId,
         systemRole: systemRoleValue,
@@ -89,6 +104,7 @@ export class UserService {
         sendWelcomeEmail: dto.sendWelcomeEmail ?? true,
         customMessage: dto.customMessage,
         group,
+        entity: entity || undefined,
       });
     }
 
@@ -96,11 +112,12 @@ export class UserService {
     if (dto.emails) {
       return this.createBulkUsers(groupId, dto.emails, {
         roleId: dto.roleId,
-        ...(dto.entityId ? { entityId: dto.entityId } : {}), // Handle entityId
+        ...(entity ? { entityId: entity.id } : {}), // Handle entityId
         systemRole: systemRoleValue,
         requirePasswordChange: dto.requirePasswordChange ?? true,
         sendWelcomeEmail: dto.sendWelcomeEmail ?? true,
         group,
+        entity: entity || undefined,
       });
     }
   }
@@ -115,13 +132,13 @@ export class UserService {
       firstName: string;
       lastName: string;
       department?: string;
-      entityId?: string;
+      entity?: { id: string; name: string; groupId: string }; // Added entity to options
       roleId: string;
       systemRole: systemRole;
       requirePasswordChange: boolean;
       sendWelcomeEmail: boolean;
       customMessage?: string;
-      group: { id: string; name: string };
+      group: { id: string; name: string; subdomain: string };
     },
   ) {
     // Check subscription limit
@@ -150,7 +167,7 @@ export class UserService {
         lastName: options.lastName,
         department: options.department,
         password: hashedPassword,
-          ...(options.entityId ? { entityId: options.entityId } : {}), // Handle entityId
+          ...(options.entity ? { entityId: options.entity.id } : {}), // Handle entityId
         
         groupId,
         roleId: options.roleId,
@@ -176,7 +193,9 @@ export class UserService {
         scope: options.systemRole === systemRole.admin ? 'GROUP' : 'ENTITY',
         groupId,
         customMessage: options.customMessage,
-        roleName: options.group.name,
+        groupName: options.group.name,
+        groupSlug: options.group.subdomain,
+        entityName: options.entity?.name,
       });
     }
 
@@ -204,8 +223,8 @@ export class UserService {
       systemRole: systemRole;
       requirePasswordChange: boolean;
       sendWelcomeEmail: boolean;
-      group: { id: string; name: string };
-            entityId?: string; // Added entityId to options
+      group: { id: string; name: string; subdomain: string };
+            entity?: { id: string; name: string }; // Added entity to options
 
     },
   ) {
@@ -253,7 +272,7 @@ export class UserService {
           requirePasswordChange: options.requirePasswordChange,
           isActive: true,
           adminEntities: [],
-            ...(options.entityId ? { entityId: options.entityId } : {}), // Handle entityId
+            ...(options.entity ? { entityId: options.entity.id } : {}), // Handle entityId
         },
       });
 
@@ -268,7 +287,10 @@ export class UserService {
           password: tempPassword,
           scope: options.systemRole === systemRole.admin ? 'GROUP' : 'ENTITY',
           groupId,
-          roleName: options.group.name,
+          groupName: options.group.name,
+          groupSlug: options.group.subdomain,
+          entityName: options.entity?.name,
+          loginUrl: `https://${options.group.subdomain}.fevico.com.ng/auth/login`,
         });
       }
     }
@@ -528,5 +550,17 @@ export class UserService {
     // Pending invites: users with lastLogin == null
     const pendingInvites = await this.prisma.user.count({ where: { groupId, lastLogin: null } });
     return { totalUsers, activeUsers, roles, pendingInvites };
+  }
+
+  async deleteUser(userId: string, groupId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.prisma.user.delete({
+      where: { id: userId },
+    });
   }
 }

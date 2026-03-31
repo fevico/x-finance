@@ -1,5 +1,5 @@
 import { BankingModule } from './banking/banking.module';
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -21,7 +21,7 @@ import { BillsModule } from './purchases/bills/bills.module';
 import { ItemsModule } from './product/items/items.module';
 import { CollectionsModule } from './product/collections/collections.module';
 import { InventoryModule } from './product/inventory/inventory.module';
-import { AssetModule } from './asset/asset.module';
+import { AssetModule } from './assets-inventory/asset/asset.module';
 import { AccountModule } from './accounts/account/account.module';
 import { AccountTypeModule } from './accounts/account-type/account-type.module';
 import { AccountCategoryModule } from './accounts/account-category/account-category.module';
@@ -47,7 +47,9 @@ import { GatewayModule } from './gateway/gateway.module';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { ModuleModule } from './module/module.module';
-import { ProjectsModule } from './projects/projects.module';
+import { StoreInventoryModule } from './assets-inventory/store-inventory/store-inventory.module';
+import { IssueHistoryModule } from './assets-inventory/store-inventory/issue-history/issue-history.module';
+import { RestockHistoryModule } from './assets-inventory/store-inventory/restock-history/restock-history.module';
 
 @Module({
   imports: [
@@ -93,8 +95,10 @@ import { ProjectsModule } from './projects/projects.module';
     BankingModule,
     AccountTransactionModule,
     AnalyticsModule,
-    ConfigModule,
-    ProjectsModule,
+    IssueHistoryModule,
+    RestockHistoryModule,
+    StoreInventoryModule,
+
   ],
   controllers: [AppController],
   providers: [
