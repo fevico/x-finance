@@ -1,6 +1,13 @@
 import { PrismaService } from '@/prisma/prisma.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateMilestoneDto, CreateTeamMemberDto, GetEntityMilestonesDto, GetEntityProjectsDto, GetProjectTeamMembersDto, Projects } from './dto/projects.dto';
+import {
+  CreateMilestoneDto,
+  CreateTeamMemberDto,
+  GetEntityMilestonesDto,
+  GetEntityProjectsDto,
+  GetProjectTeamMembersDto,
+  Projects,
+} from './dto/projects.dto';
 import { generateRandomInvoiceNumber } from '@/auth/utils/helper';
 import { ProjectStatus } from 'prisma/generated/enums';
 
@@ -10,24 +17,25 @@ export class ProjectsService {
 
   async createProject(project: Projects, entityId: string) {
     try {
-      const projectnumber = generateRandomInvoiceNumber({ prefix: 'PRO' });
+      const projectNumber = generateRandomInvoiceNumber({ prefix: 'PRO' });
       const data = await this.prisma.project.create({
         data: {
           ...project,
-          projectId: projectnumber,
+          projectNumber,
           entityId,
+          status: project.status as ProjectStatus, // Default to 'Planning' if not provided
         },
       });
       return data;
     } catch (error) {
-        throw new HttpException(`${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new HttpException(
+        `${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async getEntityProjects(
-    entityId: string,
-    dto: GetEntityProjectsDto,
-  ) {
+  async getEntityProjects(entityId: string, dto: GetEntityProjectsDto) {
     try {
       const { status, search, page = 1, limit = 10 } = dto;
       const skip = (page - 1) * limit;
@@ -64,7 +72,7 @@ export class ProjectsService {
             createdAt: 'desc', // or startDate, etc.
           },
           skip,
-          take: limit,
+          take: Number(limit),
         }),
         this.prisma.project.count({ where }),
       ]);
@@ -76,9 +84,9 @@ export class ProjectsService {
         data: projects,
         pagination: {
           total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
+          page: Number(page),
+          limit: Number(limit),
+          totalPages: Math.ceil(total / Number(limit)),
         },
         stats,
       };
@@ -99,7 +107,10 @@ export class ProjectsService {
         },
       });
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -156,7 +167,10 @@ export class ProjectsService {
         },
       });
     } catch (error) {
-      throw new HttpException(`${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -228,8 +242,13 @@ export class ProjectsService {
     const totalProfit = totalRevenue - totalCost;
 
     // Active projects (In_Progress or Planning)
-    const activeWhere = { ...where, status: { in: ['In_Progress', 'Planning'] } };
-    const activeProjects = await this.prisma.project.count({ where: activeWhere });
+    const activeWhere = {
+      ...where,
+      status: { in: ['In_Progress', 'Planning'] },
+    };
+    const activeProjects = await this.prisma.project.count({
+      where: activeWhere,
+    });
 
     // Average profit margin
     let averageProfitMargin = 0;

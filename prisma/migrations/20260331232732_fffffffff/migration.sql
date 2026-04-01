@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Module" ADD COLUMN     "menuSortOrder" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "moduleSortOrder" INTEGER NOT NULL DEFAULT 0;

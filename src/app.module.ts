@@ -51,6 +51,7 @@ import { StoreInventoryModule } from './assets-inventory/store-inventory/store-i
 import { IssueHistoryModule } from './assets-inventory/store-inventory/issue-history/issue-history.module';
 import { RestockHistoryModule } from './assets-inventory/store-inventory/restock-history/restock-history.module';
 import { ItemsModule } from './sales/items/items.module';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { ItemsModule } from './sales/items/items.module';
     IssueHistoryModule,
     RestockHistoryModule,
     StoreInventoryModule,
+    ProjectsModule,
 
   ],
   controllers: [AppController],

@@ -32,15 +32,21 @@ export class Projects {
 
   @IsString()
   @IsNotEmpty()
-  projectManager: string;
+  managerId: string;
 
-  @IsDate()
+  @IsString()
+  @IsNotEmpty()
+  status: string;
+
+  @IsString()
   @IsNotEmpty()
   startDate: Date;
 
-  @IsDate()
+  @IsString()
   @IsNotEmpty()
   endDate: Date;
+
+
 }
 
 export class GetEntityProjectsDto {

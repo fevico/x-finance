@@ -26,7 +26,7 @@ export class ProjectsController {
     return this.projectService.createProject(project, entityId);
   }
 
-  @Get('entity')
+  @Get()
   async getEntityProjects(
     @Req() req: Request,
     @Query() dto: GetEntityProjectsDto,
